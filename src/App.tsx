@@ -329,6 +329,7 @@ function App(): React.ReactElement {
                   }
                 />
               ))}
+              {/* User event plugin routes */}
               <Route element={<EventDashboardScreen />}>
                 <Route
                   path="/user/event/:orgId/:eventId"
