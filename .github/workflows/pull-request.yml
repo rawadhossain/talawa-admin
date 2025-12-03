@@ -602,10 +602,11 @@ jobs:
             fi
           done < lcov-files.txt
 
-          # Merge LCOV files - collect all lcov.info files explicitly
-          LCOV_FILES=$(tr '\n' ' ' < lcov-files.txt)
-          echo "Merging coverage files: $LCOV_FILES"
-          pnpm exec lcov-result-merger $LCOV_FILES ./coverage/vitest/lcov.info
+          # Merge LCOV files
+          # lcov-result-merger accepts glob patterns - ensure the pattern matches all shard files
+          echo "Merging coverage files..."
+          # Use the glob pattern that matches the actual file structure: coverage-shards/coverage-shard-*/lcov.info
+          pnpm exec lcov-result-merger coverage-shards/coverage-shard-*/lcov.info ./coverage/vitest/lcov.info
 
           # Validate merged file exists and is not empty
           if [ ! -s ./coverage/vitest/lcov.info ]; then
