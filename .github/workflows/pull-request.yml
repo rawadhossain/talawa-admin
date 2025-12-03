@@ -602,8 +602,14 @@ jobs:
             fi
           done < lcov-files.txt
 
-          # Merge LCOV files
-          pnpm exec lcov-result-merger "coverage-shards/*/lcov.info" ./coverage/vitest/lcov.info
+          # Merge LCOV files - collect all lcov.info files explicitly
+          LCOV_FILES=$(find coverage-shards -name "lcov.info" -type f | tr '\n' ' ')
+          if [ -z "$LCOV_FILES" ]; then
+            echo "ERROR: No lcov.info files found for merging!"
+            exit 1
+          fi
+          echo "Merging coverage files: $LCOV_FILES"
+          pnpm exec lcov-result-merger $LCOV_FILES ./coverage/vitest/lcov.info
 
           # Validate merged file exists and is not empty
           if [ ! -s ./coverage/vitest/lcov.info ]; then
