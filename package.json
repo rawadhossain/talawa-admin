@@ -90,7 +90,7 @@
     "check-localstorage": "tsx scripts/githooks/check-localstorage-usage.ts",
     "postgenerate-docs": "find docs/docs/auto-docs -name 'README.md' -delete && node scripts/docs/fix-repo-url.js",
     "generate-docs": "typedoc && pnpm run postgenerate-docs && node scripts/docs/fix-readme-links.js",
-    "cypress:run": "cypress run && nyc report --reporter=text-summary",
+    "cypress:run": "cypress run",
     "cypress:open": "cypress open",
     "start-server": "node scripts/start-server.js",
     "cy:open": "pnpm run start-server cypress:open",
@@ -152,8 +152,8 @@
     "graphql": "^16.10.0",
     "husky": "^9.1.6",
     "knip": "^5.66.0",
+    "lcov-result-merger": "^5.0.1",
     "lint-staged": "^16.2.3",
-    "nyc": "^17.1.0",
     "prettier": "^3.6.2",
     "sass": "^1.93.3",
     "tsx": "^4.21.0",
@@ -165,38 +165,25 @@
     "vite-plugin-svgr": "^4.3.0",
     "vitest": "^3.2.4"
   },
-  "nyc": {
-    "reporter": [
-      "html",
-      "lcov"
-    ],
-    "extension": [
-      ".js",
-      ".jsx",
-      ".ts",
-      ".tsx"
-    ],
-    "all": true,
-    "include": [
-      "src/screens/**/*.{js,jsx,ts,tsx}",
-      "src/components/**/*.{js,jsx,ts,tsx}",
-      "src/subComponents/**/*.{js,jsx,ts,tsx}",
-      "src/shared-components/**/*.{js,jsx,ts,tsx}"
-    ],
-    "exclude": [
-      "cypress/**",
-      "**/*.cy.*",
-      "src/**/*.spec.*",
-      "coverage/**"
-    ],
-    "temp-directory": ".nyc_output"
-  },
   "resolutions": {
     "@apollo/client": "3.14.0"
   },
   "pnpm": {
     "overrides": {
-      "@apollo/client": "3.14.0"
+      "@apollo/client": "3.14.0",
+      "@pdfme/common": "5.4.8",
+      "@pdfme/schemas": "5.4.8",
+      "@pdfme/generator": "5.4.8"
+    },
+    "peerDependencyRules": {
+      "allowedVersions": {
+        "react": ">=16",
+        "react-dom": ">=16"
+      },
+      "ignoreMissing": [
+        "react",
+        "react-dom"
+      ]
     }
   },
   "engines": {
