@@ -150,7 +150,7 @@
     "eslint-plugin-tsdoc": "^0.4.0",
     "glob": "^13.0.0",
     "graphql": "^16.10.0",
-    "husky": "^9.1.6",
+    "husky": "^9.1.7",
     "knip": "^5.66.0",
     "lcov-result-merger": "^5.0.1",
     "lint-staged": "^16.2.3",
