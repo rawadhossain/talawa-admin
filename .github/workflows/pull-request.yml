@@ -658,9 +658,20 @@ jobs:
           fi
 
           # Calculate coverage as backup info
+          # Ensure bc is available
+          if ! command -v bc &> /dev/null; then
+            echo "ERROR: bc command not found!"
+            exit 1
+          fi
           LINES_FOUND=$(grep -o "LF:[0-9]*" "$LCOV_FILE" | cut -d: -f2 | paste -sd+ | bc)
           LINES_HIT=$(grep -o "LH:[0-9]*" "$LCOV_FILE" | cut -d: -f2 | paste -sd+ | bc)
-          COVERAGE=$(awk "BEGIN {printf \"%.2f\", ($LINES_HIT / $LINES_FOUND) * 100}")
+
+          if [ -z "$LINES_FOUND" ] || [ "$LINES_FOUND" -eq 0 ]; then
+            echo "ERROR: Failed to extract coverage metrics!"
+            exit 1
+          fi
+          COVERAGE=$(awk -v hit="$LINES_HIT" -v found="$LINES_FOUND" 'BEGIN {printf "%.2f", (hit / found) * 100}')
+
 
           echo "Pre-check: Coverage is $COVERAGE% ($LINES_HIT/$LINES_FOUND lines)"
 
