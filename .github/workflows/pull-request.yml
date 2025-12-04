@@ -641,46 +641,35 @@ jobs:
           files: ./coverage/vitest/lcov.info
           flags: vitest
 
-      - name: Validate and prepare coverage file
+      - name: Test acceptable level of code coverage
         if: steps.check-artifacts.outputs.artifacts_found == 'true'
-        id: validate-coverage
         run: |
           LCOV_FILE="./coverage/vitest/lcov.info"
 
-          # Get absolute path
-          ABSOLUTE_PATH="$(pwd)/$LCOV_FILE"
-          echo "absolute_path=$ABSOLUTE_PATH" >> $GITHUB_OUTPUT
+          # Extract line coverage data
+          LINES_FOUND=$(grep -o "LF:[0-9]*" "$LCOV_FILE" | cut -d: -f2 | paste -sd+ | bc)
+          LINES_HIT=$(grep -o "LH:[0-9]*" "$LCOV_FILE" | cut -d: -f2 | paste -sd+ | bc)
 
-          # Validate file exists and is not empty
-          if [ ! -s "$LCOV_FILE" ]; then
-            echo "ERROR: Coverage file is empty or missing!"
+          if [ "$LINES_FOUND" -eq 0 ]; then
+            echo "ERROR: No lines found in coverage report!"
             exit 1
           fi
 
-          # Calculate coverage as backup info
-          # Ensure bc is available
-          if ! command -v bc &> /dev/null; then
-            echo "ERROR: bc command not found!"
-            exit 1
-          fi
-          LINES_FOUND=$(grep -c "^DA:" "$LCOV_FILE")
-          LINES_HIT=$(grep "^DA:" "$LCOV_FILE" | awk -F',' '$2 > 0 {count++} END {print count+0}')
-
-          if [ -z "$LINES_FOUND" ] || [ "$LINES_FOUND" -eq 0 ]; then
-            echo "ERROR: Failed to extract coverage metrics!"
-            exit 1
-          fi
           COVERAGE=$(awk -v hit="$LINES_HIT" -v found="$LINES_FOUND" 'BEGIN {printf "%.2f", (hit / found) * 100}')
 
+          echo "📊 Coverage Results:"
+          echo "  Lines found: $LINES_FOUND"
+          echo "  Lines hit: $LINES_HIT"
+          echo "  Coverage: $COVERAGE%"
 
-          echo "Pre-check: Coverage is $COVERAGE% ($LINES_HIT/$LINES_FOUND lines)"
+          MIN_COVERAGE=94.0
 
-      - name: Test acceptable level of code coverage
-        if: steps.check-artifacts.outputs.artifacts_found == 'true'
-        uses: VeryGoodOpenSource/very_good_coverage@v3
-        with:
-          path: './coverage/vitest/lcov.info'
-          min_coverage: 94.0
+          if (( $(echo "$COVERAGE < $MIN_COVERAGE" | bc -l) )); then
+            echo "Coverage $COVERAGE% is below minimum threshold of $MIN_COVERAGE%"
+            exit 1
+          else
+            echo "Coverage $COVERAGE% meets minimum threshold of $MIN_COVERAGE%"
+          fi
 
   # Graphql-Inspector:
   #   if: ${{ github.actor != 'dependabot[bot]' }}
