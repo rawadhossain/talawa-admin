@@ -663,8 +663,8 @@ jobs:
             echo "ERROR: bc command not found!"
             exit 1
           fi
-          LINES_FOUND=$(grep -o "LF:[0-9]*" "$LCOV_FILE" | cut -d: -f2 | paste -sd+ | bc)
-          LINES_HIT=$(grep -o "LH:[0-9]*" "$LCOV_FILE" | cut -d: -f2 | paste -sd+ | bc)
+          LINES_FOUND=$(grep -c "^DA:" "$LCOV_FILE")
+          LINES_HIT=$(grep "^DA:" "$LCOV_FILE" | awk -F',' '$2 > 0 {count++} END {print count+0}')
 
           if [ -z "$LINES_FOUND" ] || [ "$LINES_FOUND" -eq 0 ]; then
             echo "ERROR: Failed to extract coverage metrics!"
