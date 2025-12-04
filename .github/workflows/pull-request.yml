@@ -602,69 +602,10 @@ jobs:
             fi
           done < lcov-files.txt
 
-          # Merge LCOV files
-          # lcov-result-merger signature: lcov-result-merger file1 file2 ... output
-          # Use bash array to properly pass all files as arguments
-          echo "Merging coverage files..."
-
-          FILE_COUNT=$(wc -l < lcov-files.txt)
-          echo "Merging $FILE_COUNT coverage files..."
-
-          # Read all files into a bash array for proper argument passing
-          mapfile -t FILES_ARRAY < lcov-files.txt
-
-          # Verify we have files
-          if [ ${#FILES_ARRAY[@]} -eq 0 ]; then
-            echo "ERROR: No files to merge!"
-            exit 1
-          fi
-
-          echo "Files to merge:"
-          printf '  %s\n' "${FILES_ARRAY[@]}"
-
-          # Execute lcov-result-merger with all input files, then output file
-          # Try node_modules path first (most reliable)
-          if [ -f node_modules/.bin/lcov-result-merger ]; then
-            echo "Using: node_modules/.bin/lcov-result-merger"
-            node_modules/.bin/lcov-result-merger "${FILES_ARRAY[@]}" ./coverage/vitest/lcov.info
-            MERGE_EXIT_CODE=$?
-          elif command -v lcov-result-merger >/dev/null 2>&1; then
-            echo "Using: system lcov-result-merger"
-            lcov-result-merger "${FILES_ARRAY[@]}" ./coverage/vitest/lcov.info
-            MERGE_EXIT_CODE=$?
-          else
-            # Fallback: use pnpm exec (may have issues with array expansion)
-            echo "Using: pnpm exec lcov-result-merger"
-            # Convert array to space-separated string
-            FILES_STR=$(printf '%s ' "${FILES_ARRAY[@]}")
-            pnpm exec lcov-result-merger $FILES_STR ./coverage/vitest/lcov.info
-            MERGE_EXIT_CODE=$?
-          fi
-
-          if [ $MERGE_EXIT_CODE -ne 0 ]; then
-            echo "ERROR: lcov-result-merger failed with exit code $MERGE_EXIT_CODE"
-            echo "Attempted to merge ${#FILES_ARRAY[@]} files"
-            exit 1
-          fi
-
-          # Verify the merge worked
-          if [ ! -f ./coverage/vitest/lcov.info ]; then
-            echo "ERROR: Merged coverage file was not created!"
-            exit 1
-          fi
-
-          MERGED_SIZE=$(wc -c < ./coverage/vitest/lcov.info 2>/dev/null || echo "0")
-          echo "Merged file size: $MERGED_SIZE bytes"
-
-          if [ "$MERGED_SIZE" -eq 0 ]; then
-            echo "ERROR: Merged coverage file is empty (0 bytes)!"
-            echo "Debug: Checking input files..."
-            echo "Number of input files: $FILE_COUNT"
-            echo "First input file size: $(wc -c < "$(head -1 lcov-files.txt)" 2>/dev/null || echo "0") bytes"
-            echo "First 10 lines of first input file:"
-            head -10 "$(head -1 lcov-files.txt)" 2>/dev/null || echo "Could not read"
-            exit 1
-          fi
+          # Merge LCOV files - collect all lcov.info files explicitly
+          LCOV_FILES=$(tr '\n' ' ' < lcov-files.txt)
+          echo "Merging coverage files: $LCOV_FILES"
+          pnpm exec lcov-result-merger $LCOV_FILES ./coverage/vitest/lcov.info
 
           # Validate merged file exists and is not empty
           if [ ! -s ./coverage/vitest/lcov.info ]; then
