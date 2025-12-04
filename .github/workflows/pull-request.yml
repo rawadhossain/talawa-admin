@@ -641,6 +641,29 @@ jobs:
           files: ./coverage/vitest/lcov.info
           flags: vitest
 
+      - name: Validate and prepare coverage file
+        if: steps.check-artifacts.outputs.artifacts_found == 'true'
+        id: validate-coverage
+        run: |
+          LCOV_FILE="./coverage/vitest/lcov.info"
+
+          # Get absolute path
+          ABSOLUTE_PATH="$(pwd)/$LCOV_FILE"
+          echo "absolute_path=$ABSOLUTE_PATH" >> $GITHUB_OUTPUT
+
+          # Validate file exists and is not empty
+          if [ ! -s "$LCOV_FILE" ]; then
+            echo "ERROR: Coverage file is empty or missing!"
+            exit 1
+          fi
+
+          # Calculate coverage as backup info
+          LINES_FOUND=$(grep -o "LF:[0-9]*" "$LCOV_FILE" | cut -d: -f2 | paste -sd+ | bc)
+          LINES_HIT=$(grep -o "LH:[0-9]*" "$LCOV_FILE" | cut -d: -f2 | paste -sd+ | bc)
+          COVERAGE=$(awk "BEGIN {printf \"%.2f\", ($LINES_HIT / $LINES_FOUND) * 100}")
+
+          echo "Pre-check: Coverage is $COVERAGE% ($LINES_HIT/$LINES_FOUND lines)"
+
       - name: Test acceptable level of code coverage
         if: steps.check-artifacts.outputs.artifacts_found == 'true'
         uses: VeryGoodOpenSource/very_good_coverage@v3
