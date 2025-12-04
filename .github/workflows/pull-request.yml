@@ -565,21 +565,11 @@ jobs:
         run: |
           mkdir -p ./coverage/vitest
 
-          # Find all coverage directories from shards
-          echo "Finding coverage data from shards..."
-          SHARD_DIRS=$(find coverage-shards -type d -name "coverage-shard-*" 2>/dev/null || true)
-
-          if [ -z "$SHARD_DIRS" ]; then
-            echo "ERROR: No shard directories found!"
-            ls -la coverage-shards/ || true
-            exit 1
-          fi
-
-          echo "Found shard directories:"
-          echo "$SHARD_DIRS"
-
           echo "Using LCOV files for merging..."
-          # Find all lcov.info files from shards
+          # Optional: debug listing
+          find coverage-shards -name "lcov.info" -type f
+
+          # Validate each file exists and is not empty (fail-fast)
           find coverage-shards -name "lcov.info" -type f > lcov-files.txt
 
           if [ ! -s lcov-files.txt ]; then
@@ -587,10 +577,6 @@ jobs:
             exit 1
           fi
 
-          echo "Found coverage files:"
-          cat lcov-files.txt
-
-          # Validate each file exists and is not empty (fail-fast)
           while IFS= read -r file; do
             if [ ! -f "$file" ]; then
               echo "ERROR: Coverage file does not exist: $file"
@@ -602,10 +588,9 @@ jobs:
             fi
           done < lcov-files.txt
 
-          # Merge LCOV files - collect all lcov.info files explicitly
-          LCOV_FILES=$(tr '\n' ' ' < lcov-files.txt)
-          echo "Merging coverage files: $LCOV_FILES"
-          pnpm exec lcov-result-merger $LCOV_FILES ./coverage/vitest/lcov.info
+          # 🚨 IMPORTANT CHANGE: use a single glob pattern for lcov-result-merger
+          echo "Merging coverage files from coverage-shards/**/lcov.info ..."
+          pnpm exec lcov-result-merger "coverage-shards/**/lcov.info" ./coverage/vitest/lcov.info
 
           # Validate merged file exists and is not empty
           if [ ! -s ./coverage/vitest/lcov.info ]; then
@@ -616,7 +601,6 @@ jobs:
           echo "Coverage merge successful"
           echo "Merged file size: $(wc -l < ./coverage/vitest/lcov.info) lines"
 
-          # Count number of source files in merged coverage
           SF_COUNT=$(grep -c "^SF:" ./coverage/vitest/lcov.info || echo "0")
           echo "Number of files in merged coverage: $SF_COUNT"
 
