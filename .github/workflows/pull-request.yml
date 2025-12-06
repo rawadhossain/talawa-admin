@@ -102,6 +102,9 @@ jobs:
           chmod +x .github/workflows/scripts/compare_translations.py
           python .github/workflows/scripts/compare_translations.py --directory public/locales
 
+      - name: Check for non-internationalized text
+        run: pnpm run check-i18n
+
       - name: Check if the source and target branches are different
         if: ${{ github.event.pull_request.base.ref == github.event.pull_request.head.ref }}
         run: |
