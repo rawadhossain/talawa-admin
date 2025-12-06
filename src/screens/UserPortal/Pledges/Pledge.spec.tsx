@@ -1216,6 +1216,111 @@ describe('Testing User Pledge Screen', () => {
     });
   });
 
+  it('should show popup with many extra users (adds popupExtra class)', async () => {
+    const manyExtrasMock = new StaticMockLink([
+      {
+        request: {
+          query: USER_PLEDGES,
+          variables: {
+            userId: { id: 'userId' },
+            where: {},
+            orderBy: 'endDate_DESC',
+          },
+        },
+        result: {
+          data: {
+            getPledgesByUserId: [
+              {
+                id: 'manyExtrasId',
+                amount: 100,
+                note: 'note',
+                updatedAt: '2024-07-28T10:00:00.000Z',
+                campaign: {
+                  id: 'campaignId',
+                  name: 'Campaign',
+                  startAt: '2024-07-01T00:00:00.000Z',
+                  endAt: '2024-09-30T23:59:59.000Z',
+                  currencyCode: 'USD',
+                  goalAmount: 5000,
+                  __typename: 'FundraisingCampaign',
+                },
+                pledger: {
+                  id: 'userId',
+                  name: 'Main User',
+                  avatarURL: null,
+                  __typename: 'User',
+                },
+                users: [
+                  {
+                    id: 'u1',
+                    name: 'Main User',
+                    avatarURL: null,
+                    __typename: 'User',
+                  },
+                  {
+                    id: 'u2',
+                    name: 'Extra 1',
+                    avatarURL: null,
+                    __typename: 'User',
+                  },
+                  {
+                    id: 'u3',
+                    name: 'Extra 2',
+                    avatarURL: null,
+                    __typename: 'User',
+                  },
+                  {
+                    id: 'u4',
+                    name: 'Extra 3',
+                    avatarURL: null,
+                    __typename: 'User',
+                  },
+                  {
+                    id: 'u5',
+                    name: 'Extra 4',
+                    avatarURL: null,
+                    __typename: 'User',
+                  },
+                  {
+                    id: 'u6',
+                    name: 'Extra 5',
+                    avatarURL: null,
+                    __typename: 'User',
+                  },
+                  {
+                    id: 'u7',
+                    name: 'Extra 6',
+                    avatarURL: null,
+                    __typename: 'User',
+                  },
+                ],
+                updater: { id: 'userId', __typename: 'User' },
+                __typename: 'FundraisingCampaignPledge',
+              },
+            ],
+          },
+        },
+      },
+    ]);
+
+    renderMyPledges(manyExtrasMock);
+
+    const moreContainer = await screen.findByTestId(
+      'moreContainer-manyExtrasId',
+    );
+    expect(moreContainer).toHaveTextContent('+5 more...');
+    await userEvent.click(moreContainer);
+
+    const popup = await screen.findByTestId('extra-users-popup');
+    expect(popup).toBeInTheDocument();
+    expect(popup.className).toContain('popupExtra');
+
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => {
+      expect(screen.queryByTestId('extra-users-popup')).not.toBeInTheDocument();
+    });
+  });
+
   it('should handle missing campaign data', async () => {
     renderMyPledges(link8);
     await waitFor(() => {

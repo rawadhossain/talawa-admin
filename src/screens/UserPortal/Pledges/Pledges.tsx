@@ -528,7 +528,7 @@ const Pledges = (): JSX.Element => {
               {user.avatarURL ? (
                 <img
                   src={user.avatarURL}
-                  alt="pledger"
+                  alt={user.name}
                   data-testid={`extraImage${index + 1}`}
                   className={styles.TableImage}
                 />

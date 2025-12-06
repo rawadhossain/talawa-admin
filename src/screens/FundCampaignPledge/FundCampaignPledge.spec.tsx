@@ -298,7 +298,6 @@ const renderFundCampaignPledge = (link: ApolloLink): RenderResult => {
 
 describe('Testing Campaign Pledge Screen', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     mockParamsState.orgId = 'orgId';
     mockParamsState.fundCampaignId = 'fundCampaignId';
     routerMocks.navigate.mockReset();
@@ -522,6 +521,20 @@ describe('Testing Campaign Pledge Screen', () => {
     await waitFor(() => {
       expect(screen.getByText('Main User 1')).toBeInTheDocument();
     });
+
+    // Popup should render without popupExtra for small lists
+    const moreContainer = screen.queryByTestId('moreContainer-1');
+    if (moreContainer) {
+      await userEvent.click(moreContainer);
+      const popup = await screen.findByTestId('extra-users-popup');
+      expect(popup.className).not.toContain('popupExtra');
+      await userEvent.keyboard('{Escape}');
+      await waitFor(() => {
+        expect(
+          screen.queryByTestId('extra-users-popup'),
+        ).not.toBeInTheDocument();
+      });
+    }
   });
 
   it('should handle popup styling when there are many extra users', async () => {
@@ -646,6 +659,111 @@ describe('Testing Campaign Pledge Screen', () => {
     await userEvent.keyboard('{Escape}');
     await waitFor(() => {
       expect(screen.queryByTestId('extra-users-popup')).not.toBeInTheDocument();
+    });
+  });
+
+  it('should render pledger without extra users (no moreContainer)', async () => {
+    const noExtraUsersMock = {
+      request: {
+        query: FUND_CAMPAIGN_PLEDGE,
+        variables: {
+          input: { id: 'fundCampaignId' },
+        },
+      },
+      result: {
+        data: {
+          fundCampaign: {
+            __typename: 'FundCampaign',
+            id: 'single',
+            name: 'Solo Campaign',
+            startAt: '2023-01-01T00:00:00Z',
+            endAt: '2024-12-31T23:59:59Z',
+            currencyCode: 'USD',
+            goalAmount: 500,
+            pledges: {
+              __typename: 'PledgeConnection',
+              edges: [
+                {
+                  __typename: 'PledgeEdge',
+                  node: {
+                    __typename: 'Pledge',
+                    id: 'singlePledge',
+                    amount: 50,
+                    createdAt: '2024-01-02T00:00:00Z',
+                    pledger: {
+                      __typename: 'User',
+                      id: 'solo',
+                      name: 'Solo User',
+                      image: null,
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      },
+    };
+
+    const noExtraLink = new StaticMockLink([noExtraUsersMock]);
+    renderFundCampaignPledge(noExtraLink);
+
+    await waitFor(() => {
+      expect(screen.getByText('Solo User')).toBeInTheDocument();
+    });
+    expect(screen.queryByTestId('moreContainer-singlePledge')).toBeNull();
+  });
+
+  it('should use fallback values when dates/currency are missing', async () => {
+    const missingDatesMock = {
+      request: {
+        query: FUND_CAMPAIGN_PLEDGE,
+        variables: {
+          input: { id: 'fundCampaignId' },
+        },
+      },
+      result: {
+        data: {
+          fundCampaign: {
+            __typename: 'FundCampaign',
+            id: 'missingDates',
+            name: 'No Dates Campaign',
+            startAt: null,
+            endAt: null,
+            currencyCode: null,
+            goalAmount: 0,
+            pledges: {
+              __typename: 'PledgeConnection',
+              edges: [
+                {
+                  __typename: 'PledgeEdge',
+                  node: {
+                    __typename: 'Pledge',
+                    id: 'md1',
+                    amount: 75,
+                    createdAt: null,
+                    pledger: {
+                      __typename: 'User',
+                      id: 'md-user',
+                      name: 'Missing Dates User',
+                      image: null,
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      },
+    };
+
+    const missingDatesLink = new StaticMockLink([missingDatesMock]);
+    renderFundCampaignPledge(missingDatesLink);
+
+    await waitFor(() => {
+      expect(screen.getByText('Missing Dates User')).toBeInTheDocument();
+      // Amount should still render with default currency fallback $
+      expect(screen.getByTestId('amountCell')).toHaveTextContent('$75');
     });
   });
 
