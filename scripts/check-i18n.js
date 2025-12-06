@@ -11,7 +11,13 @@ import path from 'path';
 const SRC_DIR = path.join(process.cwd(), 'src');
 
 const FILE_EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx'];
-const TEST_PATTERNS = [/\.spec\./i, /\.test\./i, /__tests__/i, /mock/i];
+const TEST_PATTERNS = [
+  /\.spec\./i,
+  /\.test\./i,
+  /__tests__/i,
+  /__mocks__/i,
+  /\.mock\./i,
+];
 
 const USER_VISIBLE_ATTRS = [
   'placeholder',
@@ -128,8 +134,20 @@ const collectViolations = (filePath) => {
 };
 
 const main = () => {
-  const allFiles = walk(SRC_DIR);
-  const targets = allFiles.filter(shouldAnalyzeFile);
+  const cliFiles = process.argv.slice(2);
+  const allFiles =
+    cliFiles.length > 0
+      ? cliFiles
+      : walk(SRC_DIR).map((p) => path.relative(process.cwd(), p));
+  const targets = allFiles
+    .map((file) => path.resolve(process.cwd(), file))
+    .filter((file) => fs.existsSync(file))
+    .filter((file) => shouldAnalyzeFile(file));
+
+  if (!targets.length) {
+    console.log('No files to scan for i18n violations.');
+    process.exit(0);
+  }
 
   const results = {};
 

@@ -4,7 +4,7 @@ pnpm run format:fix
 # pnpm run lint:fix
 pnpm run lint-staged
 pnpm run typecheck
-node scripts/check-i18n.js
+pnpm run check-i18n
 pnpm run update:toc
 pnpm run check:pom
 npx knip --include files,exports
