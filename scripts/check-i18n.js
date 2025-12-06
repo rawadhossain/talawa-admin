@@ -47,7 +47,10 @@ const walk = (dir) => {
 const shouldAnalyzeFile = (filePath) => {
   const ext = path.extname(filePath);
   if (!FILE_EXTENSIONS.includes(ext)) return false;
-  return !TEST_PATTERNS.some((pattern) => pattern.test(filePath));
+
+  // Normalize separators so test/mock exclusions work cross-platform
+  const normalizedPath = filePath.split(path.sep).join(POSIX_SEP);
+  return !TEST_PATTERNS.some((pattern) => pattern.test(normalizedPath));
 };
 
 const stripComments = (content) =>
