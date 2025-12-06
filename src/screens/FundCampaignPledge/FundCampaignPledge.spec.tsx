@@ -307,6 +307,8 @@ describe('Testing Campaign Pledge Screen', () => {
 
   afterEach(() => {
     vi.useRealTimers();
+
+    vi.clearAllMocks();
   });
 
   it('should redirect to fallback URL if URL params are undefined', async () => {
@@ -639,6 +641,12 @@ describe('Testing Campaign Pledge Screen', () => {
     for (let i = 1; i <= 6; i++) {
       expect(screen.getByText(`Extra User ${i}`)).toBeInTheDocument();
     }
+
+    // Close the popup via Escape to cover Popover onClose path
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => {
+      expect(screen.queryByTestId('extra-users-popup')).not.toBeInTheDocument();
+    });
   });
 
   it('should render Progress Bar with Raised amount (CONSTANT) & Pledged Amount', async () => {

@@ -522,7 +522,7 @@ const Pledges = (): JSX.Element => {
           {extraUsers.map((user: InterfaceUserInfoPG, index: number) => (
             <div
               className={styles.pledgerContainer}
-              key={index}
+              key={user.id ?? index}
               data-testid={`extra${index + 1}`}
             >
               {user.avatarURL ? (
