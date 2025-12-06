@@ -58,7 +58,8 @@ const stripComments = (content) =>
     .replace(/(^|\s)\/\/.*$/gm, '');
 
 const countWords = (text) => {
-  const words = text.match(/[A-Za-z]+/g);
+  // Unicode-aware word detection: sequences of letters in any script
+  const words = text.match(/\p{L}+/gu);
   return words ? words.length : 0;
 };
 
@@ -68,13 +69,10 @@ const isAllowedString = (text) => {
   const value = text.trim();
   if (!value) return true;
   if (value.includes('${')) return true; // skip template literals with vars
-  if (!/[A-Za-z]/.test(value)) return true; // symbols / numbers only
   if (looksLikeUrl(value)) return true;
-  return countWords(value) < 2; // smart detection: require 2+ words
+  // Flag if there is at least one word (single-word UI text should be translated)
+  return countWords(value) === 0;
 };
-
-const isTranslationCall = (linePrefix) =>
-  /\b(t|tCommon|tErrors)\s*\($/i.test(linePrefix);
 
 const toPosixPath = (filePath) => filePath.split(path.sep).join(POSIX_SEP);
 
