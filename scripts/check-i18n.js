@@ -55,10 +55,10 @@ const shouldAnalyzeFile = (filePath) => {
 
 const stripComments = (content) =>
   content
-    // block comments
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    // line comments
-    .replace(/(^|\s)\/\/.*$/gm, '');
+    // block comments – strip text but preserve newlines so line numbers stay stable
+    .replace(/\/\*[\s\S]*?\*\//g, (match) => match.replace(/[^\n]/g, ''))
+    // line comments – drop everything after `//` but keep leading whitespace/newline
+    .replace(/(^|\s)\/\/.*$/gm, '$1');
 
 const countWords = (text) => {
   // Unicode-aware word detection: sequences of letters in any script
