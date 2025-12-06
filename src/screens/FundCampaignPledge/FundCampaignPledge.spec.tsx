@@ -767,6 +767,85 @@ describe('Testing Campaign Pledge Screen', () => {
     });
   });
 
+  it('should handle null fundCampaign gracefully', async () => {
+    const nullCampaignMock = {
+      request: {
+        query: FUND_CAMPAIGN_PLEDGE,
+        variables: {
+          input: { id: 'fundCampaignId' },
+        },
+      },
+      result: {
+        data: {
+          fundCampaign: null,
+        },
+      },
+    };
+
+    const nullCampaignLink = new StaticMockLink([nullCampaignMock]);
+    renderFundCampaignPledge(nullCampaignLink);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('searchPledger')).toBeInTheDocument();
+    });
+    // No rows should render; fallback overlay text should appear
+    expect(screen.getByText(translations.noPledges)).toBeInTheDocument();
+  });
+
+  it('should render zero-amount pledge with no users and fallback currency', async () => {
+    const zeroAmountNoUsersMock = {
+      request: {
+        query: FUND_CAMPAIGN_PLEDGE,
+        variables: {
+          input: { id: 'fundCampaignId' },
+        },
+      },
+      result: {
+        data: {
+          fundCampaign: {
+            __typename: 'FundCampaign',
+            id: 'zero',
+            name: 'Zero Campaign',
+            startAt: '2023-01-01T00:00:00Z',
+            endAt: '2024-12-31T23:59:59Z',
+            currencyCode: null,
+            goalAmount: 0,
+            pledges: {
+              __typename: 'PledgeConnection',
+              edges: [
+                {
+                  __typename: 'PledgeEdge',
+                  node: {
+                    __typename: 'Pledge',
+                    id: 'zeroPledge',
+                    amount: null,
+                    createdAt: null,
+                    pledger: null,
+                    users: [],
+                  },
+                },
+              ],
+            },
+          },
+        },
+      },
+    };
+
+    const zeroLink = new StaticMockLink([zeroAmountNoUsersMock]);
+    renderFundCampaignPledge(zeroLink);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('searchPledger')).toBeInTheDocument();
+    });
+
+    // Amount falls back to 0 with default currency symbol
+    expect(screen.getByTestId('amountCell')).toHaveTextContent('$0');
+    // No extra users link since users array is empty
+    expect(
+      screen.queryByTestId('moreContainer-zeroPledge'),
+    ).not.toBeInTheDocument();
+  });
+
   it('should render Progress Bar with Raised amount (CONSTANT) & Pledged Amount', async () => {
     renderFundCampaignPledge(link1);
     await waitFor(() => {
