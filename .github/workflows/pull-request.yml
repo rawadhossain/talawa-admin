@@ -106,7 +106,7 @@ jobs:
         run: |
           BASE_SHA=$(git merge-base ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
           CHANGED=$(git diff --name-only --diff-filter=ACMRT "$BASE_SHA" ${{ github.event.pull_request.head.sha }} \
-            | grep -E '^src/.*\.(ts|tsx|js|jsx)$' || true)
+            | grep -E '^src/.*\.(ts|tsx|js|jsx)$' | tr '\n' ' ' || true)
           echo "files=$CHANGED" >> $GITHUB_OUTPUT
           if [ -z "$CHANGED" ]; then
             echo "none=true" >> $GITHUB_OUTPUT
