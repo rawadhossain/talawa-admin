@@ -1,6 +1,5 @@
 import { defineConfig } from 'cypress';
 import fs from 'node:fs';
-import codeCoverageTask from '@cypress/code-coverage/task';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -36,7 +35,19 @@ export default defineConfig({
       apiUrl: process.env.CYPRESS_API_URL || 'http://localhost:4000/graphql',
     },
     setupNodeEvents(on, config) {
-      codeCoverageTask(on, config);
+      // Disable Cypress coverage tasks (NYC is incompatible with Node 24)
+      on('task', {
+        resetCoverage() {
+          return null;
+        },
+        combineCoverage() {
+          return null;
+        },
+        coverageReport() {
+          return null;
+        },
+      });
+
       // Custom task to log messages and read files
       on('task', {
         log(message: string) {
