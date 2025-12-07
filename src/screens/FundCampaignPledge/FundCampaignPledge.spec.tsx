@@ -711,7 +711,9 @@ describe('Testing Campaign Pledge Screen', () => {
     await waitFor(() => {
       expect(screen.getByText('Solo User')).toBeInTheDocument();
     });
-    expect(screen.queryByTestId('moreContainer-singlePledge')).toBeNull();
+    expect(
+      screen.queryByTestId('moreContainer-singlePledge'),
+    ).not.toBeInTheDocument();
   });
 
   it('should use fallback values when dates/currency are missing', async () => {
@@ -786,10 +788,10 @@ describe('Testing Campaign Pledge Screen', () => {
     renderFundCampaignPledge(nullCampaignLink);
 
     await waitFor(() => {
+      // Both conditions belong here
       expect(screen.getByTestId('searchPledger')).toBeInTheDocument();
+      expect(screen.getByText(translations.noPledges)).toBeInTheDocument();
     });
-    // No rows should render; fallback overlay text should appear
-    expect(screen.getByText(translations.noPledges)).toBeInTheDocument();
   });
 
   it('should render zero-amount pledge with no users and fallback currency', async () => {
@@ -1106,12 +1108,10 @@ describe('Testing Campaign Pledge Screen', () => {
       expect(screen.getByText('Avatar User')).toBeInTheDocument();
     });
 
-    // Check that the image is rendered with the avatarURL
-    const mainUserContainer = screen.getByTestId('mainUser-avatarPledge-0');
-    expect(mainUserContainer).toBeInTheDocument();
-    const img = mainUserContainer.querySelector('img');
-    expect(img).toHaveAttribute('src', 'https://example.com/avatar.jpg');
-    expect(img).toHaveAttribute('alt', 'Avatar User');
+    const avatarImg = screen.getByRole('img', { name: 'Avatar User' });
+
+    expect(avatarImg).toHaveAttribute('src', 'https://example.com/avatar.jpg');
+    expect(avatarImg).toHaveAttribute('alt', 'Avatar User');
   });
 
   it('should render extra users with avatarURL in popup', async () => {
