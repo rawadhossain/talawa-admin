@@ -6,9 +6,54 @@ import EnvironmentPlugin from 'vite-plugin-environment';
 import createInternalFileWriterPlugin from '../src/plugin/vite/internalFileWriterPlugin';
 import istanbul from 'vite-plugin-istanbul';
 
+// Only expose explicitly safe, public client env vars
+const CLIENT_ENV_ALLOWLIST = [
+  'REACT_APP_TALAWA_URL',
+  'REACT_APP_BACKEND_WEBSOCKET_URL',
+  'REACT_APP_USE_RECAPTCHA',
+  'REACT_APP_RECAPTCHA_SITE_KEY',
+];
+
+// Warn (or fail when STRICT_ENV=1) if potentially sensitive env vars are present but not explicitly allowlisted for client exposure.
+function validateClientEnv(): void {
+  const strict = process.env.STRICT_ENV === '1';
+  const suspectPatterns = [
+    /SECRET/i,
+    /TOKEN/i,
+    /PASSWORD/i,
+    /PRIVATE/i,
+    /API_KEY/i,
+    /KEY$/i,
+  ];
+
+  const offenders = Object.keys(process.env || {}).filter((key) => {
+    if (CLIENT_ENV_ALLOWLIST.includes(key)) return false;
+    return suspectPatterns.some((re) => re.test(key)) && process.env[key];
+  });
+
+  if (offenders.length) {
+    const msg = `Detected non-allowlisted env vars with sensitive-looking names: ${offenders.join(
+      ', ',
+    )}. Only allowlisted REACT_APP_* vars should be client-exposed.`;
+    if (strict) {
+      throw new Error(msg);
+    } else {
+      console.warn(msg);
+    }
+  }
+}
+
+validateClientEnv();
+
 const parsed = parseInt(process.env.PORT || '', 10);
 const PORT =
   !isNaN(parsed) && parsed >= 1024 && parsed <= 65535 ? parsed : 4321;
+
+// Provide safe defaults to avoid build-time errors when envs are absent locally.
+const CLIENT_ENV_DEFAULTS = CLIENT_ENV_ALLOWLIST.reduce(
+  (acc, key) => ({ ...acc, [key]: process.env[key] ?? '' }),
+  {} as Record<string, string>,
+);
 
 export default defineConfig({
   // depending on your application, base can also be "/"
@@ -19,7 +64,7 @@ export default defineConfig({
   plugins: [
     react(),
     viteTsconfigPaths(),
-    EnvironmentPlugin('all'),
+    EnvironmentPlugin(CLIENT_ENV_DEFAULTS),
     svgrPlugin({
       svgrOptions: {
         icon: true,

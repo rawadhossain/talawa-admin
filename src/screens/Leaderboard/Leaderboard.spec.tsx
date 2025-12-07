@@ -101,6 +101,8 @@ describe('Testing Leaderboard Screen', () => {
   });
 
   afterEach(() => {
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
     routerMocks.useParams.mockReset();
   });
 
