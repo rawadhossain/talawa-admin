@@ -299,6 +299,11 @@ describe('VenueModal', () => {
     vi.resetModules();
   });
 
+  afterEach(() => {
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
+  });
+
   test('creates a new venue successfully', async () => {
     render(
       <MockedProvider mocks={MOCKS}>
