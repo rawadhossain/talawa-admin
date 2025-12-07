@@ -523,18 +523,14 @@ describe('Testing Campaign Pledge Screen', () => {
     });
 
     // Popup should render without popupExtra for small lists
-    const moreContainer = screen.queryByTestId('moreContainer-1');
-    if (moreContainer) {
-      await userEvent.click(moreContainer);
-      const popup = await screen.findByTestId('extra-users-popup');
-      expect(popup.className).not.toContain('popupExtra');
-      await userEvent.keyboard('{Escape}');
-      await waitFor(() => {
-        expect(
-          screen.queryByTestId('extra-users-popup'),
-        ).not.toBeInTheDocument();
-      });
-    }
+    const moreContainer = await screen.findByTestId('moreContainer-1');
+    await userEvent.click(moreContainer);
+    const popup = await screen.findByTestId('extra-users-popup');
+    expect(popup.className).not.toContain('popupExtra');
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => {
+      expect(screen.queryByTestId('extra-users-popup')).not.toBeInTheDocument();
+    });
   });
 
   it('should handle popup styling when there are many extra users', async () => {
