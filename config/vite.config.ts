@@ -50,10 +50,9 @@ const PORT =
   !isNaN(parsed) && parsed >= 1024 && parsed <= 65535 ? parsed : 4321;
 
 // Provide safe defaults to avoid build-time errors when envs are absent locally.
-const CLIENT_ENV_DEFAULTS = CLIENT_ENV_ALLOWLIST.reduce(
-  (acc, key) => ({ ...acc, [key]: process.env[key] ?? '' }),
-  {} as Record<string, string>,
-);
+const CLIENT_ENV_DEFAULTS = Object.fromEntries(
+  CLIENT_ENV_ALLOWLIST.map((key) => [key, process.env[key] ?? '']),
+) as Record<string, string>;
 
 export default defineConfig({
   // depending on your application, base can also be "/"
