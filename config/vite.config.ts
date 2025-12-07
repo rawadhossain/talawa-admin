@@ -15,6 +15,7 @@ const CLIENT_ENV_ALLOWLIST = [
 ];
 
 // Warn (or fail when STRICT_ENV=1) if potentially sensitive env vars are present but not explicitly allowlisted for client exposure.
+// Set STRICT_ENV=1 to throw an error instead of just warning (useful for CI/CD).
 function validateClientEnv(): void {
   const strict = process.env.STRICT_ENV === '1';
   const suspectPatterns = [
@@ -24,6 +25,11 @@ function validateClientEnv(): void {
     /PRIVATE/i,
     /API_KEY/i,
     /KEY$/i,
+    /DATABASE/i,
+    /DB_/i,
+    /CREDENTIAL/i,
+    /AUTH/i,
+    /BEARER/i,
   ];
 
   const offenders = Object.keys(process.env || {}).filter((key) => {
