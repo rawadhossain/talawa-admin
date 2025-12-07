@@ -19,7 +19,37 @@ import {
   CREATE_VENUE_MUTATION,
   UPDATE_VENUE_MUTATION,
 } from 'GraphQl/Mutations/mutations';
-import { ApolloLink, Observable } from '@apollo/client';
+import { ApolloLink, InMemoryCache, Observable } from '@apollo/client';
+
+// Override jsdom's unimplemented requestSubmit to a simple submit dispatch
+// Force override any existing jsdom stub
+beforeAll(() => {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    delete (HTMLFormElement.prototype as any).requestSubmit;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (HTMLFormElement.prototype as any).requestSubmit =
+      function requestSubmit() {
+        const event = new Event('submit', { bubbles: true, cancelable: true });
+        this.dispatchEvent(event);
+      };
+  } catch {
+    // ignore if jsdom marks the property as readonly in this version
+  }
+});
+
+// Ensure MockedProvider does not pass addTypename (Apollo 3.14 warns)
+const mockedProviderDefaults = MockedProvider as typeof MockedProvider & {
+  defaultProps?: Record<string, unknown>;
+};
+if (mockedProviderDefaults.defaultProps?.addTypename !== undefined) {
+  delete mockedProviderDefaults.defaultProps.addTypename;
+}
+mockedProviderDefaults.defaultProps = {
+  ...(mockedProviderDefaults.defaultProps || {}),
+  addTypename: false,
+  cache: new InMemoryCache({ addTypename: false }),
+};
 
 // Mock Setup
 const MOCKS = [
@@ -154,6 +184,27 @@ const MOCKS = [
       },
     },
   },
+  // Update without name (capacity/description only) for fallback tests
+  {
+    request: {
+      query: UPDATE_VENUE_MUTATION,
+      variables: {
+        id: 'venue1',
+        description: 'Updated description for venue 1',
+        capacity: 100,
+      },
+    },
+    result: {
+      data: {
+        updateVenue: {
+          id: 'venue1',
+          name: 'Venue 1',
+          description: 'Updated description for venue 1',
+          capacity: 100,
+        },
+      },
+    },
+  },
 
   // Duplicate name error mock
   {
@@ -281,7 +332,11 @@ const renderVenueModal = (
   link: ApolloLink,
 ): RenderResult => {
   return render(
-    <MockedProvider link={link}>
+    <MockedProvider
+      link={link}
+      addTypename={false}
+      cache={new InMemoryCache({ addTypename: false })}
+    >
       <MemoryRouter initialEntries={['/']}>
         <Provider store={store}>
           <I18nextProvider i18n={i18nForTest}>
@@ -299,9 +354,18 @@ describe('VenueModal', () => {
     vi.resetModules();
   });
 
+  afterEach(() => {
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
+  });
+
   test('creates a new venue successfully', async () => {
     render(
-      <MockedProvider mocks={MOCKS}>
+      <MockedProvider
+        mocks={MOCKS}
+        addTypename={false}
+        cache={new InMemoryCache({ addTypename: false })}
+      >
         <I18nextProvider i18n={i18nForTest}>
           <VenueModal {...defaultProps} />
         </I18nextProvider>
@@ -372,7 +436,11 @@ describe('VenueModal', () => {
 
   test('clears image input correctly', async () => {
     render(
-      <MockedProvider mocks={MOCKS}>
+      <MockedProvider
+        mocks={MOCKS}
+        addTypename={false}
+        cache={new InMemoryCache({ addTypename: false })}
+      >
         <I18nextProvider i18n={i18nForTest}>
           <VenueModal {...editProps} />
         </I18nextProvider>
@@ -2631,29 +2699,6 @@ describe('VenueModal', () => {
               'Venue details updated successfully',
             );
           });
-        });
-
-        test('handles file input ref clearing in clearImageInput', async () => {
-          renderVenueModal(defaultProps, new StaticMockLink(MOCKS, true));
-
-          // Upload a file first
-          const file = new File(['test'], 'test.png', { type: 'image/png' });
-          const fileInput = screen.getByTestId('venueImgUrl');
-
-          await act(async () => {
-            fireEvent.change(fileInput, {
-              target: { files: [file] },
-            });
-          });
-
-          // Click the clear button
-          const clearButton = screen.getByTestId('closeimage');
-          await act(async () => {
-            fireEvent.click(clearButton);
-          });
-
-          // Verify the file input value is cleared
-          expect((fileInput as HTMLInputElement).value).toBe('');
         });
 
         test('handles form submission with null description in edit mode', async () => {
