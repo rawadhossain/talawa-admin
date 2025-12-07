@@ -40,7 +40,7 @@ function validateClientEnv(): void {
   if (offenders.length) {
     const msg = `Detected non-allowlisted env vars with sensitive-looking names: ${offenders.join(
       ', ',
-    )}. Only allowlisted REACT_APP_* vars should be client-exposed.`;
+    )}. Only explicitly allowlisted environment variables should be exposed to the client.`;
     if (strict) {
       throw new Error(msg);
     } else {

@@ -34,10 +34,10 @@ function requestToKey(
  */
 export class StaticMockLink extends ApolloLink {
   public operation?: Operation;
-  public addTypename = true;
+  public addTypename = false;
   private _mockedResponsesByKey: { [key: string]: MockedResponse[] } = {};
 
-  constructor(mockedResponses: readonly MockedResponse[], addTypename = true) {
+  constructor(mockedResponses: readonly MockedResponse[], addTypename = false) {
     super();
     this.addTypename = addTypename;
     if (mockedResponses) {
