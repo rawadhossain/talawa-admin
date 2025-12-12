@@ -31,7 +31,13 @@ const USER_VISIBLE_ATTRS = [
 const POSIX_SEP = path.posix.sep;
 
 const walk = (dir) => {
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  let entries;
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return []; // unreadable directory — skip
+  }
+
   const files = [];
   for (const entry of entries) {
     const resolved = path.join(dir, entry.name);
@@ -118,7 +124,7 @@ const collectViolations = (filePath) => {
       // Strip out variables FIRST
       const staticText = fullText.replace(/\$\{[^}]*\}/g, '').trim();
       if (staticText && !isAllowedString(staticText)) {
-        violations.push({ line: lineNumber, text: staticText });
+        violations.push({ line: lineNumber, text: fullText.trim() });
       }
     }
 
