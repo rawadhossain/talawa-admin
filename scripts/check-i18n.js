@@ -109,9 +109,23 @@ const collectViolations = (filePath) => {
       }
     }
 
+    // Template literals in JSX expressions with hardcoded text
+    const templateLiteralRegex = /\{`([^`]*)`\}/g;
+    let templateMatch;
+    while ((templateMatch = templateLiteralRegex.exec(line)) !== null) {
+      const fullText = templateMatch[1]; // e.g., "Hello ${name}"
+
+      // Strip out variables FIRST
+      const staticText = fullText.replace(/\$\{[^}]*\}/g, '').trim();
+      if (staticText && !isAllowedString(staticText)) {
+        violations.push({ line: lineNumber, text: staticText });
+      }
+    }
+
     // Attribute values likely user-visible
     const attrRegex = new RegExp(
-      `\\b(${USER_VISIBLE_ATTRS.join('|')})\\s*=\\s*(['"\`])([^'"\\\`]+)\\2`,
+      // Allow empty strings and basic escaped characters
+      `\\b(${USER_VISIBLE_ATTRS.join('|')})\\s*=\\s*(['"\`])((?:\\\\.|(?!\\2)[^\\\\])*)\\2`,
       'gi',
     );
     let attrMatch;
@@ -146,6 +160,12 @@ const collectViolations = (filePath) => {
 
 const main = () => {
   const cliFiles = process.argv.slice(2);
+
+  if (cliFiles.length === 0 && !fs.existsSync(SRC_DIR)) {
+    console.log('No files to scan for i18n violations.');
+    process.exit(0);
+  }
+
   const allFiles =
     cliFiles.length > 0
       ? cliFiles
