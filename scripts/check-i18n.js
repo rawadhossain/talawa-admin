@@ -166,7 +166,6 @@ const collectViolations = (filePath) => {
 
 const main = () => {
   const cliFiles = process.argv.slice(2);
-
   if (cliFiles.length === 0 && !fs.existsSync(SRC_DIR)) {
     console.log('No files to scan for i18n violations.');
     process.exit(0);
