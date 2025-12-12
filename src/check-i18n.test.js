@@ -13,11 +13,14 @@ const fixturesDir = path.resolve(__dirname, '..', 'scripts', '__fixtures__');
 
 const tempDirs = [];
 
-const runScript = (targets, options = {}) =>
-  spawnSync(process.execPath, [scriptPath, ...targets], {
+const runScript = (targets, options = {}) => {
+  const { env, ...rest } = options;
+  return spawnSync(process.execPath, [scriptPath, ...targets], {
     encoding: 'utf-8',
-    ...options,
+    env: { ...process.env, ...(env ?? {}), FORCE_COLOR: '0', NO_COLOR: '1' },
+    ...rest,
   });
+};
 
 const makeTempDir = () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'i18n-detector-'));
@@ -373,6 +376,11 @@ describe('check-i18n script', () => {
     // Check that output contains both files
     expect(res.stdout).toContain('file1.tsx');
     expect(res.stdout).toContain('file2.tsx');
+    const i1 = res.stdout.indexOf('file1.tsx');
+    const i2 = res.stdout.indexOf('file2.tsx');
+    expect(i1).toBeGreaterThan(-1);
+    expect(i2).toBeGreaterThan(i1);
+    expect(res.stdout.slice(i1, i2)).toContain('\n\n');
     // Check header message
     expect(res.stdout).toContain('non-internationalized user-visible text');
   });
