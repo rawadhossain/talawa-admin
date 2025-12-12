@@ -15,11 +15,15 @@ const tempDirs = [];
 
 const runScript = (targets, options = {}) => {
   const { env, ...rest } = options;
-  return spawnSync(process.execPath, [scriptPath, ...targets], {
+  const res = spawnSync(process.execPath, [scriptPath, ...targets], {
     encoding: 'utf-8',
     env: { ...process.env, ...(env ?? {}), FORCE_COLOR: '0', NO_COLOR: '1' },
+    timeout: 30_000,
+    killSignal: 'SIGKILL',
     ...rest,
   });
+  if (res.error) throw res.error;
+  return res;
 };
 
 const makeTempDir = () => {
@@ -236,7 +240,7 @@ describe('check-i18n script', () => {
     expect(res.stdout).toContain('No non-internationalized');
   });
 
-  it('allows template literals with variables', () => {
+  it('flags template literals with hardcoded text', () => {
     const tmp = makeTempDir();
     const file = writeTempFile(
       tmp,
@@ -244,8 +248,8 @@ describe('check-i18n script', () => {
       'const name = "John";\n<div>{`Hello ${name}`}</div>',
     );
     const res = runScript([file]);
-    expect(res.status).toBe(0);
-    expect(res.stdout).toContain('No non-internationalized');
+    expect(res.status).toBe(1);
+    expect(res.stdout).toContain('Hello');
   });
 
   it('allows URLs (http://, /, data:)', () => {

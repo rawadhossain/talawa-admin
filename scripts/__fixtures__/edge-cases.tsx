@@ -2,7 +2,6 @@ import React from 'react';
 
 // Allowed URLs and data URIs
 export function EdgeCasesFixture() {
-  const name = 'John';
   return (
     <div>
       {/* Allowed URLs/data */}
@@ -11,9 +10,6 @@ export function EdgeCasesFixture() {
       </a>
       <img src="/assets/logo.png" alt="/assets/logo.png" />
       <link rel="icon" href="data:image/png;base64,..." />
-
-      {/* Allowed template literals with variables */}
-      <div>{`Welcome ${name}`}</div>
 
       {/* Allowed empty strings, numbers, symbols */}
       <span></span>

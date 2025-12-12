@@ -71,7 +71,10 @@ const looksLikeUrl = (text) => /^(https?:\/\/|\/|data:)/i.test(text.trim());
 const isAllowedString = (text) => {
   const value = text.trim();
   if (!value) return true;
-  if (value.includes('${')) return true; // skip template literals with vars
+  if (value.includes('${')) {
+    const staticText = value.replace(/\${.*?}/g, '').trim();
+    return countWords(staticText) === 0;
+  }
   if (looksLikeUrl(value)) return true;
   // Flag if there is at least one word (single-word UI text should be translated)
   return countWords(value) === 0;
