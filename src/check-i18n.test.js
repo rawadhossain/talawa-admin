@@ -83,7 +83,7 @@ describe('check-i18n script', () => {
   it('reports path:line in output for violations', () => {
     const res = runScript([path.join(fixturesDir, 'violations.tsx')]);
     expect(res.status).toBe(1);
-    expect(res.stdout).toMatch(/violations\.tsx:\d+ -> ".*"/);
+    expect(res.stdout).toMatch(/violations\.tsx:\d -> ".*"/);
   });
 
   it('exits 1 when multiple files passed with any violations', () => {
@@ -315,6 +315,18 @@ describe('check-i18n script', () => {
     expect(res.stdout).toContain('Success message');
     expect(res.stdout).toContain('Warning message');
     expect(res.stdout).toContain('Info message');
+  });
+
+  it('detects toast messages with apostrophes and special characters', () => {
+    const tmp = makeTempDir();
+    const file = writeTempFile(
+      tmp,
+      'toast-special.tsx',
+      'toast.error("Can\'t proceed with this action");',
+    );
+    const res = runScript([file]);
+    expect(res.status).toBe(1);
+    expect(res.stdout).toContain("Can't proceed");
   });
 
   // All user-visible attributes

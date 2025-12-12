@@ -138,7 +138,7 @@ const collectViolations = (filePath) => {
 
     // Toast messages
     const toastRegex =
-      /toast\.(error|success|warning|info)\s*\(\s*(['"`])([^'"\\`]+)\2/gi;
+      /toast\.(error|success|warning|info)\s*\(\s*(['"`])((?:\\.|(?!\2).)*?)\2/gi;
     let toastMatch;
     while ((toastMatch = toastRegex.exec(line)) !== null) {
       const text = toastMatch[3].trim();
