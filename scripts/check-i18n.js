@@ -35,7 +35,7 @@ const walk = (dir) => {
   try {
     entries = fs.readdirSync(dir, { withFileTypes: true });
   } catch {
-    return []; // unreadable directory — skip
+    return [];
   }
 
   const files = [];
@@ -109,7 +109,7 @@ const collectViolations = (filePath) => {
     const jsxRegex = />\s*([^<>{}\n]+?)\s*</g;
     let jsxMatch;
     while ((jsxMatch = jsxRegex.exec(line)) !== null) {
-      const text = jsxMatch[1].trim();
+      const text = jsxMatch[1];
       if (!isAllowedString(text)) {
         violations.push({ line: lineNumber, text });
       }
@@ -124,7 +124,7 @@ const collectViolations = (filePath) => {
       // Strip out variables FIRST
       const staticText = fullText.replace(/\$\{[^}]*\}/g, '').trim();
       if (staticText && !isAllowedString(staticText)) {
-        violations.push({ line: lineNumber, text: fullText.trim() });
+        violations.push({ line: lineNumber, text: fullText });
       }
     }
 
@@ -147,7 +147,7 @@ const collectViolations = (filePath) => {
       /toast\.(error|success|warning|info)\s*\(\s*(['"`])((?:\\.|(?!\2).)*?)\2/gi;
     let toastMatch;
     while ((toastMatch = toastRegex.exec(line)) !== null) {
-      const text = toastMatch[3].trim();
+      const text = toastMatch[3];
       if (!isAllowedString(text)) {
         violations.push({ line: lineNumber, text });
       }
@@ -207,7 +207,9 @@ const main = () => {
   filesWithIssues.forEach((file) => {
     const relativePath = toPosixPath(path.relative(process.cwd(), file));
     results[file].forEach((violation) => {
-      console.log(`${relativePath}:${violation.line} -> "${violation.text}"`);
+      console.log(
+        `${relativePath}:${violation.line} -> ${JSON.stringify(violation.text)}`,
+      );
     });
     console.log();
   });
