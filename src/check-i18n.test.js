@@ -3,6 +3,10 @@ import path from 'path';
 import fs from 'fs';
 import os from 'os';
 import { spawnSync } from 'child_process';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const scriptPath = path.resolve(__dirname, '..', 'scripts', 'check-i18n.js');
 const fixturesDir = path.resolve(__dirname, '..', 'scripts', '__fixtures__');
@@ -10,7 +14,7 @@ const fixturesDir = path.resolve(__dirname, '..', 'scripts', '__fixtures__');
 const tempDirs = [];
 
 const runScript = (targets, options = {}) =>
-  spawnSync('node', [scriptPath, ...targets], {
+  spawnSync(process.execPath, [scriptPath, ...targets], {
     encoding: 'utf-8',
     ...options,
   });
@@ -98,7 +102,7 @@ describe('check-i18n script', () => {
     );
   });
 
-  it('prints warning and exits 0 when a file cannot be read', () => {
+  it('prints message and exits 0 when an input file does not exist', () => {
     const missing = path.join(fixturesDir, 'does-not-exist.tsx');
     const res = runScript([missing]);
     expect(res.status).toBe(0);
