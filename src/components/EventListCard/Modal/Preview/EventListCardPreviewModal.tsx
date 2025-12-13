@@ -293,7 +293,6 @@ const PreviewModal: React.FC<InterfacePreviewEventModalProps> = ({
                   onEndDateChange={(date) => {
                     if (date) setEventEndDate(date);
                   }}
-                  disabled={!canEditEvent}
                 />
               </div>
             )}

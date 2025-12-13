@@ -23,6 +23,7 @@ vi.mock('screens/OrganizationEvents/CustomRecurrenceModal', () => ({
     customRecurrenceModalIsOpen ? (
       <div data-testid="customRecurrenceModal">
         <button
+          type="button"
           data-testid="closeCustomModal"
           onClick={hideCustomRecurrenceModal}
         >

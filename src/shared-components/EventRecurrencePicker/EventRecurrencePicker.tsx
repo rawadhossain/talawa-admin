@@ -31,44 +31,41 @@ import {
 import type { InterfaceEventRecurrencePickerProps } from 'types/EventRecurrencePicker/interface';
 
 /**
- * Gets the day name from a numeric day index
- * @param dayIndex - Day index (0 = Sunday, 1 = Monday, etc.)
- * @returns The full name of the day
+ * Compares two arrays for equality (order-sensitive)
+ * @param arr1 - First array
+ * @param arr2 - Second array
+ * @returns True if arrays are equal
  */
-const getDayName = (dayIndex: number): string => {
-  const days = [
-    'Sunday',
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-  ];
-  return days[dayIndex];
+const arraysEqual = <T,>(
+  arr1: T[] | undefined,
+  arr2: T[] | undefined,
+): boolean => {
+  if (arr1 === arr2) return true;
+  if (!arr1 || !arr2) return false;
+  if (arr1.length !== arr2.length) return false;
+  return arr1.every((val, index) => val === arr2[index]);
 };
 
 /**
- * Gets the month name from a numeric month index
- * @param monthIndex - Month index (0 = January, 1 = February, etc.)
- * @returns The full name of the month
+ * Compares two recurrence rules for semantic equality
+ * @param rule1 - First recurrence rule
+ * @param rule2 - Second recurrence rule
+ * @returns True if rules are semantically equal
  */
-const getMonthName = (monthIndex: number): string => {
-  const months = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
-  ];
-  return months[monthIndex];
+const recurrenceRulesEqual = (
+  rule1: InterfaceRecurrenceRule,
+  rule2: InterfaceRecurrenceRule,
+): boolean => {
+  return (
+    rule1.frequency === rule2.frequency &&
+    rule1.interval === rule2.interval &&
+    rule1.never === rule2.never &&
+    arraysEqual(rule1.byDay, rule2.byDay) &&
+    arraysEqual(rule1.byMonth, rule2.byMonth) &&
+    arraysEqual(rule1.byMonthDay, rule2.byMonthDay) &&
+    rule1.count === rule2.count &&
+    rule1.endDate === rule2.endDate
+  );
 };
 
 const EventRecurrencePicker: React.FC<InterfaceEventRecurrencePickerProps> = ({
@@ -79,13 +76,38 @@ const EventRecurrencePicker: React.FC<InterfaceEventRecurrencePickerProps> = ({
   onEndDateChange,
   disabled = false,
 }) => {
-  const { t } = useTranslation('translation', {
+  const { t, i18n } = useTranslation('translation', {
     keyPrefix: 'organizationEvents',
   });
 
   const [customRecurrenceModalIsOpen, setCustomRecurrenceModalIsOpen] =
     useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  /**
+   * Gets the localized day name from a numeric day index
+   * @param dayIndex - Day index (0 = Sunday, 1 = Monday, etc.)
+   * @returns The localized full name of the day
+   */
+  const getDayName = (dayIndex: number): string => {
+    // Create a date from a known Sunday (Jan 7, 2024) and add the day index
+    const date = new Date(2024, 0, 7 + dayIndex);
+    return new Intl.DateTimeFormat(i18n.language || navigator.language, {
+      weekday: 'long',
+    }).format(date);
+  };
+
+  /**
+   * Gets the localized month name from a numeric month index
+   * @param monthIndex - Month index (0 = January, 1 = February, etc.)
+   * @returns The localized full name of the month
+   */
+  const getMonthName = (monthIndex: number): string => {
+    const date = new Date(2024, monthIndex, 1);
+    return new Intl.DateTimeFormat(i18n.language || navigator.language, {
+      month: 'long',
+    }).format(date);
+  };
 
   /**
    * Shows the custom recurrence configuration modal
@@ -107,10 +129,14 @@ const EventRecurrencePicker: React.FC<InterfaceEventRecurrencePickerProps> = ({
     label: string;
     value: InterfaceRecurrenceRule | 'custom' | null;
   }> => {
+    // Ensure we have a valid date, fallback to current date if invalid
     const eventDate = new Date(startDate);
-    const dayOfWeek = eventDate.getDay();
-    const dayOfMonth = eventDate.getDate();
-    const month = eventDate.getMonth();
+    const isValidDate = !isNaN(eventDate.getTime());
+    const safeDate = isValidDate ? eventDate : new Date();
+
+    const dayOfWeek = safeDate.getDay();
+    const dayOfMonth = safeDate.getDate();
+    const month = safeDate.getMonth();
     const dayName = getDayName(dayOfWeek);
     const monthName = getMonthName(month);
 
@@ -121,15 +147,15 @@ const EventRecurrencePicker: React.FC<InterfaceEventRecurrencePickerProps> = ({
       },
       {
         label: 'Daily',
-        value: createDefaultRecurrenceRule(eventDate, Frequency.DAILY),
+        value: createDefaultRecurrenceRule(safeDate, Frequency.DAILY),
       },
       {
         label: `Weekly on ${dayName}`,
-        value: createDefaultRecurrenceRule(eventDate, Frequency.WEEKLY),
+        value: createDefaultRecurrenceRule(safeDate, Frequency.WEEKLY),
       },
       {
         label: `Monthly on day ${dayOfMonth}`,
-        value: createDefaultRecurrenceRule(eventDate, Frequency.MONTHLY),
+        value: createDefaultRecurrenceRule(safeDate, Frequency.MONTHLY),
       },
       {
         label: `Annually on ${monthName} ${dayOfMonth}`,
@@ -188,7 +214,7 @@ const EventRecurrencePicker: React.FC<InterfaceEventRecurrencePickerProps> = ({
     const options = getRecurrenceOptions();
     const matchingOption = options.find((option) => {
       if (!option.value || option.value === 'custom') return false;
-      return JSON.stringify(option.value) === JSON.stringify(recurrence);
+      return recurrenceRulesEqual(option.value, recurrence);
     });
 
     if (matchingOption) {
