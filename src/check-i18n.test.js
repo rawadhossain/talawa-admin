@@ -472,15 +472,38 @@ describe('check-i18n script', () => {
     expect(res.stdout).toContain('No files to scan for i18n violations.');
   });
 
-  // Error handling in collectViolations()
-  it('processes remaining files when one is deleted before walk completes', () => {
+  it('gracefully handles when src is a file (invalid directory)', () => {
     const tmp = makeTempDir();
-    const srcDir = path.join(tmp, 'src');
-    fs.mkdirSync(srcDir, { recursive: true });
-    writeTempFile(tmp, path.join('src', 'valid.tsx'), '<div>Valid text</div>');
-
+    // Make a file named "src" so walk() gets ENOTDIR and returns []
+    fs.writeFileSync(path.join(tmp, 'src'), 'not a directory');
     const res = runScript([], { cwd: tmp });
+    expect(res.status).toBe(0);
+    expect(res.stdout).toContain('No files to scan for i18n violations.');
+  });
+
+  // Error handling in collectViolations()
+  it('continues when a target path is a directory with .tsx extension', () => {
+    const tmp = makeTempDir();
+    // Valid file with a violation
+    writeTempFile(tmp, 'bad.tsx', '<div>Bad text</div>');
+    // Directory that looks like a .tsx file -> triggers readFileSync error (EISDIR)
+    const dirAsFile = path.join(tmp, 'not-a-file.tsx');
+    fs.mkdirSync(dirAsFile);
+
+    const res = runScript([path.join(tmp, 'bad.tsx'), dirAsFile]);
     expect(res.status).toBe(1);
-    expect(res.stdout).toContain('Valid text');
+    expect(res.stdout).toContain('Bad text');
+  });
+
+  it('skips unreadable target and reports no files when only directory-like target passed', () => {
+    const tmp = makeTempDir();
+    const dirAsFile = path.join(tmp, 'unreadable.tsx');
+    fs.mkdirSync(dirAsFile);
+
+    const res = runScript([dirAsFile]);
+    expect(res.status).toBe(0);
+    expect(res.stdout).toContain(
+      'No non-internationalized user-visible text found.',
+    );
   });
 });
