@@ -1,19 +1,15 @@
 import React, { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
-import Dropdown from 'react-bootstrap/Dropdown';
 import { Form } from 'react-bootstrap';
 import { useMutation } from '@apollo/client';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
 import { TimePicker, DatePicker } from '@mui/x-date-pickers';
 import styles from '../../style/app-fixed.module.css';
-import CustomRecurrenceModal from '../../screens/OrganizationEvents/CustomRecurrenceModal';
+import EventRecurrencePicker from 'shared-components/EventRecurrencePicker/EventRecurrencePicker';
 import {
-  Frequency,
-  WeekDays,
   InterfaceRecurrenceRule,
-  createDefaultRecurrenceRule,
   validateRecurrenceInput,
   formatRecurrenceForApi,
 } from '../../utils/recurrenceUtils';
@@ -78,9 +74,6 @@ const CreateEventModal: React.FC<ICreateEventModalProps> = ({
   const [recurrence, setRecurrence] = useState<InterfaceRecurrenceRule | null>(
     null,
   );
-  const [customRecurrenceModalIsOpen, setCustomRecurrenceModalIsOpen] =
-    useState(false);
-  const [recurrenceDropdownOpen, setRecurrenceDropdownOpen] = useState(false);
   const [formState, setFormState] = useState({
     name: '',
     eventdescrip: '',
@@ -92,149 +85,6 @@ const CreateEventModal: React.FC<ICreateEventModalProps> = ({
   const [create, { loading: createLoading }] = useMutation(
     CREATE_EVENT_MUTATION,
   );
-
-  /**
-   * Shows the custom recurrence configuration modal
-   */
-  const showCustomRecurrenceModal = (): void =>
-    setCustomRecurrenceModalIsOpen(true);
-
-  /**
-   * Hides the custom recurrence configuration modal
-   */
-  const hideCustomRecurrenceModal = (): void =>
-    setCustomRecurrenceModalIsOpen(false);
-
-  /**
-   * Gets the day name from a numeric day index
-   * @param dayIndex - Day index (0 = Sunday, 1 = Monday, etc.)
-   * @returns The full name of the day
-   */
-  const getDayName = (dayIndex: number): string => {
-    const days = [
-      'Sunday',
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-    ];
-    return days[dayIndex];
-  };
-
-  /**
-   * Gets the month name from a numeric month index
-   * @param monthIndex - Month index (0 = January, 1 = February, etc.)
-   * @returns The full name of the month
-   */
-  const getMonthName = (monthIndex: number): string => {
-    const months = [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
-    ];
-    return months[monthIndex];
-  };
-
-  /**
-   * Generates recurrence options based on the current start date
-   * @returns Array of recurrence options with labels and values
-   */
-  const getRecurrenceOptions = () => {
-    const eventDate = new Date(startDate);
-    const dayOfWeek = eventDate.getDay();
-    const dayOfMonth = eventDate.getDate();
-    const month = eventDate.getMonth();
-    const dayName = getDayName(dayOfWeek);
-    const monthName = getMonthName(month);
-
-    return [
-      {
-        label: 'Does not repeat',
-        value: null,
-      },
-      {
-        label: 'Daily',
-        value: createDefaultRecurrenceRule(eventDate, Frequency.DAILY),
-      },
-      {
-        label: `Weekly on ${dayName}`,
-        value: createDefaultRecurrenceRule(eventDate, Frequency.WEEKLY),
-      },
-      {
-        label: `Monthly on day ${dayOfMonth}`,
-        value: createDefaultRecurrenceRule(eventDate, Frequency.MONTHLY),
-      },
-      {
-        label: `Annually on ${monthName} ${dayOfMonth}`,
-        value: {
-          frequency: Frequency.YEARLY,
-          interval: 1,
-          byMonth: [month + 1],
-          byMonthDay: [dayOfMonth],
-          never: true,
-        },
-      },
-      {
-        label: 'Every weekday (Monday to Friday)',
-        value: {
-          frequency: Frequency.WEEKLY,
-          interval: 1,
-          byDay: ['MO', 'TU', 'WE', 'TH', 'FR'] as WeekDays[],
-          never: true,
-        },
-      },
-      {
-        label: 'Custom...',
-        value: 'custom',
-      },
-    ];
-  };
-
-  /**
-   * Handles selection of a recurrence option from the dropdown
-   * @param option - Selected recurrence option with label and value
-   */
-  const handleRecurrenceSelect = (option: {
-    label: string;
-    value: InterfaceRecurrenceRule | 'custom' | null;
-  }): void => {
-    if (option.value === 'custom') {
-      if (!recurrence) {
-        setRecurrence(createDefaultRecurrenceRule(startDate, Frequency.WEEKLY));
-      }
-      showCustomRecurrenceModal();
-    } else {
-      setRecurrence(option.value);
-    }
-    setRecurrenceDropdownOpen(false);
-  };
-
-  /**
-   * Gets the current recurrence label to display in the dropdown
-   * @returns String label describing the current recurrence pattern
-   */
-  const getCurrentRecurrenceLabel = (): string => {
-    if (!recurrence) return 'Does not repeat';
-
-    const options = getRecurrenceOptions();
-    const matchingOption = options.find((option) => {
-      if (!option.value || option.value === 'custom') return false;
-      return JSON.stringify(option.value) === JSON.stringify(recurrence);
-    });
-
-    return matchingOption ? matchingOption.label : 'Custom';
-  };
 
   /**
    * Resets all form fields and state to their initial values
@@ -513,38 +363,13 @@ const CreateEventModal: React.FC<ICreateEventModalProps> = ({
               </div>
             </div>
             <div>
-              <Dropdown
-                show={recurrenceDropdownOpen}
-                onToggle={setRecurrenceDropdownOpen}
-              >
-                <Dropdown.Toggle
-                  variant="outline-secondary"
-                  id="recurrence-dropdown"
-                  data-testid="recurrenceDropdown"
-                  className={`${styles.dropdown}`}
-                >
-                  {getCurrentRecurrenceLabel()}
-                </Dropdown.Toggle>
-                <Dropdown.Menu>
-                  {getRecurrenceOptions().map((option, index) => (
-                    <Dropdown.Item
-                      key={index}
-                      onClick={() =>
-                        handleRecurrenceSelect({
-                          ...option,
-                          value: option.value as
-                            | InterfaceRecurrenceRule
-                            | 'custom'
-                            | null,
-                        })
-                      }
-                      data-testid={`recurrenceOption-${index}`}
-                    >
-                      {option.label}
-                    </Dropdown.Item>
-                  ))}
-                </Dropdown.Menu>
-              </Dropdown>
+              <EventRecurrencePicker
+                startDate={startDate}
+                endDate={endDate}
+                recurrence={recurrence}
+                onRecurrenceChange={setRecurrence}
+                onEndDateChange={setEndDate}
+              />
             </div>
             <Button
               type="submit"
@@ -559,26 +384,6 @@ const CreateEventModal: React.FC<ICreateEventModalProps> = ({
           </Form>
         </Modal.Body>
       </Modal>
-
-      {recurrence && (
-        <CustomRecurrenceModal
-          recurrenceRuleState={recurrence}
-          setRecurrenceRuleState={(newRecurrence) => {
-            if (typeof newRecurrence === 'function') {
-              setRecurrence((prev) => (prev ? newRecurrence(prev) : null));
-            } else {
-              setRecurrence(newRecurrence);
-            }
-          }}
-          endDate={endDate}
-          setEndDate={setEndDate}
-          customRecurrenceModalIsOpen={customRecurrenceModalIsOpen}
-          hideCustomRecurrenceModal={hideCustomRecurrenceModal}
-          setCustomRecurrenceModalIsOpen={setCustomRecurrenceModalIsOpen}
-          t={t}
-          startDate={startDate}
-        />
-      )}
     </>
   );
 };

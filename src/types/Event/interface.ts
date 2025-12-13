@@ -169,8 +169,6 @@ export interface IPreviewEventModalProps {
   openEventDashboard: () => void;
   recurrence: InterfaceRecurrenceRule | null;
   setRecurrence: Dispatch<SetStateAction<InterfaceRecurrenceRule | null>>;
-  customRecurrenceModalIsOpen: boolean;
-  setCustomRecurrenceModalIsOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 export interface IUpdateEventModalProps {

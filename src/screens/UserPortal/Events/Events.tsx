@@ -53,6 +53,7 @@ import {
 } from 'GraphQl/Queries/Queries';
 import EventCalendar from 'components/EventCalender/Monthly/EventCalender';
 import EventHeader from 'components/EventCalender/Header/EventHeader';
+import EventRecurrencePicker from 'shared-components/EventRecurrencePicker/EventRecurrencePicker';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import type { ChangeEvent } from 'react';
@@ -67,6 +68,11 @@ import { errorHandler } from 'utils/errorHandler';
 import useLocalStorage from 'utils/useLocalstorage';
 import type { IEventEdge } from 'types/Event/interface';
 import styles from 'style/app-fixed.module.css';
+import {
+  InterfaceRecurrenceRule,
+  validateRecurrenceInput,
+  formatRecurrenceForApi,
+} from 'utils/recurrenceUtils';
 
 const timeToDayJs = (time: string): Dayjs => {
   const dateTimeString = dayjs().format('YYYY-MM-DD') + ' ' + time;
@@ -87,7 +93,8 @@ export default function events(): JSX.Element {
   const [endAt, setEndAt] = React.useState<Date | null>(new Date());
   const [isPublic, setIsPublic] = React.useState(true);
   const [isRegisterable, setIsRegisterable] = React.useState(true);
-  const [isRecurring, setIsRecurring] = React.useState(false);
+  const [recurrence, setRecurrence] =
+    React.useState<InterfaceRecurrenceRule | null>(null);
   const [isAllDay, setIsAllDay] = React.useState(true);
   const [startTime, setStartTime] = React.useState('08:00:00');
   const [endTime, setEndTime] = React.useState('10:00:00');
@@ -155,6 +162,20 @@ export default function events(): JSX.Element {
       const startTimeParts = startTime.split(':');
       const endTimeParts = endTime.split(':');
 
+      // Validate recurrence if set
+      let recurrenceInput;
+      if (recurrence) {
+        const { isValid, errors } = validateRecurrenceInput(
+          recurrence,
+          startAt || new Date(),
+        );
+        if (!isValid) {
+          toast.error(errors.join(', '));
+          return;
+        }
+        recurrenceInput = formatRecurrenceForApi(recurrence);
+      }
+
       const input = {
         name: eventTitle,
         description: eventDescription,
@@ -177,7 +198,7 @@ export default function events(): JSX.Element {
         location: eventLocation,
         isPublic,
         isRegisterable,
-        // Note: recurrence and createChat might need to be handled differently
+        recurrence: recurrenceInput,
       };
 
       const { data: createEventData } = await create({
@@ -193,6 +214,7 @@ export default function events(): JSX.Element {
         setEndAt(new Date());
         setStartTime('08:00:00');
         setEndTime('10:00:00');
+        setRecurrence(null);
       }
       setCreateEventmodalisOpen(false);
     } catch (error: unknown) {
@@ -471,17 +493,15 @@ export default function events(): JSX.Element {
                   onChange={(): void => setIsAllDay(!isAllDay)}
                 />
               </div>
-              <div className={styles.dispflexEvents}>
-                <label htmlFor="recurring">{t('recurring')}:</label>
-                <Form.Switch
-                  className={`me-4 ${styles.switch}`}
-                  id="recurring"
-                  type="checkbox"
-                  checked={isRecurring}
-                  data-testid="recurringEventCheck"
-                  onChange={(): void => setIsRecurring(!isRecurring)}
-                />
-              </div>
+            </div>
+            <div className="mb-3">
+              <EventRecurrencePicker
+                startDate={startAt || new Date()}
+                endDate={endAt}
+                recurrence={recurrence}
+                onRecurrenceChange={setRecurrence}
+                onEndDateChange={setEndAt}
+              />
             </div>
             <div className={styles.checkboxdivEvents}>
               <div className={styles.dispflexEvents}>

@@ -949,7 +949,7 @@ describe('Testing Events Screen [User Portal]', () => {
     });
   });
 
-  it('Should toggle public, registerable, recurring, and createChat checkboxes', async () => {
+  it('Should toggle public, registerable, and createChat checkboxes', async () => {
     render(
       <MockedProvider link={link}>
         <BrowserRouter>
@@ -978,17 +978,63 @@ describe('Testing Events Screen [User Portal]', () => {
     // Toggle all checkboxes
     await userEvent.click(screen.getByTestId('publicEventCheck'));
     await userEvent.click(screen.getByTestId('registerableEventCheck'));
-    await userEvent.click(screen.getByTestId('recurringEventCheck'));
     await userEvent.click(screen.getByTestId('createChatCheck'));
 
     // Toggle back
     await userEvent.click(screen.getByTestId('publicEventCheck'));
     await userEvent.click(screen.getByTestId('registerableEventCheck'));
-    await userEvent.click(screen.getByTestId('recurringEventCheck'));
     await userEvent.click(screen.getByTestId('createChatCheck'));
 
     // All toggles should work without errors
     expect(screen.getByTestId('publicEventCheck')).toBeInTheDocument();
+  });
+
+  it('Should render and interact with recurrence picker', async () => {
+    render(
+      <MockedProvider link={link}>
+        <BrowserRouter>
+          <Provider store={store}>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <ThemeProvider theme={theme}>
+                <I18nextProvider i18n={i18nForTest}>
+                  <Events />
+                </I18nextProvider>
+              </ThemeProvider>
+            </LocalizationProvider>
+          </Provider>
+        </BrowserRouter>
+      </MockedProvider>,
+    );
+
+    await wait();
+
+    // Open modal
+    await userEvent.click(screen.getByTestId('createEventModalBtn'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('recurrenceDropdown')).toBeInTheDocument();
+    });
+
+    // Check default label
+    expect(screen.getByTestId('recurrenceDropdown')).toHaveTextContent(
+      'Does not repeat',
+    );
+
+    // Open dropdown and select Daily
+    await userEvent.click(screen.getByTestId('recurrenceDropdown'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('recurrenceOption-1')).toBeInTheDocument();
+    });
+
+    await userEvent.click(screen.getByTestId('recurrenceOption-1'));
+
+    // Should now show Daily
+    await waitFor(() => {
+      expect(screen.getByTestId('recurrenceDropdown')).toHaveTextContent(
+        'Daily',
+      );
+    });
   });
 
   it('Should handle date picker changes', async () => {
