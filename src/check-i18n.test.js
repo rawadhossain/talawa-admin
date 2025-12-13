@@ -455,4 +455,82 @@ describe('check-i18n script', () => {
     expect(res.status).toBe(1);
     expect(res.stdout).toMatch(/multiline-comment\.tsx:5 -> "Real text"/);
   });
+
+  // Error handling in walk() - directory traversal errors
+  it('handles unreadable directories gracefully in walk()', () => {
+    const tmp = makeTempDir();
+    writeTempFile(tmp, path.join('src', 'valid.tsx'), '<div>Valid text</div>');
+    const res = runScript([], { cwd: tmp });
+    expect(res.status).toBe(1);
+    expect(res.stdout).toContain('Valid text');
+  });
+
+  it('returns empty array for non-existent directory in walk()', () => {
+    const tmp = makeTempDir();
+    const res = runScript([], { cwd: tmp });
+    expect(res.status).toBe(0);
+    expect(res.stdout).toContain('No files to scan for i18n violations.');
+  });
+
+  // Error handling in collectViolations()
+  it('handles file read errors gracefully with warning', () => {
+    const tmp = makeTempDir();
+    const srcDir = path.join(tmp, 'src');
+    fs.mkdirSync(srcDir, { recursive: true });
+    writeTempFile(tmp, path.join('src', 'valid.tsx'), '<div>Valid text</div>');
+
+    const disappearingFile = path.join(srcDir, 'disappearing.tsx');
+    fs.writeFileSync(disappearingFile, '<div>Text</div>');
+    fs.unlinkSync(disappearingFile);
+
+    const res = runScript([], { cwd: tmp });
+    expect(res.status).toBe(1);
+    expect(res.stdout).toContain('Valid text');
+  });
+
+  it('continues processing other files when one file has read error', () => {
+    const tmp = makeTempDir();
+    writeTempFile(tmp, 'file1.tsx', '<div>First file</div>');
+    writeTempFile(tmp, 'file2.tsx', '<div>Second file</div>');
+
+    const res = runScript([
+      path.join(tmp, 'file1.tsx'),
+      path.join(tmp, 'file2.tsx'),
+    ]);
+
+    expect(res.status).toBe(1);
+    expect(res.stdout).toContain('First file');
+    expect(res.stdout).toContain('Second file');
+  });
+
+  it('warns and returns empty violations for unreadable file', () => {
+    const tmp = makeTempDir();
+    const filePath = path.join(tmp, 'phantom.tsx');
+    fs.writeFileSync(filePath, '<div>Text</div>');
+    fs.unlinkSync(filePath);
+
+    const res = runScript([filePath]);
+    expect(res.status).toBe(0);
+    expect(res.stdout).toContain('No files to scan');
+  });
+
+  // Test walk() with nested directories containing errors
+  it('walks nested directories and handles errors gracefully', () => {
+    const tmp = makeTempDir();
+    writeTempFile(
+      tmp,
+      path.join('src', 'components', 'Button.tsx'),
+      '<button>Click me</button>',
+    );
+    writeTempFile(
+      tmp,
+      path.join('src', 'pages', 'Home.tsx'),
+      '<h1>Welcome</h1>',
+    );
+
+    const res = runScript([], { cwd: tmp });
+    expect(res.status).toBe(1);
+    expect(res.stdout).toContain('Click me');
+    expect(res.stdout).toContain('Welcome');
+  });
 });
