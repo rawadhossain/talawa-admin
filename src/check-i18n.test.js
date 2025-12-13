@@ -174,7 +174,7 @@ describe('check-i18n script', () => {
     const file = writeTempFile(
       tmp,
       'aria-placeholder-test.tsx',
-      '<input aria-placeholder="Enter text here" />',
+      '<div contenteditable="true" aria-placeholder="Enter text here"></div>',
     );
     const res = runScript([file]);
     expect(res.status).toBe(1);
