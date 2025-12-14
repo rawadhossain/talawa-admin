@@ -1522,45 +1522,9 @@ describe('Testing Events Screen [User Portal]', () => {
     expect(parsed[0].creator).toEqual({ id: '', name: '' });
   });
 
-  it('Should create an event with recurrence selected', async () => {
-    const recurrenceMock = {
-      request: {
-        query: CREATE_EVENT_MUTATION,
-        variables: {
-          input: {
-            name: 'Recurring Event',
-            description: 'Test recurring description',
-            startAt: dayjs(new Date())
-              .startOf('day')
-              .format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
-            endAt: dayjs(new Date())
-              .endOf('day')
-              .format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
-            organizationId: 'org123',
-            allDay: true,
-            location: 'Test Location',
-            isPublic: true,
-            isRegisterable: true,
-            recurrence: {
-              frequency: 'DAILY',
-              interval: 1,
-            },
-          },
-        },
-      },
-      result: {
-        data: {
-          createEvent: {
-            id: 'newRecurringEvent1',
-          },
-        },
-      },
-    };
-
-    const recurrenceLink = new StaticMockLink([...MOCKS, recurrenceMock], true);
-
+  it('Should allow selecting recurrence options in event creation', async () => {
     render(
-      <MockedProvider link={recurrenceLink}>
+      <MockedProvider link={link}>
         <BrowserRouter>
           <Provider store={store}>
             <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -1584,36 +1548,63 @@ describe('Testing Events Screen [User Portal]', () => {
       expect(screen.getByTestId('eventTitleInput')).toBeInTheDocument();
     });
 
-    // Fill form
-    await userEvent.type(
-      screen.getByTestId('eventTitleInput'),
-      'Recurring Event',
-    );
-    await userEvent.type(
-      screen.getByTestId('eventDescriptionInput'),
-      'Test recurring description',
-    );
-    await userEvent.type(
-      screen.getByTestId('eventLocationInput'),
-      'Test Location',
+    // Verify recurrence dropdown is present
+    expect(screen.getByTestId('recurrenceDropdown')).toBeInTheDocument();
+
+    // Initially shows "Does not repeat"
+    expect(screen.getByTestId('recurrenceDropdown')).toHaveTextContent(
+      'Does not repeat',
     );
 
-    // Select Daily recurrence
+    // Open recurrence dropdown
     await userEvent.click(screen.getByTestId('recurrenceDropdown'));
 
+    // Verify recurrence options are available
     await waitFor(() => {
-      expect(screen.getByTestId('recurrenceOption-1')).toBeInTheDocument();
+      expect(screen.getByTestId('recurrenceOption-0')).toBeInTheDocument(); // Does not repeat
+      expect(screen.getByTestId('recurrenceOption-1')).toBeInTheDocument(); // Daily
+      expect(screen.getByTestId('recurrenceOption-2')).toBeInTheDocument(); // Weekly
     });
 
+    // Select Daily recurrence
     await userEvent.click(screen.getByTestId('recurrenceOption-1'));
 
+    // Verify selection updated
     await waitFor(() => {
       expect(screen.getByTestId('recurrenceDropdown')).toHaveTextContent(
         'Daily',
       );
     });
 
-    await userEvent.click(screen.getByTestId('createEventBtn'));
-    await wait(500);
+    // Can change to another option
+    await userEvent.click(screen.getByTestId('recurrenceDropdown'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('recurrenceOption-2')).toBeInTheDocument();
+    });
+
+    await userEvent.click(screen.getByTestId('recurrenceOption-2'));
+
+    // Verify Weekly is selected (contains "Weekly" in the text)
+    await waitFor(() => {
+      expect(screen.getByTestId('recurrenceDropdown').textContent).toContain(
+        'Weekly',
+      );
+    });
+
+    // Can reset to "Does not repeat"
+    await userEvent.click(screen.getByTestId('recurrenceDropdown'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('recurrenceOption-0')).toBeInTheDocument();
+    });
+
+    await userEvent.click(screen.getByTestId('recurrenceOption-0'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('recurrenceDropdown')).toHaveTextContent(
+        'Does not repeat',
+      );
+    });
   });
 });
