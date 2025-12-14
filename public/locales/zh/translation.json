@@ -456,7 +456,14 @@
     "endDate": "结束日期",
     "talawaApiUnavailable": "塔拉瓦 API 不可用",
     "done": "完成",
-    "createChat": "创建聊天"
+    "createChat": "创建聊天",
+    "doesNotRepeat": "不重复",
+    "daily": "每天",
+    "weeklyOn": "每周{{day}}",
+    "monthlyOnDay": "每月第{{day}}天",
+    "annuallyOn": "每年{{month}}{{day}}日",
+    "everyWeekday": "每个工作日（周一至周五）",
+    "custom": "自定义..."
   },
   "organizationActionItems": {
     "actionItemCategory": "行动项类别",

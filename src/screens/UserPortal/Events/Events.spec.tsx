@@ -1536,7 +1536,7 @@ describe('Testing Events Screen [User Portal]', () => {
             endAt: dayjs(new Date())
               .endOf('day')
               .format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
-            organizationId: 'orgId',
+            organizationId: 'org123',
             allDay: true,
             location: 'Test Location',
             isPublic: true,
