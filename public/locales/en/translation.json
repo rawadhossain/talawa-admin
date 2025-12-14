@@ -456,7 +456,14 @@
     "startDate": "startDate",
     "endDate": "endDate",
     "talawaApiUnavailable": "talawaApiUnavailable",
-    "done": "done"
+    "done": "done",
+    "doesNotRepeat": "Does not repeat",
+    "daily": "Daily",
+    "weeklyOn": "Weekly on {{day}}",
+    "monthlyOnDay": "Monthly on day {{day}}",
+    "annuallyOn": "Annually on {{month}} {{day}}",
+    "everyWeekday": "Every weekday (Monday to Friday)",
+    "custom": "Custom..."
   },
   "organizationActionItems": {
     "actionItemCategory": "Action Item Category",

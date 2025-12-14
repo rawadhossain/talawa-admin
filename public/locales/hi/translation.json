@@ -456,7 +456,14 @@
     "endDate": "समाप्ति तिथि",
     "talawaApiUnavailable": "Talawa API अनुपलब्ध",
     "done": "पूर्ण",
-    "createChat": "चैट बनाएं"
+    "createChat": "चैट बनाएं",
+    "doesNotRepeat": "दोहराता नहीं है",
+    "daily": "दैनिक",
+    "weeklyOn": "{{day}} को साप्ताहिक",
+    "monthlyOnDay": "महीने के {{day}} दिन",
+    "annuallyOn": "{{month}} {{day}} को वार्षिक",
+    "everyWeekday": "हर कार्यदिवस (सोमवार से शुक्रवार)",
+    "custom": "कस्टम..."
   },
   "organizationActionItems": {
     "actionItemCategory": "क्रिया वस्तु श्रेणी",

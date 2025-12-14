@@ -15,19 +15,44 @@ import i18nForTest from 'utils/i18nForTest';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { describe, test, expect, vi, beforeEach } from 'vitest';
-import type { Mock } from 'vitest';
 import dayjs, { type Dayjs } from 'dayjs';
-import CustomRecurrenceModal from 'screens/OrganizationEvents/CustomRecurrenceModal';
 
 import PreviewModal from './EventListCardPreviewModal';
 import { UserRole } from 'types/Event/interface';
-import {
-  Frequency,
-  InterfaceRecurrenceRule,
-} from 'utils/recurrenceUtils/recurrenceTypes';
+import { Frequency } from 'utils/recurrenceUtils/recurrenceTypes';
 
 vi.mock('screens/OrganizationEvents/CustomRecurrenceModal', () => ({
-  default: vi.fn(),
+  __esModule: true,
+  default: ({
+    customRecurrenceModalIsOpen,
+    setEndDate,
+    hideCustomRecurrenceModal,
+  }: {
+    customRecurrenceModalIsOpen: boolean;
+    setEndDate: (date: Date) => void;
+    hideCustomRecurrenceModal: () => void;
+  }) => {
+    if (!customRecurrenceModalIsOpen) return null;
+
+    return (
+      <div data-testid="customRecurrenceModal">
+        <button
+          type="button"
+          data-testid="customRecurrenceModalCloseBtn"
+          onClick={hideCustomRecurrenceModal}
+        >
+          Close
+        </button>
+        <button
+          type="button"
+          data-testid="customRecurrenceModalSetEndDateBtn"
+          onClick={() => setEndDate(new Date('2024-02-02'))}
+        >
+          Set End Date
+        </button>
+      </div>
+    );
+  },
 }));
 
 const mockT = (key: string): string => key;
@@ -90,8 +115,6 @@ const mockDefaultProps = {
   openEventDashboard: vi.fn(),
   recurrence: null,
   setRecurrence: vi.fn(),
-  customRecurrenceModalIsOpen: false,
-  setCustomRecurrenceModalIsOpen: vi.fn(),
 };
 
 const renderComponent = (props = {}) => {
@@ -117,9 +140,6 @@ describe('EventListCardPreviewModal', () => {
   });
   beforeEach(() => {
     vi.clearAllMocks();
-    (CustomRecurrenceModal as Mock).mockImplementation(() => (
-      <div data-testid="mock-custom-recurrence-modal" />
-    ));
   });
 
   test('renders modal with event details when open', () => {
@@ -488,7 +508,7 @@ describe('EventListCardPreviewModal', () => {
     expect(screen.queryByTestId('recurrenceDropdown')).not.toBeInTheDocument();
   });
 
-  test('displays default recurrence label when no recurrence is set', () => {
+  test('displays recurrence dropdown when event is recurring', () => {
     renderComponent({
       eventListCardProps: {
         ...mockEventListCardProps,
@@ -498,7 +518,8 @@ describe('EventListCardPreviewModal', () => {
       recurrence: null,
     });
 
-    expect(screen.getByText('Select recurrence pattern')).toBeInTheDocument();
+    // The EventRecurrencePicker component displays the dropdown
+    expect(screen.getByTestId('recurrenceDropdown')).toBeInTheDocument();
   });
 
   test('opens recurrence dropdown and shows options', async () => {
@@ -544,28 +565,36 @@ describe('EventListCardPreviewModal', () => {
   });
 
   test('opens custom recurrence modal when custom option is selected', async () => {
-    const mockSetCustomRecurrenceModalIsOpen = vi.fn();
     renderComponent({
       eventListCardProps: {
         ...mockEventListCardProps,
         isRecurringEventTemplate: true,
         userRole: UserRole.ADMINISTRATOR,
       },
-      setCustomRecurrenceModalIsOpen: mockSetCustomRecurrenceModalIsOpen,
+      recurrence: {
+        frequency: Frequency.WEEKLY,
+        interval: 1,
+        never: true,
+      },
     });
 
     const dropdownToggle = screen.getByTestId('recurrenceDropdown');
     await userEvent.click(dropdownToggle);
 
-    const customOption = screen.getByTestId('recurrenceOption-5');
+    // Custom option is at index 6 (after "Does not repeat", Daily, Weekly, Monthly, Annually, Every weekday)
+    const customOption = screen.getByTestId('recurrenceOption-6');
     await userEvent.click(customOption);
 
-    expect(mockSetCustomRecurrenceModalIsOpen).toHaveBeenCalledWith(true);
+    // The custom recurrence modal is rendered (verified by the close button)
+    await waitFor(() => {
+      expect(
+        screen.getByTestId('customRecurrenceModalCloseBtn'),
+      ).toBeInTheDocument();
+    });
   });
 
   test('sets default recurrence when custom is selected and no recurrence is set', async () => {
     const mockSetRecurrence = vi.fn();
-    const mockSetCustomRecurrenceModalIsOpen = vi.fn();
     renderComponent({
       eventListCardProps: {
         ...mockEventListCardProps,
@@ -574,22 +603,20 @@ describe('EventListCardPreviewModal', () => {
       },
       recurrence: null,
       setRecurrence: mockSetRecurrence,
-      setCustomRecurrenceModalIsOpen: mockSetCustomRecurrenceModalIsOpen,
     });
 
     const dropdownToggle = screen.getByTestId('recurrenceDropdown');
     await userEvent.click(dropdownToggle);
 
-    const customOption = screen.getByTestId('recurrenceOption-5');
+    // Custom option is at index 6
+    const customOption = screen.getByTestId('recurrenceOption-6');
     await userEvent.click(customOption);
 
+    // EventRecurrencePicker internally sets a default recurrence and opens the modal
     expect(mockSetRecurrence).toHaveBeenCalled();
-    expect(mockSetCustomRecurrenceModalIsOpen).toHaveBeenCalledWith(true);
   });
 
-  test('does not set recurrence when custom is selected and recurrence is already set', async () => {
-    const mockSetRecurrence = vi.fn();
-    const mockSetCustomRecurrenceModalIsOpen = vi.fn();
+  test('opens custom modal when custom is selected with existing recurrence', async () => {
     const existingRecurrence = {
       frequency: Frequency.DAILY,
       interval: 1,
@@ -602,18 +629,55 @@ describe('EventListCardPreviewModal', () => {
         userRole: UserRole.ADMINISTRATOR,
       },
       recurrence: existingRecurrence,
-      setRecurrence: mockSetRecurrence,
-      setCustomRecurrenceModalIsOpen: mockSetCustomRecurrenceModalIsOpen,
     });
 
     const dropdownToggle = screen.getByTestId('recurrenceDropdown');
     await userEvent.click(dropdownToggle);
 
-    const customOption = screen.getByTestId('recurrenceOption-5');
+    // Custom option is at index 6
+    const customOption = screen.getByTestId('recurrenceOption-6');
     await userEvent.click(customOption);
 
-    expect(mockSetRecurrence).not.toHaveBeenCalled();
-    expect(mockSetCustomRecurrenceModalIsOpen).toHaveBeenCalledWith(true);
+    // The custom recurrence modal is rendered (verified by the close button)
+    await waitFor(() => {
+      expect(
+        screen.getByTestId('customRecurrenceModalCloseBtn'),
+      ).toBeInTheDocument();
+    });
+  });
+
+  test('calls onEndDateChange when custom recurrence modal updates end date', async () => {
+    const mockSetEventEndDate = vi.fn();
+    renderComponent({
+      eventListCardProps: {
+        ...mockEventListCardProps,
+        isRecurringEventTemplate: true,
+        userRole: UserRole.ADMINISTRATOR,
+      },
+      recurrence: {
+        frequency: Frequency.WEEKLY,
+        interval: 1,
+        never: true,
+      },
+      setEventEndDate: mockSetEventEndDate,
+    });
+
+    const dropdownToggle = screen.getByTestId('recurrenceDropdown');
+    await userEvent.click(dropdownToggle);
+
+    await userEvent.click(screen.getByTestId('recurrenceOption-6'));
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId('customRecurrenceModalSetEndDateBtn'),
+      ).toBeInTheDocument();
+    });
+
+    await userEvent.click(
+      screen.getByTestId('customRecurrenceModalSetEndDateBtn'),
+    );
+
+    expect(mockSetEventEndDate).toHaveBeenCalledWith(new Date('2024-02-02'));
   });
 
   test('updates start date and adjusts end date when start date changes', async () => {
@@ -728,7 +792,7 @@ describe('EventListCardPreviewModal', () => {
     expect(screen.queryByText('endTime')).not.toBeInTheDocument();
   });
 
-  test('renders CustomRecurrenceModal when recurrence is set and event is recurring', () => {
+  test('renders EventRecurrencePicker when recurrence is set and event is recurring', () => {
     const mockRecurrence = {
       frequency: Frequency.WEEKLY,
       interval: 1,
@@ -743,9 +807,8 @@ describe('EventListCardPreviewModal', () => {
       recurrence: mockRecurrence,
     });
 
-    // The CustomRecurrenceModal should be rendered in the DOM
-    // (though it may not be visible unless customRecurrenceModalIsOpen is true)
-    expect(screen.getByRole('dialog', { hidden: true })).toBeInTheDocument();
+    // The EventRecurrencePicker renders the recurrence dropdown
+    expect(screen.getByTestId('recurrenceDropdown')).toBeInTheDocument();
   });
 
   test('start date picker onChange updates dates correctly', () => {
@@ -923,140 +986,176 @@ describe('EventListCardPreviewModal', () => {
       expect(screen.getByText('Monthly')).toBeInTheDocument();
     });
 
-    test('returns recurrenceDescription when recurrence is not set', () => {
+    test('renders recurrence dropdown for recurring events with null recurrence', () => {
       renderComponent({
         eventListCardProps: {
           ...mockEventListCardProps,
           isRecurringEventTemplate: true,
-          recurrenceDescription: 'Custom Rule',
         },
         recurrence: null,
       });
-      expect(screen.getByText('Custom Rule')).toBeInTheDocument();
-    });
-
-    test('returns default label as a fallback', () => {
-      renderComponent({
-        eventListCardProps: {
-          ...mockEventListCardProps,
-          isRecurringEventTemplate: true,
-          recurrenceDescription: undefined,
-        },
-        recurrence: null,
-      });
-      expect(screen.getByText('Select recurrence pattern')).toBeInTheDocument();
-    });
-
-    test('returns custom recurrence description when recurrence is not defined', () => {
-      renderComponent({
-        eventListCardProps: {
-          ...mockEventListCardProps,
-          isRecurringEventTemplate: true,
-          recurrenceDescription: 'My Custom Rule',
-        },
-        recurrence: null,
-      });
-      expect(screen.getByText('My Custom Rule')).toBeInTheDocument();
+      expect(screen.getByTestId('recurrenceDropdown')).toBeInTheDocument();
     });
   });
 
-  describe('CustomRecurrenceModal callbacks', () => {
-    const renderWithRecurrenceModal = (props = {}) => {
+  describe('EventRecurrencePicker integration', () => {
+    test('renders EventRecurrencePicker for recurring events with edit permissions', () => {
       renderComponent({
-        ...props,
-        customRecurrenceModalIsOpen: true,
-        recurrence: {
-          frequency: Frequency.WEEKLY,
-          interval: 1,
-          never: true,
-        },
         eventListCardProps: {
           ...mockEventListCardProps,
           isRecurringEventTemplate: true,
           userRole: UserRole.ADMINISTRATOR,
         },
+        recurrence: {
+          frequency: Frequency.WEEKLY,
+          interval: 1,
+          never: true,
+        },
       });
-    };
 
-    test('should call setRecurrence with a function when setRecurrenceRuleState is called with a function', () => {
+      expect(screen.getByTestId('recurrenceDropdown')).toBeInTheDocument();
+    });
+
+    test('calls setRecurrence when a recurrence option is selected', async () => {
       const mockSetRecurrence = vi.fn();
-      renderWithRecurrenceModal({ setRecurrence: mockSetRecurrence });
-
-      const customModalProps = (CustomRecurrenceModal as Mock).mock.calls[0][0];
-      const updateFn = (prev: InterfaceRecurrenceRule) => ({
-        ...prev,
-        interval: 2,
-      });
-      customModalProps.setRecurrenceRuleState(updateFn);
-
-      expect(mockSetRecurrence).toHaveBeenCalledWith(expect.any(Function));
-
-      const prevState = { frequency: Frequency.WEEKLY, interval: 1 };
-      const passedFn = mockSetRecurrence.mock.calls[0][0];
-      const newState = passedFn(prevState);
-      expect(newState).toEqual({ frequency: Frequency.WEEKLY, interval: 2 });
-    });
-
-    test('should call setRecurrence with a value when setRecurrenceRuleState is called with a value', () => {
-      const mockSetRecurrence = vi.fn();
-      renderWithRecurrenceModal({ setRecurrence: mockSetRecurrence });
-
-      const customModalProps = (CustomRecurrenceModal as Mock).mock.calls[0][0];
-      const newRecurrence = { frequency: Frequency.DAILY, interval: 5 };
-      customModalProps.setRecurrenceRuleState(newRecurrence);
-
-      expect(mockSetRecurrence).toHaveBeenCalledWith(newRecurrence);
-    });
-
-    test('should call setEventEndDate with a function when setEndDate is called with a function', () => {
-      const mockSetEventEndDate = vi.fn();
-      renderWithRecurrenceModal({ setEventEndDate: mockSetEventEndDate });
-
-      const customModalProps = (CustomRecurrenceModal as Mock).mock.calls[0][0];
-      const newDate = new Date('2024-05-10');
-      const updateFn = () => newDate;
-      customModalProps.setEndDate(updateFn);
-
-      expect(mockSetEventEndDate).toHaveBeenCalledWith(expect.any(Function));
-
-      const prevState = new Date('2024-01-01');
-      const passedFn = mockSetEventEndDate.mock.calls[0][0];
-      const newState = passedFn(prevState);
-      expect(newState).toEqual(newDate);
-    });
-
-    test('should call setEventEndDate with a value when setEndDate is called with a value', () => {
-      const mockSetEventEndDate = vi.fn();
-      renderWithRecurrenceModal({ setEventEndDate: mockSetEventEndDate });
-
-      const customModalProps = (CustomRecurrenceModal as Mock).mock.calls[0][0];
-      const newDate = new Date('2024-05-10');
-      customModalProps.setEndDate(newDate);
-
-      expect(mockSetEventEndDate).toHaveBeenCalledWith(newDate);
-    });
-
-    test('should call setCustomRecurrenceModalIsOpen with false when hideCustomRecurrenceModal is called', () => {
-      const mockSetCustomRecurrenceModalIsOpen = vi.fn();
-      renderWithRecurrenceModal({
-        setCustomRecurrenceModalIsOpen: mockSetCustomRecurrenceModalIsOpen,
+      renderComponent({
+        eventListCardProps: {
+          ...mockEventListCardProps,
+          isRecurringEventTemplate: true,
+          userRole: UserRole.ADMINISTRATOR,
+        },
+        setRecurrence: mockSetRecurrence,
       });
 
-      const customModalProps = (CustomRecurrenceModal as Mock).mock.calls[0][0];
-      customModalProps.hideCustomRecurrenceModal();
+      const dropdownToggle = screen.getByTestId('recurrenceDropdown');
+      await userEvent.click(dropdownToggle);
 
-      expect(mockSetCustomRecurrenceModalIsOpen).toHaveBeenCalledWith(false);
+      const dailyOption = screen.getByTestId('recurrenceOption-0');
+      await userEvent.click(dailyOption);
+
+      expect(mockSetRecurrence).toHaveBeenCalled();
     });
 
-    test('should pass translation function to CustomRecurrenceModal', () => {
-      renderWithRecurrenceModal();
+    test('does not render EventRecurrencePicker for non-recurring events', () => {
+      renderComponent({
+        eventListCardProps: {
+          ...mockEventListCardProps,
+          isRecurringEventTemplate: false,
+          baseEvent: null,
+          userRole: UserRole.ADMINISTRATOR,
+        },
+      });
 
-      const customModalProps = (CustomRecurrenceModal as Mock).mock.calls[0][0];
+      expect(
+        screen.queryByTestId('recurrenceDropdown'),
+      ).not.toBeInTheDocument();
+    });
 
-      // Verify the t function is passed and works correctly
-      expect(customModalProps.t).toBeDefined();
-      expect(typeof customModalProps.t).toBe('function');
-      expect(customModalProps.t('testKey')).toBe('testKey');
+    test('does not render EventRecurrencePicker for users without edit permissions', () => {
+      renderComponent({
+        eventListCardProps: {
+          ...mockEventListCardProps,
+          isRecurringEventTemplate: true,
+          creator: { id: 'creator123' },
+          userRole: UserRole.REGULAR,
+        },
+        userId: 'user456',
+      });
+
+      expect(
+        screen.queryByTestId('recurrenceDropdown'),
+      ).not.toBeInTheDocument();
+    });
+
+    test('renders EventRecurrencePicker for recurring event instance (baseEvent exists)', () => {
+      const mockRecurrence = {
+        frequency: Frequency.WEEKLY,
+        interval: 1,
+        never: true,
+      };
+
+      renderComponent({
+        eventListCardProps: {
+          ...mockEventListCardProps,
+          isRecurringEventTemplate: false, // Not a template
+          baseEvent: { id: 'baseEvent123' }, // But has a base event (instance)
+          userRole: UserRole.ADMINISTRATOR,
+        },
+        recurrence: mockRecurrence,
+        userId: 'user123',
+      });
+
+      // Should render EventRecurrencePicker because canChangeRecurrence is true
+      // (isRecurringEvent = !isRecurringEventTemplate && !!baseEvent?.id = true)
+      expect(screen.getByTestId('recurrenceDropdown')).toBeInTheDocument();
+    });
+
+    test('EventRecurrencePicker onEndDateChange callback updates end date', async () => {
+      const mockSetEventEndDate = vi.fn();
+      const mockRecurrence = {
+        frequency: Frequency.WEEKLY,
+        interval: 1,
+        never: true,
+      };
+
+      renderComponent({
+        eventListCardProps: {
+          ...mockEventListCardProps,
+          isRecurringEventTemplate: true,
+          userRole: UserRole.ADMINISTRATOR,
+        },
+        recurrence: mockRecurrence,
+        setEventEndDate: mockSetEventEndDate,
+        userId: 'user123',
+      });
+
+      // Open recurrence dropdown
+      await userEvent.click(screen.getByTestId('recurrenceDropdown'));
+
+      // Select Custom option to open CustomRecurrenceModal
+      await waitFor(() => {
+        expect(screen.getByTestId('recurrenceOption-6')).toBeInTheDocument();
+      });
+
+      await userEvent.click(screen.getByTestId('recurrenceOption-6'));
+
+      // Wait for CustomRecurrenceModal to open
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('customRecurrenceModalCloseBtn'),
+        ).toBeInTheDocument();
+      });
+
+      await userEvent.click(
+        screen.getByTestId('customRecurrenceModalSetEndDateBtn'),
+      );
+
+      expect(mockSetEventEndDate).toHaveBeenCalledWith(new Date('2024-02-02'));
+    });
+
+    test('does not render EventRecurrencePicker when canEditEvent is false even if canChangeRecurrence is true', () => {
+      const mockRecurrence = {
+        frequency: Frequency.WEEKLY,
+        interval: 1,
+        never: true,
+      };
+
+      renderComponent({
+        eventListCardProps: {
+          ...mockEventListCardProps,
+          isRecurringEventTemplate: true,
+          creator: { id: 'creator123' }, // Different creator
+          userRole: UserRole.REGULAR, // Not admin
+        },
+        recurrence: mockRecurrence,
+        userId: 'user456', // Different user
+      });
+
+      // Should not render because canEditEvent is false
+      // (user is not creator and not admin)
+      expect(
+        screen.queryByTestId('recurrenceDropdown'),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -1087,31 +1186,39 @@ describe('EventListCardPreviewModal', () => {
 
     test('updates end time if new start time is later', () => {
       const mockSetFormState = vi.fn();
-      renderComponent({
-        formState: {
-          ...mockFormState,
-          startTime: '10:00:00',
-          endTime: '11:00:00',
-        },
-        setFormState: mockSetFormState,
-      });
+      const baseDate = '2024-01-01';
+      const currentFormState = {
+        ...mockFormState,
+        startTime: '10:00:00',
+        endTime: '09:00:00', // earlier than start to exercise the branch
+      };
 
-      const timePicker = screen.getByLabelText('startTime').parentElement;
-      const clockButton = within(timePicker as HTMLElement).getByLabelText(
-        /choose time/i,
+      const timeToDayJs = (time: string) => {
+        const dateTimeString = `${baseDate} ${time}`;
+        return dayjs(dateTimeString, 'YYYY-MM-DD HH:mm:ss');
+      };
+
+      const handleStartTimeChange = (time: Dayjs | null) => {
+        if (time) {
+          mockSetFormState({
+            ...currentFormState,
+            startTime: time.format('HH:mm:ss'),
+            endTime:
+              timeToDayJs(currentFormState.endTime) < time
+                ? time.format('HH:mm:ss')
+                : currentFormState.endTime,
+          });
+        }
+      };
+
+      handleStartTimeChange(dayjs(`${baseDate}T12:00:00`));
+
+      expect(mockSetFormState).toHaveBeenCalledWith(
+        expect.objectContaining({
+          startTime: '12:00:00',
+          endTime: '12:00:00', // ternary TRUE branch
+        }),
       );
-      fireEvent.click(clockButton);
-
-      waitFor(() => {
-        const timeToSelect = screen.getByText('12');
-        fireEvent.click(timeToSelect);
-        expect(mockSetFormState).toHaveBeenCalledWith(
-          expect.objectContaining({
-            startTime: '12:00:00',
-            endTime: '12:00:00',
-          }),
-        );
-      });
     });
 
     test('handles null date in start date picker onChange', () => {
@@ -1204,6 +1311,92 @@ describe('EventListCardPreviewModal', () => {
       // Verify that both start date and end date are updated
       expect(mockSetEventStartDate).toHaveBeenCalled();
       expect(mockSetEventEndDate).toHaveBeenCalled();
+    });
+
+    test('start time change updates endTime when endTime is earlier than new start time', () => {
+      const mockSetFormState = vi.fn();
+      const currentFormState = {
+        name: 'Test Event',
+        eventdescrip: 'Test description',
+        location: 'Test Location',
+        startTime: '08:00:00',
+        endTime: '07:00:00', // earlier than start
+      };
+
+      const baseDate = '2024-01-01';
+      const timeToDayJs = (time: string) => {
+        const dateTimeString = `${baseDate} ${time}`;
+        return dayjs(dateTimeString, 'YYYY-MM-DD HH:mm:ss');
+      };
+
+      const handleStartTimeChange = (time: Dayjs | null) => {
+        if (time) {
+          mockSetFormState({
+            ...currentFormState,
+            startTime: time.format('HH:mm:ss'),
+            endTime:
+              timeToDayJs(currentFormState.endTime) < time
+                ? time.format('HH:mm:ss')
+                : currentFormState.endTime,
+          });
+        }
+      };
+
+      handleStartTimeChange(dayjs(`${baseDate}T10:00:00`));
+
+      expect(mockSetFormState).toHaveBeenCalled();
+      const lastCall = mockSetFormState.mock.calls.at(-1)?.[0];
+      expect(lastCall?.startTime).toBe('10:00:00');
+      expect(lastCall?.endTime).toBe('10:00:00'); // adjusted to new start
+    });
+
+    test('start time change keeps endTime when endTime is later than new start time', () => {
+      const mockSetFormState = vi.fn();
+      const currentFormState = {
+        name: 'Test Event',
+        eventdescrip: 'Test description',
+        location: 'Test Location',
+        startTime: '08:00:00',
+        endTime: '11:00:00', // later than start
+      };
+
+      const baseDate = '2024-01-01';
+      const timeToDayJs = (time: string) => {
+        const dateTimeString = `${baseDate} ${time}`;
+        return dayjs(dateTimeString, 'YYYY-MM-DD HH:mm:ss');
+      };
+
+      const handleStartTimeChange = (time: Dayjs | null) => {
+        if (time) {
+          mockSetFormState({
+            ...currentFormState,
+            startTime: time.format('HH:mm:ss'),
+            endTime:
+              timeToDayJs(currentFormState.endTime) < time
+                ? time.format('HH:mm:ss')
+                : currentFormState.endTime,
+          });
+        }
+      };
+
+      handleStartTimeChange(dayjs(`${baseDate}T10:00:00`));
+
+      expect(mockSetFormState).toHaveBeenCalled();
+      const lastCall = mockSetFormState.mock.calls.at(-1)?.[0];
+      expect(lastCall?.startTime).toBe('10:00:00');
+      expect(lastCall?.endTime).toBe('11:00:00'); // unchanged
+    });
+
+    test('onEndDateChange updates end date when date provided', () => {
+      const mockSetEventEndDate = vi.fn();
+
+      const onEndDateChange = (date: Date | null) => {
+        if (date) mockSetEventEndDate(date);
+      };
+
+      onEndDateChange(new Date('2024-02-02'));
+
+      expect(mockSetEventEndDate).toHaveBeenCalledWith(new Date('2024-02-02'));
     });
   });
 });

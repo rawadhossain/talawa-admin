@@ -182,4 +182,23 @@ describe('EditOrgCustomFieldDropDown Component', () => {
       type: 'DATE',
     });
   });
+
+  it('displays "None" when type is empty', () => {
+    const emptyTypeProps = {
+      ...defaultProps,
+      customFieldData: {
+        type: '',
+        name: 'Test Field',
+        required: false,
+      },
+    };
+
+    render(
+      <I18nextProvider i18n={i18n}>
+        <EditOrgCustomFieldDropDown {...emptyTypeProps} />
+      </I18nextProvider>,
+    );
+
+    expect(screen.getByTestId('toggleBtn')).toHaveTextContent('none');
+  });
 });

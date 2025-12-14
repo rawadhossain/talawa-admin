@@ -32,18 +32,12 @@
  * @returns A modal for previewing and managing event details.
  */
 import React from 'react';
-import { Button, Form, Modal, Dropdown } from 'react-bootstrap';
+import { Button, Form, Modal } from 'react-bootstrap';
 import styles from 'style/app-fixed.module.css';
 import { DatePicker, TimePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
-import {
-  Frequency,
-  WeekDays,
-  InterfaceRecurrenceRule,
-} from 'utils/recurrenceUtils/recurrenceTypes';
-import { createDefaultRecurrenceRule } from 'utils/recurrenceUtils/recurrenceUtilityFunctions';
-import CustomRecurrenceModal from 'screens/OrganizationEvents/CustomRecurrenceModal';
+import EventRecurrencePicker from 'shared-components/EventRecurrencePicker/EventRecurrencePicker';
 
 import type { InterfacePreviewEventModalProps } from 'types/Event/interface';
 import { UserRole } from 'types/Event/interface';
@@ -74,8 +68,6 @@ const PreviewModal: React.FC<InterfacePreviewEventModalProps> = ({
   openEventDashboard,
   recurrence,
   setRecurrence,
-  customRecurrenceModalIsOpen,
-  setCustomRecurrenceModalIsOpen,
 }) => {
   const timeToDayJs = (time: string): Dayjs => {
     const dateTimeString = dayjs().format('YYYY-MM-DD') + ' ' + time;
@@ -86,131 +78,6 @@ const PreviewModal: React.FC<InterfacePreviewEventModalProps> = ({
   const canEditEvent =
     eventListCardProps.creator?.id === userId ||
     eventListCardProps.userRole === UserRole.ADMINISTRATOR;
-
-  const getDayName = (dayIndex: number): string => {
-    const days = [
-      'Sunday',
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-    ];
-    return days[dayIndex];
-  };
-
-  const getMonthName = (monthIndex: number): string => {
-    const months = [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
-    ];
-    return months[monthIndex];
-  };
-
-  const getRecurrenceOptions = () => {
-    const eventDate = new Date(eventStartDate);
-    const dayOfWeek = eventDate.getDay();
-    const dayOfMonth = eventDate.getDate();
-    const month = eventDate.getMonth();
-    const dayName = getDayName(dayOfWeek);
-    const monthName = getMonthName(month);
-
-    return [
-      {
-        label: 'Daily',
-        value: createDefaultRecurrenceRule(eventDate, Frequency.DAILY),
-      },
-      {
-        label: `Weekly on ${dayName}`,
-        value: createDefaultRecurrenceRule(eventDate, Frequency.WEEKLY),
-      },
-      {
-        label: `Monthly on day ${dayOfMonth}`,
-        value: createDefaultRecurrenceRule(eventDate, Frequency.MONTHLY),
-      },
-      {
-        label: `Annually on ${monthName} ${dayOfMonth}`,
-        value: {
-          frequency: Frequency.YEARLY,
-          interval: 1,
-          byMonth: [month + 1],
-          byMonthDay: [dayOfMonth],
-          never: true,
-        },
-      },
-      {
-        label: 'Every weekday (Monday to Friday)',
-        value: {
-          frequency: Frequency.WEEKLY,
-          interval: 1,
-          byDay: ['MO', 'TU', 'WE', 'TH', 'FR'] as WeekDays[],
-          never: true,
-        },
-      },
-      {
-        label: 'Custom...',
-        value: 'custom',
-      },
-    ];
-  };
-
-  const handleRecurrenceSelect = (option: {
-    label: string;
-    value: InterfaceRecurrenceRule | 'custom' | null;
-  }): void => {
-    if (option.value === 'custom') {
-      if (!recurrence) {
-        setRecurrence(
-          createDefaultRecurrenceRule(eventStartDate, Frequency.WEEKLY),
-        );
-      }
-      setCustomRecurrenceModalIsOpen(true);
-    } else {
-      setRecurrence(option.value);
-    }
-  };
-
-  const getCurrentRecurrenceLabel = (): string => {
-    // If the user has interacted with the dropdown, show the selected recurrence
-    if (recurrence) {
-      const options = getRecurrenceOptions();
-      const matchingOption = options.find((option) => {
-        if (option.value === 'custom') return false;
-        return JSON.stringify(option.value) === JSON.stringify(recurrence);
-      });
-
-      if (matchingOption) {
-        return matchingOption.label;
-      }
-
-      // If no standard option matches, display the frequency of the custom rule.
-      if (recurrence.frequency) {
-        return (
-          recurrence.frequency.charAt(0).toUpperCase() +
-          recurrence.frequency.slice(1).toLowerCase()
-        );
-      }
-    }
-
-    // If the user has not interacted with the dropdown, show the original description
-    if (eventListCardProps.recurrenceDescription) {
-      return eventListCardProps.recurrenceDescription;
-    }
-
-    // Fallback for non-recurring events or events without a description
-    return 'Select recurrence pattern';
-  };
 
   // Check if this is a recurring event (either template or instance)
   const isRecurringEvent =
@@ -418,36 +285,15 @@ const PreviewModal: React.FC<InterfacePreviewEventModalProps> = ({
             </div>
             {canEditEvent && canChangeRecurrence && (
               <div className="mb-3">
-                <Dropdown drop="down">
-                  <Dropdown.Toggle
-                    variant="outline-secondary"
-                    id="recurrence-dropdown"
-                    data-testid="recurrenceDropdown"
-                    className={`${styles.dropdown}`}
-                    disabled={!canEditEvent}
-                  >
-                    {getCurrentRecurrenceLabel()}
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu className="w-100">
-                    {getRecurrenceOptions().map((option, index) => (
-                      <Dropdown.Item
-                        key={index}
-                        onClick={() =>
-                          handleRecurrenceSelect({
-                            ...option,
-                            value: option.value as
-                              | InterfaceRecurrenceRule
-                              | 'custom'
-                              | null,
-                          })
-                        }
-                        data-testid={`recurrenceOption-${index}`}
-                      >
-                        {option.label}
-                      </Dropdown.Item>
-                    ))}
-                  </Dropdown.Menu>
-                </Dropdown>
+                <EventRecurrencePicker
+                  startDate={eventStartDate}
+                  endDate={eventEndDate}
+                  recurrence={recurrence}
+                  onRecurrenceChange={setRecurrence}
+                  onEndDateChange={(date) => {
+                    if (date) setEventEndDate(date);
+                  }}
+                />
               </div>
             )}
           </Form>
@@ -503,34 +349,6 @@ const PreviewModal: React.FC<InterfacePreviewEventModalProps> = ({
             ))}
         </Modal.Footer>
       </Modal>
-
-      {recurrence && isRecurringEvent && (
-        <CustomRecurrenceModal
-          recurrenceRuleState={recurrence}
-          setRecurrenceRuleState={(newRecurrence) => {
-            if (typeof newRecurrence === 'function') {
-              setRecurrence((prev) => (prev ? newRecurrence(prev) : null));
-            } else {
-              setRecurrence(newRecurrence);
-            }
-          }}
-          endDate={eventEndDate}
-          setEndDate={(date: React.SetStateAction<Date | null>) => {
-            if (typeof date === 'function') {
-              setEventEndDate((prev) => date(prev) || prev);
-            } else {
-              setEventEndDate(date || eventEndDate);
-            }
-          }}
-          customRecurrenceModalIsOpen={customRecurrenceModalIsOpen}
-          hideCustomRecurrenceModal={() =>
-            setCustomRecurrenceModalIsOpen(false)
-          }
-          setCustomRecurrenceModalIsOpen={setCustomRecurrenceModalIsOpen}
-          t={(key: string) => key} // Pass translation function if available
-          startDate={eventStartDate}
-        />
-      )}
     </>
   );
 };

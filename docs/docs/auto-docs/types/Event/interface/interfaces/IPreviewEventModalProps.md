@@ -16,14 +16,6 @@ Defined in: [src/types/Event/interface.ts:147](https://github.com/PalisadoesFoun
 
 ***
 
-### customRecurrenceModalIsOpen
-
-> **customRecurrenceModalIsOpen**: `boolean`
-
-Defined in: [src/types/Event/interface.ts:172](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/Event/interface.ts#L172)
-
-***
-
 ### eventEndDate
 
 > **eventEndDate**: `Date`
@@ -169,14 +161,6 @@ Defined in: [src/types/Event/interface.ts:151](https://github.com/PalisadoesFoun
 > **setAllDayChecked**: `Dispatch`\<`SetStateAction`\<`boolean`\>\>
 
 Defined in: [src/types/Event/interface.ts:148](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/Event/interface.ts#L148)
-
-***
-
-### setCustomRecurrenceModalIsOpen
-
-> **setCustomRecurrenceModalIsOpen**: `Dispatch`\<`SetStateAction`\<`boolean`\>\>
-
-Defined in: [src/types/Event/interface.ts:173](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/Event/interface.ts#L173)
 
 ***
 

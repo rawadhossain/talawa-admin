@@ -178,9 +178,6 @@ function EventListCardModals({
     );
   };
 
-  const [customRecurrenceModalIsOpen, setCustomRecurrenceModalIsOpen] =
-    useState(false);
-
   const [formState, setFormState] = useState({
     name: eventListCardProps.name,
     eventdescrip: eventListCardProps.description,
@@ -417,8 +414,6 @@ function EventListCardModals({
         openEventDashboard={openEventDashboard}
         recurrence={recurrence}
         setRecurrence={setRecurrence}
-        customRecurrenceModalIsOpen={customRecurrenceModalIsOpen}
-        setCustomRecurrenceModalIsOpen={setCustomRecurrenceModalIsOpen}
       />
 
       {/* delete modal */}
