@@ -30,7 +30,12 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { vi, beforeEach, afterEach } from 'vitest';
+import type { Mock } from 'vitest';
 import { toast } from 'react-toastify';
+import {
+  validateRecurrenceInput,
+  formatRecurrenceForApi,
+} from 'utils/recurrenceUtils';
 
 const { mockToast, mockUseParams } = vi.hoisted(() => ({
   mockToast: {
@@ -40,6 +45,15 @@ const { mockToast, mockUseParams } = vi.hoisted(() => ({
   },
   mockUseParams: vi.fn(),
 }));
+
+vi.mock('utils/recurrenceUtils', async () => {
+  const actual = await vi.importActual('utils/recurrenceUtils');
+  return {
+    ...actual,
+    validateRecurrenceInput: vi.fn(),
+    formatRecurrenceForApi: vi.fn(),
+  };
+});
 
 vi.mock('react-toastify', () => ({
   toast: mockToast,
@@ -412,6 +426,39 @@ const MOCKS = [
       data: {
         createEvent: {
           id: 'newEvent2',
+        },
+      },
+    },
+  },
+  // Mock for CREATE_EVENT_MUTATION with recurrence (all-day event)
+  {
+    request: {
+      query: CREATE_EVENT_MUTATION,
+      variables: {
+        input: {
+          name: 'Event with Rec',
+          description: 'Desc',
+          startAt: dayjs(new Date())
+            .startOf('day')
+            .format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
+          endAt: dayjs(new Date())
+            .endOf('day')
+            .format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
+          organizationId: 'org123',
+          allDay: true,
+          location: 'Loc',
+          isPublic: true,
+          isRegisterable: true,
+          recurrence: {
+            frequency: 'DAILY',
+          },
+        },
+      },
+    },
+    result: {
+      data: {
+        createEvent: {
+          id: 'recurringEvent1',
         },
       },
     },
@@ -1605,6 +1652,126 @@ describe('Testing Events Screen [User Portal]', () => {
       expect(screen.getByTestId('recurrenceDropdown')).toHaveTextContent(
         'Does not repeat',
       );
+    });
+  });
+
+  it('Should show error and prevent creation when recurrence validation fails', async () => {
+    (validateRecurrenceInput as Mock).mockReturnValue({
+      isValid: false,
+      errors: ['Invalid recurrence rule'],
+    });
+
+    render(
+      <MockedProvider link={link}>
+        <BrowserRouter>
+          <Provider store={store}>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <ThemeProvider theme={theme}>
+                <I18nextProvider i18n={i18nForTest}>
+                  <Events />
+                </I18nextProvider>
+              </ThemeProvider>
+            </LocalizationProvider>
+          </Provider>
+        </BrowserRouter>
+      </MockedProvider>,
+    );
+
+    await wait();
+
+    // Open modal
+    await userEvent.click(screen.getByTestId('createEventModalBtn'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('recurrenceDropdown')).toBeInTheDocument();
+    });
+
+    // Select Daily recurrence (non-null recurrence)
+    await userEvent.click(screen.getByTestId('recurrenceDropdown'));
+    await userEvent.click(screen.getByTestId('recurrenceOption-1'));
+
+    // Fill required fields
+    await userEvent.type(screen.getByTestId('eventTitleInput'), 'Test Event');
+    await userEvent.type(
+      screen.getByTestId('eventDescriptionInput'),
+      'Test Description',
+    );
+    await userEvent.type(
+      screen.getByTestId('eventLocationInput'),
+      'Test Location',
+    );
+
+    const form = screen.getByTestId('eventTitleInput').closest('form');
+    if (!form) {
+      throw new Error('Event creation form not found');
+    }
+
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(mockToast.error).toHaveBeenCalledWith('Invalid recurrence rule');
+    });
+
+    expect(formatRecurrenceForApi).not.toHaveBeenCalled();
+  });
+
+  it('Should format recurrence and create event when recurrence is valid', async () => {
+    (validateRecurrenceInput as Mock).mockReturnValue({
+      isValid: true,
+      errors: [],
+    });
+
+    (formatRecurrenceForApi as Mock).mockReturnValue({
+      frequency: 'DAILY',
+    });
+
+    mockToast.success.mockClear();
+
+    render(
+      <MockedProvider link={link}>
+        <BrowserRouter>
+          <Provider store={store}>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <ThemeProvider theme={theme}>
+                <I18nextProvider i18n={i18nForTest}>
+                  <Events />
+                </I18nextProvider>
+              </ThemeProvider>
+            </LocalizationProvider>
+          </Provider>
+        </BrowserRouter>
+      </MockedProvider>,
+    );
+
+    await wait();
+
+    await userEvent.click(screen.getByTestId('createEventModalBtn'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('recurrenceDropdown')).toBeInTheDocument();
+    });
+
+    await userEvent.click(screen.getByTestId('recurrenceDropdown'));
+    await userEvent.click(screen.getByTestId('recurrenceOption-1'));
+
+    await userEvent.type(
+      screen.getByTestId('eventTitleInput'),
+      'Event with Rec',
+    );
+    await userEvent.type(screen.getByTestId('eventDescriptionInput'), 'Desc');
+    await userEvent.type(screen.getByTestId('eventLocationInput'), 'Loc');
+
+    const form = screen.getByTestId('eventTitleInput').closest('form');
+    if (!form) {
+      throw new Error('Event creation form not found');
+    }
+
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(formatRecurrenceForApi).toHaveBeenCalled();
+      expect(mockToast.success).toHaveBeenCalled();
+      expect(validateRecurrenceInput).toHaveBeenCalled();
     });
   });
 });
