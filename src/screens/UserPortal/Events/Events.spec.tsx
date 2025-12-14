@@ -1521,4 +1521,99 @@ describe('Testing Events Screen [User Portal]', () => {
     // Creator fallback should be used when creator is null
     expect(parsed[0].creator).toEqual({ id: '', name: '' });
   });
+
+  it('Should create an event with recurrence selected', async () => {
+    const recurrenceMock = {
+      request: {
+        query: CREATE_EVENT_MUTATION,
+        variables: {
+          input: {
+            name: 'Recurring Event',
+            description: 'Test recurring description',
+            startAt: dayjs(new Date())
+              .startOf('day')
+              .format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
+            endAt: dayjs(new Date())
+              .endOf('day')
+              .format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
+            organizationId: 'orgId',
+            allDay: true,
+            location: 'Test Location',
+            isPublic: true,
+            isRegisterable: true,
+            recurrence: {
+              frequency: 'DAILY',
+              interval: 1,
+            },
+          },
+        },
+      },
+      result: {
+        data: {
+          createEvent: {
+            id: 'newRecurringEvent1',
+          },
+        },
+      },
+    };
+
+    const recurrenceLink = new StaticMockLink([...MOCKS, recurrenceMock], true);
+
+    render(
+      <MockedProvider link={recurrenceLink}>
+        <BrowserRouter>
+          <Provider store={store}>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <ThemeProvider theme={theme}>
+                <I18nextProvider i18n={i18nForTest}>
+                  <Events />
+                </I18nextProvider>
+              </ThemeProvider>
+            </LocalizationProvider>
+          </Provider>
+        </BrowserRouter>
+      </MockedProvider>,
+    );
+
+    await wait();
+
+    // Open modal
+    await userEvent.click(screen.getByTestId('createEventModalBtn'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('eventTitleInput')).toBeInTheDocument();
+    });
+
+    // Fill form
+    await userEvent.type(
+      screen.getByTestId('eventTitleInput'),
+      'Recurring Event',
+    );
+    await userEvent.type(
+      screen.getByTestId('eventDescriptionInput'),
+      'Test recurring description',
+    );
+    await userEvent.type(
+      screen.getByTestId('eventLocationInput'),
+      'Test Location',
+    );
+
+    // Select Daily recurrence
+    await userEvent.click(screen.getByTestId('recurrenceDropdown'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('recurrenceOption-1')).toBeInTheDocument();
+    });
+
+    await userEvent.click(screen.getByTestId('recurrenceOption-1'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('recurrenceDropdown')).toHaveTextContent(
+        'Daily',
+      );
+    });
+
+    await userEvent.click(screen.getByTestId('createEventBtn'));
+    await wait(500);
+  });
 });

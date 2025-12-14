@@ -64,7 +64,8 @@ const recurrenceRulesEqual = (
     arraysEqual(rule1.byMonth, rule2.byMonth) &&
     arraysEqual(rule1.byMonthDay, rule2.byMonthDay) &&
     rule1.count === rule2.count &&
-    rule1.endDate === rule2.endDate
+    (rule1.endDate?.getTime?.() ?? rule1.endDate) ===
+      (rule2.endDate?.getTime?.() ?? rule2.endDate)
   );
 };
 
@@ -142,23 +143,23 @@ const EventRecurrencePicker: React.FC<InterfaceEventRecurrencePickerProps> = ({
 
     return [
       {
-        label: 'Does not repeat',
+        label: t('doesNotRepeat'),
         value: null,
       },
       {
-        label: 'Daily',
+        label: t('daily'),
         value: createDefaultRecurrenceRule(safeDate, Frequency.DAILY),
       },
       {
-        label: `Weekly on ${dayName}`,
+        label: t('weeklyOn', { day: dayName }),
         value: createDefaultRecurrenceRule(safeDate, Frequency.WEEKLY),
       },
       {
-        label: `Monthly on day ${dayOfMonth}`,
+        label: t('monthlyOnDay', { day: dayOfMonth }),
         value: createDefaultRecurrenceRule(safeDate, Frequency.MONTHLY),
       },
       {
-        label: `Annually on ${monthName} ${dayOfMonth}`,
+        label: t('annuallyOn', { month: monthName, day: dayOfMonth }),
         value: {
           frequency: Frequency.YEARLY,
           interval: 1,
@@ -168,7 +169,7 @@ const EventRecurrencePicker: React.FC<InterfaceEventRecurrencePickerProps> = ({
         },
       },
       {
-        label: 'Every weekday (Monday to Friday)',
+        label: t('everyWeekday'),
         value: {
           frequency: Frequency.WEEKLY,
           interval: 1,
@@ -177,7 +178,7 @@ const EventRecurrencePicker: React.FC<InterfaceEventRecurrencePickerProps> = ({
         },
       },
       {
-        label: 'Custom...',
+        label: t('custom'),
         value: 'custom',
       },
     ];
@@ -209,7 +210,7 @@ const EventRecurrencePicker: React.FC<InterfaceEventRecurrencePickerProps> = ({
    * @returns String label describing the current recurrence pattern
    */
   const getCurrentRecurrenceLabel = (): string => {
-    if (!recurrence) return 'Does not repeat';
+    if (!recurrence) return t('doesNotRepeat');
 
     const options = getRecurrenceOptions();
     const matchingOption = options.find((option) => {
@@ -229,7 +230,7 @@ const EventRecurrencePicker: React.FC<InterfaceEventRecurrencePickerProps> = ({
       );
     }
 
-    return 'Custom';
+    return t('custom');
   };
 
   /**

@@ -10,15 +10,26 @@ import {
   mockEndDate,
   mockWeeklyRecurrence,
 } from './EventRecurrencePickerMocks';
+import type { InterfaceRecurrenceRule } from 'utils/recurrenceUtils';
 
-// Mock the CustomRecurrenceModal component
+// Mock the CustomRecurrenceModal component with callbacks for testing
 vi.mock('screens/OrganizationEvents/CustomRecurrenceModal', () => ({
   default: ({
     customRecurrenceModalIsOpen,
     hideCustomRecurrenceModal,
+    setRecurrenceRuleState,
+    setEndDate,
+    recurrenceRuleState,
   }: {
     customRecurrenceModalIsOpen: boolean;
     hideCustomRecurrenceModal: () => void;
+    setRecurrenceRuleState: (
+      rule:
+        | InterfaceRecurrenceRule
+        | ((prev: InterfaceRecurrenceRule) => InterfaceRecurrenceRule),
+    ) => void;
+    setEndDate: (date: React.SetStateAction<Date | null>) => void;
+    recurrenceRuleState: InterfaceRecurrenceRule;
   }) =>
     customRecurrenceModalIsOpen ? (
       <div data-testid="customRecurrenceModal">
@@ -28,6 +39,48 @@ vi.mock('screens/OrganizationEvents/CustomRecurrenceModal', () => ({
           onClick={hideCustomRecurrenceModal}
         >
           Close
+        </button>
+        <button
+          type="button"
+          data-testid="updateRecurrenceWithFunction"
+          onClick={() =>
+            setRecurrenceRuleState((prev: InterfaceRecurrenceRule) => ({
+              ...prev,
+              interval: 3,
+            }))
+          }
+        >
+          Update Recurrence With Function
+        </button>
+        <button
+          type="button"
+          data-testid="updateRecurrenceWithValue"
+          onClick={() =>
+            setRecurrenceRuleState({
+              ...recurrenceRuleState,
+              interval: 5,
+            })
+          }
+        >
+          Update Recurrence With Value
+        </button>
+        <button
+          type="button"
+          data-testid="updateEndDateWithValue"
+          onClick={() => setEndDate(new Date('2024-02-15'))}
+        >
+          Update End Date With Value
+        </button>
+        <button
+          type="button"
+          data-testid="updateEndDateWithFunction"
+          onClick={() =>
+            setEndDate((prev: Date | null) =>
+              prev ? new Date(prev.getTime() + 86400000) : new Date(),
+            )
+          }
+        >
+          Update End Date With Function
         </button>
       </div>
     ) : null,
@@ -178,5 +231,205 @@ describe('EventRecurrencePicker', () => {
   it('is disabled when disabled prop is true', () => {
     renderComponent({ disabled: true });
     expect(screen.getByTestId('recurrenceDropdown')).toBeDisabled();
+  });
+
+  it('handles recurrence state changes with function callback from CustomRecurrenceModal', async () => {
+    const user = userEvent.setup();
+    const onRecurrenceChange = vi.fn();
+    renderComponent({ recurrence: mockWeeklyRecurrence, onRecurrenceChange });
+
+    // Open the custom recurrence modal
+    await user.click(screen.getByTestId('recurrenceDropdown'));
+    await user.click(screen.getByTestId('recurrenceOption-6'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('customRecurrenceModal')).toBeInTheDocument();
+    });
+
+    // Click the button that updates recurrence with a function
+    await user.click(screen.getByTestId('updateRecurrenceWithFunction'));
+
+    expect(onRecurrenceChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        interval: 3,
+      }),
+    );
+  });
+
+  it('handles recurrence state changes with direct value from CustomRecurrenceModal', async () => {
+    const user = userEvent.setup();
+    const onRecurrenceChange = vi.fn();
+    renderComponent({ recurrence: mockWeeklyRecurrence, onRecurrenceChange });
+
+    // Open the custom recurrence modal
+    await user.click(screen.getByTestId('recurrenceDropdown'));
+    await user.click(screen.getByTestId('recurrenceOption-6'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('customRecurrenceModal')).toBeInTheDocument();
+    });
+
+    // Click the button that updates recurrence with a direct value
+    await user.click(screen.getByTestId('updateRecurrenceWithValue'));
+
+    expect(onRecurrenceChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        interval: 5,
+      }),
+    );
+  });
+
+  it('handles end date changes with direct value from CustomRecurrenceModal', async () => {
+    const user = userEvent.setup();
+    const onEndDateChange = vi.fn();
+    renderComponent({ recurrence: mockWeeklyRecurrence, onEndDateChange });
+
+    // Open the custom recurrence modal
+    await user.click(screen.getByTestId('recurrenceDropdown'));
+    await user.click(screen.getByTestId('recurrenceOption-6'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('customRecurrenceModal')).toBeInTheDocument();
+    });
+
+    // Click the button that updates end date with a direct value
+    await user.click(screen.getByTestId('updateEndDateWithValue'));
+
+    expect(onEndDateChange).toHaveBeenCalledWith(new Date('2024-02-15'));
+  });
+
+  it('handles end date changes with function callback from CustomRecurrenceModal', async () => {
+    const user = userEvent.setup();
+    const onEndDateChange = vi.fn();
+    renderComponent({ recurrence: mockWeeklyRecurrence, onEndDateChange });
+
+    // Open the custom recurrence modal
+    await user.click(screen.getByTestId('recurrenceDropdown'));
+    await user.click(screen.getByTestId('recurrenceOption-6'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('customRecurrenceModal')).toBeInTheDocument();
+    });
+
+    // Click the button that updates end date with a function
+    await user.click(screen.getByTestId('updateEndDateWithFunction'));
+
+    // The function adds one day to the end date (86400000 ms)
+    expect(onEndDateChange).toHaveBeenCalledWith(expect.any(Date));
+  });
+
+  it('closes CustomRecurrenceModal when close button is clicked', async () => {
+    const user = userEvent.setup();
+    renderComponent({ recurrence: mockWeeklyRecurrence });
+
+    // Open the custom recurrence modal
+    await user.click(screen.getByTestId('recurrenceDropdown'));
+    await user.click(screen.getByTestId('recurrenceOption-6'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('customRecurrenceModal')).toBeInTheDocument();
+    });
+
+    // Close the modal
+    await user.click(screen.getByTestId('closeCustomModal'));
+
+    await waitFor(() => {
+      expect(
+        screen.queryByTestId('customRecurrenceModal'),
+      ).not.toBeInTheDocument();
+    });
+  });
+
+  it('renders correctly with invalid startDate by falling back to current date', () => {
+    // Test that the component handles invalid dates gracefully
+    renderComponent({ startDate: new Date('invalid') });
+    // Should still render without errors
+    expect(screen.getByTestId('recurrenceDropdown')).toBeInTheDocument();
+  });
+
+  it('renders monthly recurrence option correctly', async () => {
+    const user = userEvent.setup();
+    const onRecurrenceChange = vi.fn();
+    renderComponent({ onRecurrenceChange });
+
+    await user.click(screen.getByTestId('recurrenceDropdown'));
+    await user.click(screen.getByTestId('recurrenceOption-3'));
+
+    expect(onRecurrenceChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        frequency: 'MONTHLY',
+        interval: 1,
+        byMonthDay: [15],
+        never: true,
+      }),
+    );
+  });
+
+  it('renders yearly recurrence option correctly', async () => {
+    const user = userEvent.setup();
+    const onRecurrenceChange = vi.fn();
+    renderComponent({ onRecurrenceChange });
+
+    await user.click(screen.getByTestId('recurrenceDropdown'));
+    await user.click(screen.getByTestId('recurrenceOption-4'));
+
+    expect(onRecurrenceChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        frequency: 'YEARLY',
+        interval: 1,
+        byMonth: [1],
+        byMonthDay: [15],
+        never: true,
+      }),
+    );
+  });
+
+  it('renders weekday recurrence option correctly', async () => {
+    const user = userEvent.setup();
+    const onRecurrenceChange = vi.fn();
+    renderComponent({ onRecurrenceChange });
+
+    await user.click(screen.getByTestId('recurrenceDropdown'));
+    await user.click(screen.getByTestId('recurrenceOption-5'));
+
+    expect(onRecurrenceChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        frequency: 'WEEKLY',
+        interval: 1,
+        byDay: ['MO', 'TU', 'WE', 'TH', 'FR'],
+        never: true,
+      }),
+    );
+  });
+
+  it('creates default weekly recurrence when custom is selected without existing recurrence', async () => {
+    const user = userEvent.setup();
+    const onRecurrenceChange = vi.fn();
+    renderComponent({ recurrence: null, onRecurrenceChange });
+
+    await user.click(screen.getByTestId('recurrenceDropdown'));
+    await user.click(screen.getByTestId('recurrenceOption-6'));
+
+    // When no recurrence exists and custom is selected, it should create a default weekly recurrence
+    expect(onRecurrenceChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        frequency: 'WEEKLY',
+        interval: 1,
+        never: true,
+      }),
+    );
+  });
+
+  it('displays "Custom" label when recurrence has no frequency', () => {
+    // Edge case: recurrence object exists but has no frequency
+    const recurrenceWithoutFrequency = {
+      interval: 1,
+      never: true,
+    } as unknown as InterfaceRecurrenceRule;
+    renderComponent({ recurrence: recurrenceWithoutFrequency });
+    // Should show "Custom" (or translated equivalent) when frequency is missing
+    expect(screen.getByTestId('recurrenceDropdown')).toHaveTextContent(
+      'Custom',
+    );
   });
 });

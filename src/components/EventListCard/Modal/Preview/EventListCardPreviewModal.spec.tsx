@@ -918,31 +918,7 @@ describe('EventListCardPreviewModal', () => {
       expect(screen.getByText('Monthly')).toBeInTheDocument();
     });
 
-    test('renders recurrence dropdown when recurrence is not set', () => {
-      renderComponent({
-        eventListCardProps: {
-          ...mockEventListCardProps,
-          isRecurringEventTemplate: true,
-        },
-        recurrence: null,
-      });
-      // EventRecurrencePicker is rendered and displays a dropdown
-      expect(screen.getByTestId('recurrenceDropdown')).toBeInTheDocument();
-    });
-
-    test('renders recurrence dropdown with fallback label when no recurrence', () => {
-      renderComponent({
-        eventListCardProps: {
-          ...mockEventListCardProps,
-          isRecurringEventTemplate: true,
-        },
-        recurrence: null,
-      });
-      // The EventRecurrencePicker component handles default labels internally
-      expect(screen.getByTestId('recurrenceDropdown')).toBeInTheDocument();
-    });
-
-    test('renders recurrence dropdown for recurring events', () => {
+    test('renders recurrence dropdown for recurring events with null recurrence', () => {
       renderComponent({
         eventListCardProps: {
           ...mockEventListCardProps,
