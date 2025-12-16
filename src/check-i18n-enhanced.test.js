@@ -440,6 +440,124 @@ describe('check-i18n script - enhanced features', () => {
     });
   });
 
+  describe('JSON operations', () => {
+    it('skips JSON.stringify/parse contexts', () => {
+      const tmp = makeTempDir();
+      const file = writeTempFile(
+        tmp,
+        'json-context.tsx',
+        [
+          'const obj = { a: 1, b: 2 };',
+          '<div>{JSON.stringify(obj)}</div>',
+          '<div>{JSON.parse("{\\"a\\":1}").a}</div>',
+        ].join('\n'),
+      );
+      const res = runScript([file]);
+      expect(res.status).toBe(0);
+      expect(res.stdout).toContain('No non-internationalized');
+    });
+  });
+
+  describe('RegExp constructor and regex literals', () => {
+    it('skips template literals used inside RegExp constructor', () => {
+      const tmp = makeTempDir();
+      const file = writeTempFile(
+        tmp,
+        'regexp-constructor.tsx',
+        'const re = new RegExp(`[A-Z]{2,}`);',
+      );
+      const res = runScript([file]);
+      expect(res.status).toBe(0);
+      expect(res.stdout).toContain('No non-internationalized');
+    });
+
+    it('skips regex literal contexts', () => {
+      const tmp = makeTempDir();
+      const file = writeTempFile(
+        tmp,
+        'regex-literal.tsx',
+        'const letters = /[a-z]+/i;',
+      );
+      const res = runScript([file]);
+      expect(res.status).toBe(0);
+      expect(res.stdout).toContain('No non-internationalized');
+    });
+  });
+
+  describe('Intl date tokens', () => {
+    it('allows Intl date/time tokens as formats', () => {
+      const tmp = makeTempDir();
+      const file = writeTempFile(
+        tmp,
+        'intl-date-tokens.tsx',
+        '<div>{`full`}</div>\n<div>{`medium`}</div>\n<div>{`numeric`}</div>\n<div>{`2-digit`}</div>',
+      );
+      const res = runScript([file]);
+      expect(res.status).toBe(0);
+      expect(res.stdout).toContain('No non-internationalized');
+    });
+  });
+
+  describe('Attribute detection', () => {
+    it('resolves the last attribute before a template literal (getAttributeName)', () => {
+      const tmp = makeTempDir();
+      const file = writeTempFile(
+        tmp,
+        'last-attr-template.tsx',
+        // Multiple attributes; template literal belongs to "to"
+        '<Link className="btn" to={`orgstore/id=${"123"}`} title="Title">Go</Link>',
+      );
+      const res = runScript([file]);
+      expect(res.status).toBe(1);
+      // Should flag "Go" and "Title" (title is user-visible); URL-like template must be skipped
+      expect(res.stdout).toContain('Go');
+      expect(res.stdout).toContain('Title');
+      expect(res.stdout).not.toContain('orgstore/id=');
+    });
+
+    it('skips miscellaneous non-user-visible attributes', () => {
+      const tmp = makeTempDir();
+      const file = writeTempFile(
+        tmp,
+        'misc-non-visible-attrs.tsx',
+        [
+          '<input id="user-id" name="username" value="raw" type="text" />',
+          '<div ref={el => (el.dataset.foo = "bar")} style={{display:"block"}} />',
+          '<button onClick={() => { /* noop */ }}>Click Here</button>',
+        ].join('\n'),
+      );
+      const res = runScript([file]);
+      // Only "Click Here" is user-visible text, so status 1
+      expect(res.status).toBe(1);
+      expect(res.stdout).toContain('Click Here');
+      expect(res.stdout).not.toContain('user-id');
+      expect(res.stdout).not.toContain('username');
+      expect(res.stdout).not.toContain('raw');
+      // Check that "text" from type="text" is not flagged (but "text" in "user-visible text" message is OK)
+      expect(res.stdout).not.toMatch(/-> "text"/);
+    });
+  });
+
+  describe('String method skip heuristic', () => {
+    it('skips string method calls with regex-like args while inside unclosed paren', () => {
+      const tmp = makeTempDir();
+      const file = writeTempFile(
+        tmp,
+        'string-methods-skip.tsx',
+        [
+          'const s = "Hello";',
+          '<div>{s.match(/[A-Z]+/g)}</div>',
+          '<div>{s.replace(/[A-Z]/g, "_")}</div>',
+          '<div>{s.search(/[A-Z]/)}</div>',
+          '<div>{s.split(/[A-Z]/)}</div>',
+        ].join('\n'),
+      );
+      const res = runScript([file]);
+      expect(res.status).toBe(0);
+      expect(res.stdout).toContain('No non-internationalized');
+    });
+  });
+
   describe('Comprehensive false positives fixture', () => {
     it('passes for false-positives.tsx with all edge cases', () => {
       const res = runScript([path.join(fixturesDir, 'false-positives.tsx')]);
