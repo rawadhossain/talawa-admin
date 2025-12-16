@@ -28,6 +28,81 @@ const USER_VISIBLE_ATTRS = [
   'aria-placeholder',
 ];
 
+// Attributes that should never be checked (CSS, routing, technical attributes)
+const NON_USER_VISIBLE_ATTRS = [
+  'className',
+  'class',
+  'style',
+  'to',
+  'href',
+  'src',
+  'id',
+  'data-testid',
+  'data-test-id',
+  'data-cy',
+  'data-id',
+  'testid',
+  'key',
+  'ref',
+  'onClick',
+  'onChange',
+  'onSubmit',
+  'onBlur',
+  'onFocus',
+  'onKeyDown',
+  'onKeyUp',
+  'type',
+  'value',
+  'name',
+  'role',
+  'tabIndex',
+  'aria-hidden',
+  'aria-describedby',
+  'aria-labelledby',
+  'aria-expanded',
+  'aria-selected',
+  'aria-checked',
+  'aria-disabled',
+  'aria-required',
+  'aria-invalid',
+  'aria-busy',
+  'aria-live',
+  'aria-atomic',
+  'aria-relevant',
+  'aria-modal',
+  'aria-controls',
+  'aria-owns',
+  'aria-haspopup',
+  'aria-orientation',
+  'aria-valuemin',
+  'aria-valuemax',
+  'aria-valuenow',
+  'aria-valuetext',
+  'aria-sort',
+  'aria-readonly',
+  'aria-multiline',
+  'aria-multiselectable',
+  'aria-autocomplete',
+  'aria-activedescendant',
+  'aria-colcount',
+  'aria-colindex',
+  'aria-colspan',
+  'aria-rowcount',
+  'aria-rowindex',
+  'aria-rowspan',
+  'aria-posinset',
+  'aria-setsize',
+  'aria-level',
+  'aria-current',
+  'aria-details',
+  'aria-errormessage',
+  'aria-flowto',
+  'aria-keyshortcuts',
+  'aria-roledescription',
+  'aria-rowindextext',
+  'aria-colindextext',
+];
+
 const POSIX_SEP = path.posix.sep;
 
 const walk = (dir) => {
@@ -66,13 +141,143 @@ const stripComments = (content) =>
     // line comments – drop everything after `//` but keep leading whitespace/newline
     .replace(/(^|\s)\/\/.*$/gm, '$1');
 
+// Check if a line has an ignore comment
+const hasIgnoreComment = (originalLines, lineIndex) => {
+  // Check current line and previous line for ignore comments
+  const ignorePatterns = [
+    /\/\/\s*i18n-ignore-line/i,
+    /\/\/\s*i18n-ignore-next-line/i,
+  ];
+
+  // Check current line
+  if (lineIndex < originalLines.length) {
+    const currentLine = originalLines[lineIndex];
+    if (ignorePatterns.some((pattern) => pattern.test(currentLine))) {
+      return true;
+    }
+  }
+
+  // Check previous line (for i18n-ignore-next-line)
+  if (lineIndex > 0) {
+    const prevLine = originalLines[lineIndex - 1];
+    if (/\/\/\s*i18n-ignore-next-line/i.test(prevLine)) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
 const countWords = (text) => {
   // Unicode-aware word detection: sequences of letters in any script
   const words = text.match(/\p{L}+/gu);
   return words ? words.length : 0;
 };
 
-const looksLikeUrl = (text) => /^(https?:\/\/|\/|data:)/i.test(text.trim());
+const looksLikeUrl = (text) => {
+  const trimmed = text.trim();
+  // Check for URLs starting with http://, https://, /, data:, or common URL patterns
+  if (/^(https?:\/\/|\/|data:)/i.test(trimmed)) return true;
+  // Check for URL-like patterns (e.g., "orgstore/id=", "path/to/resource", "api/v1/endpoint")
+  // Must have at least one slash or equals sign to be considered a URL pattern
+  // Single words like "Link" should not be considered URLs
+  if (
+    /^[a-z0-9]+(\/[a-z0-9\-_=]+)+(\?[^`]*)?$/i.test(trimmed) ||
+    /^[a-z0-9]+\/[a-z0-9\-_=]+/i.test(trimmed) ||
+    /^[a-z0-9]+=[a-z0-9\-_=]+/i.test(trimmed)
+  )
+    return true;
+  return false;
+};
+
+// Check if text looks like a date format string (e.g., "MM/DD/YYYY", "YYYY-MM-DD", "HH:mm:ss")
+const looksLikeDateFormat = (text) => {
+  const trimmed = text.trim();
+  // Common date format patterns
+  const dateFormatPatterns = [
+    /^[YMDHmsS]+([\/\-\s:\.][YMDHmsS]+)+$/i, // YYYY-MM-DD, MM/DD/YYYY, HH:mm:ss
+    /^[YMDHmsS]+\[[^\]]+\][YMDHmsS]*$/i, // YYYY-MM-DDTHH:mm:ss.SSS[Z]
+    /^[a-z]+$/i, // Single format token like "short", "long" (for Intl.DateTimeFormat)
+  ];
+  return dateFormatPatterns.some((pattern) => pattern.test(trimmed));
+};
+
+// Check if text looks like a regular expression pattern
+const looksLikeRegexPattern = (text) => {
+  const trimmed = text.trim();
+  // Common regex patterns (character classes, quantifiers, anchors, etc.)
+  if (/^[.*+?^${}()|[\]\\\/\-]+$/.test(trimmed)) return true;
+  // Patterns with common regex syntax
+  if (/^[^]*[\^$.*+?{}()[\]|\\][^]*$/.test(trimmed)) return true;
+  return false;
+};
+
+// Check if text is in a context that should be skipped
+const isInSkipContext = (line, matchIndex) => {
+  const beforeMatch = line.substring(0, matchIndex);
+  const afterMatch = line.substring(matchIndex);
+
+  // Skip console.log/error/warn/info/debug messages
+  if (/console\.(log|error|warn|info|debug)\s*\(/.test(beforeMatch)) {
+    return true;
+  }
+
+  // Skip throw new Error(...) statements
+  if (/throw\s+new\s+Error\s*\(/.test(beforeMatch)) {
+    return true;
+  }
+
+  // Skip GraphQL queries (gql`...`)
+  if (/gql\s*`/.test(beforeMatch)) {
+    return true;
+  }
+
+  // Skip new RegExp(...) or /pattern/ regex literals
+  if (/new\s+RegExp\s*\(/.test(beforeMatch) || /\/[^\/]+\//.test(beforeMatch)) {
+    return true;
+  }
+
+  // Skip JSON.stringify/parse
+  if (/JSON\.(stringify|parse)\s*\(/.test(beforeMatch)) {
+    return true;
+  }
+
+  // Skip .format() calls (date formatting) - only if we're inside the format call
+  // Check if there's a .format( with an unclosed parenthesis before the match
+  const formatMatch = beforeMatch.match(/\.format\s*\(/g);
+  if (formatMatch) {
+    const openParens = (beforeMatch.match(/\(/g) || []).length;
+    const closeParens = (beforeMatch.match(/\)/g) || []).length;
+    if (openParens > closeParens) {
+      return true;
+    }
+  }
+
+  // Skip .match() or .replace() with regex patterns - only if we're inside the call
+  const methodMatch = beforeMatch.match(/\.(match|replace|search|split)\s*\(/g);
+  if (methodMatch) {
+    const openParens = (beforeMatch.match(/\(/g) || []).length;
+    const closeParens = (beforeMatch.match(/\)/g) || []).length;
+    if (openParens > closeParens) {
+      return true;
+    }
+  }
+
+  // Skip TypeScript type annotations: ): Type => or : Type = or Promise<Type>
+  // Be more specific - don't match JSX attributes (which have < before them)
+  if (
+    /:\s*\w+\s*=>/.test(beforeMatch + afterMatch) ||
+    /\):\s*\w+/.test(beforeMatch) ||
+    /Promise\s*</.test(beforeMatch + afterMatch) ||
+    // Only match type annotations, not JSX attributes or other patterns
+    (/\w+\s*:\s*\w+\s*[=,;]/.test(beforeMatch + afterMatch) &&
+      !/</.test(beforeMatch)) // Don't match if there's a < before (likely JSX)
+  ) {
+    return true;
+  }
+
+  return false;
+};
 
 const isAllowedString = (text) => {
   const value = text.trim();
@@ -82,11 +287,30 @@ const isAllowedString = (text) => {
     return countWords(staticText) === 0;
   }
   if (looksLikeUrl(value)) return true;
+  if (looksLikeDateFormat(value)) return true;
+  if (looksLikeRegexPattern(value)) return true;
   // Flag if there is at least one word (single-word UI text should be translated)
   return countWords(value) === 0;
 };
 
 const toPosixPath = (filePath) => filePath.split(path.sep).join(POSIX_SEP);
+
+// Extract attribute name from a line containing an attribute
+const getAttributeName = (line, matchIndex) => {
+  // Look backwards from the match to find the attribute name
+  const beforeMatch = line.substring(0, matchIndex);
+  // Find all attribute assignments and get the last one before the match
+  // This handles cases like: className={`btn ${styles.x}`} or className="btn"
+  const allAttrMatches = [
+    ...beforeMatch.matchAll(/(\w+(?:-\w+)*(?::\w+)?)\s*=\s*/g),
+  ];
+  if (allAttrMatches.length > 0) {
+    // Get the last (most recent) attribute match
+    const lastMatch = allAttrMatches[allAttrMatches.length - 1];
+    return lastMatch[1].toLowerCase();
+  }
+  return null;
+};
 
 const collectViolations = (filePath) => {
   let content;
@@ -97,32 +321,143 @@ const collectViolations = (filePath) => {
     return [];
   }
 
-  const lines = stripComments(content).split('\n');
+  const originalLines = content.split('\n');
+  const strippedContent = stripComments(content);
+  const lines = strippedContent.split('\n');
   const violations = [];
 
   lines.forEach((line, idx) => {
     const lineNumber = idx + 1;
+
+    // Skip if line has ignore comment
+    if (hasIgnoreComment(originalLines, idx)) {
+      return;
+    }
+
     const importLike = /^\s*(import|require)\b/.test(line);
     if (importLike) return;
 
-    // JSX text between tags
+    // JSX text between tags - improved to avoid matching TypeScript types
+    // Only match if it's clearly JSX (has < and > with text between)
+    // Exclude patterns that look like TypeScript generics or function signatures
     const jsxRegex = />\s*([^<>{}\n]+?)\s*</g;
     let jsxMatch;
     while ((jsxMatch = jsxRegex.exec(line)) !== null) {
       const text = jsxMatch[1];
+      const matchIndex = jsxMatch.index;
+
+      // Skip if in a context that should be ignored
+      if (isInSkipContext(line, matchIndex)) {
+        continue;
+      }
+
+      // Skip if this looks like TypeScript type annotation
+      // Check if there's a colon, arrow, or Promise-like pattern nearby
+      const beforeMatch = line.substring(0, matchIndex);
+      const afterMatch = line.substring(matchIndex + jsxMatch[0].length);
+      const fullContext = beforeMatch + afterMatch;
+
+      // Skip if it looks like a type annotation: ): Type => or : Type = or Promise<Type>
+      // Be more specific to avoid false positives with JSX
+      if (
+        /:\s*\w+\s*=>/.test(fullContext) ||
+        /\):\s*\w+/.test(beforeMatch) ||
+        /Promise\s*</.test(fullContext) ||
+        // Only match type annotations, not JSX attributes or other patterns
+        (/\w+\s*:\s*\w+\s*[=,;]/.test(fullContext) && !/</.test(beforeMatch)) // Don't match if there's a < before (likely JSX)
+      ) {
+        continue;
+      }
+
+      // Skip if this looks like JavaScript code (comparison operators, logical operators)
+      // Patterns like: age >= 18 && age <= 40, x === y, a != b, etc.
+      if (
+        /(>=|<=|==|!=|===|!==|&&|\|\|)\s*\d+/.test(text) || // Comparison with numbers
+        /\d+\s*(>=|<=|==|!=|===|!==|&&|\|\|)/.test(text) || // Number before operator
+        /(return|const|let|var|if|while|for)\s+.*(>=|<=|==|!=|===|!==)/.test(
+          beforeMatch,
+        ) || // Code keywords before comparison
+        /\.(filter|map|reduce|find|some|every)\s*\(/.test(beforeMatch) // Array methods
+      ) {
+        continue;
+      }
+
       if (!isAllowedString(text)) {
         violations.push({ line: lineNumber, text });
       }
     }
 
     // Template literals in JSX expressions with hardcoded text
+    // But only if they're not in className, style, or routing attributes
     const templateLiteralRegex = /\{`([^`]*)`\}/g;
     let templateMatch;
     while ((templateMatch = templateLiteralRegex.exec(line)) !== null) {
-      const fullText = templateMatch[1]; // e.g., "Hello ${name}"
+      const fullText = templateMatch[1];
+      const matchIndex = templateMatch.index;
+
+      // Skip if in a context that should be ignored
+      if (isInSkipContext(line, matchIndex)) {
+        continue;
+      }
+
+      // Check what attribute this template literal is in
+      const attributeName = getAttributeName(line, matchIndex);
+
+      // Also check if the line contains className=, style=, to=, etc. before this match
+      // This is a fallback for cases where getAttributeName might not work perfectly
+      const beforeMatch = line.substring(0, matchIndex);
+      // Check for any non-user-visible attribute assignment before the template literal
+      // Pattern: attributeName = { or attributeName = " or attributeName = '
+      const hasNonUserVisibleAttr = NON_USER_VISIBLE_ATTRS.some((attr) => {
+        // Escape special regex characters in attribute name
+        const escapedAttr = attr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const pattern = new RegExp(`\\b${escapedAttr}\\s*=\\s*['"\`{]`, 'i');
+        return pattern.test(beforeMatch);
+      });
+
+      // Also check if the template literal content looks like CSS classes
+      // and the line contains className (heuristic for className template literals)
+      // Expanded to include common CSS utility classes and patterns
+      const commonCssPatterns = [
+        /\b(btn|primary|secondary|danger|warning|info|success|lg|sm|md|xl|container|wrapper|flex|grid|row|col)\b/i,
+        /\b(m-|p-|d-|text-|bg-|border-|rounded|shadow|hover|active|disabled|shimmer|mx-|my-|px-|py-|ms-|me-|mt-|mb-|pt-|pb-|ps-|pe-)\d*/i,
+        /\b(fi\s+fi-|fa\s+fa-)/i, // Font icons: "fi fi-xx" or "fa fa-xx"
+        /\$\{styles\.\w+\}/, // CSS modules
+        /\?\s*['"`]?\w+['"`]?\s*:/, // Ternary operators in className (conditional classes)
+        /\w+\s*===\s*['"`]?\w+['"`]?\s*\?/, // Conditional checks
+      ];
+      const looksLikeCssClasses =
+        /className/i.test(beforeMatch) &&
+        commonCssPatterns.some((pattern) => pattern.test(fullText));
+
+      // Skip if it's in a non-user-visible attribute
+      if (attributeName && NON_USER_VISIBLE_ATTRS.includes(attributeName)) {
+        continue;
+      }
+
+      // Also skip if we detected a non-user-visible attribute in the line
+      if (hasNonUserVisibleAttr) {
+        continue;
+      }
+
+      // Skip if it looks like CSS classes in a className attribute
+      if (looksLikeCssClasses) {
+        continue;
+      }
 
       // Strip out variables FIRST
       const staticText = fullText.replace(/\$\{[^}]*\}/g, '').trim();
+
+      // If it's a URL-like pattern, allow it
+      if (looksLikeUrl(staticText) || looksLikeUrl(fullText)) {
+        continue;
+      }
+
+      // If it's a date format pattern, allow it
+      if (looksLikeDateFormat(staticText) || looksLikeDateFormat(fullText)) {
+        continue;
+      }
+
       if (staticText && !isAllowedString(staticText)) {
         violations.push({ line: lineNumber, text: fullText });
       }
@@ -137,6 +472,13 @@ const collectViolations = (filePath) => {
     let attrMatch;
     while ((attrMatch = attrRegex.exec(line)) !== null) {
       const text = attrMatch[3];
+      const matchIndex = attrMatch.index;
+
+      // Skip if in a context that should be ignored
+      if (isInSkipContext(line, matchIndex)) {
+        continue;
+      }
+
       if (!isAllowedString(text)) {
         violations.push({ line: lineNumber, text });
       }
