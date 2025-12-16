@@ -49,12 +49,12 @@ export function FalsePositivesFixture() {
       <a href="orgstore/id=123" />
       <a href={`orgstore/id=${dialogRedirectOrgId}`} />
       <a href="api/v1/users" />
-      <img src="/assets/logo.png" alt="/assets/logo.png" />
+      <img src="/assets/logo.png" alt="" />
       <link href="data:image/png;base64,abc" />
 
       {/* JavaScript operators in expressions - should be skipped */}
-      <div>{age >= 10 && age <= 40 ? 'Adult' : 'Minor'}</div>
       <div>{age >= 18 && age <= 40}</div>
+      <div>{age === 25 || age !== 30}</div>
     </div>
   );
 }

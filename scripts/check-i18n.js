@@ -26,6 +26,8 @@ const USER_VISIBLE_ATTRS = [
   'alt',
   'label',
   'aria-placeholder',
+  'aria-valuetext',
+  'aria-roledescription',
 ];
 
 // Attributes that should never be checked (CSS, routing, technical attributes)
@@ -77,7 +79,6 @@ const NON_USER_VISIBLE_ATTRS = [
   'aria-valuemin',
   'aria-valuemax',
   'aria-valuenow',
-  'aria-valuetext',
   'aria-sort',
   'aria-readonly',
   'aria-multiline',
@@ -98,7 +99,6 @@ const NON_USER_VISIBLE_ATTRS = [
   'aria-errormessage',
   'aria-flowto',
   'aria-keyshortcuts',
-  'aria-roledescription',
   'aria-rowindextext',
   'aria-colindextext',
 ];
@@ -143,18 +143,11 @@ const stripComments = (content) =>
 
 // Check if a line has an ignore comment
 const hasIgnoreComment = (originalLines, lineIndex) => {
-  // Check current line and previous line for ignore comments
-  const ignorePatterns = [
-    /\/\/\s*i18n-ignore-line/i,
-    /\/\/\s*i18n-ignore-next-line/i,
-  ];
-
   // Check current line
   if (lineIndex < originalLines.length) {
     const currentLine = originalLines[lineIndex];
-    if (ignorePatterns.some((pattern) => pattern.test(currentLine))) {
-      return true;
-    }
+    // Only i18n-ignore-line applies to current line
+    if (/\/\/\s*i18n-ignore-line/i.test(currentLine)) return true;
   }
 
   // Check previous line (for i18n-ignore-next-line)
@@ -197,7 +190,7 @@ const looksLikeDateFormat = (text) => {
   const dateFormatPatterns = [
     /^[YMDHmsS]+([\/\-\s:\.][YMDHmsS]+)+$/i, // YYYY-MM-DD, MM/DD/YYYY, HH:mm:ss
     /^[YMDHmsS]+\[[^\]]+\][YMDHmsS]*$/i, // YYYY-MM-DDTHH:mm:ss.SSS[Z]
-    /^[a-z]+$/i, // Single format token like "short", "long" (for Intl.DateTimeFormat)
+    /^(short|long|narrow|numeric|2-digit|full|medium)$/i, // Intl.DateTimeFormat tokens
   ];
   return dateFormatPatterns.some((pattern) => pattern.test(trimmed));
 };
@@ -208,7 +201,7 @@ const looksLikeRegexPattern = (text) => {
   // Common regex patterns (character classes, quantifiers, anchors, etc.)
   if (/^[.*+?^${}()|[\]\\\/\-]+$/.test(trimmed)) return true;
   // Patterns with common regex syntax
-  if (/^[^]*[\^$.*+?{}()[\]|\\][^]*$/.test(trimmed)) return true;
+  if (/[\^$.*+?{}()[\]|\\]/.test(trimmed)) return true;
   return false;
 };
 
@@ -387,13 +380,90 @@ const collectViolations = (filePath) => {
       }
     }
 
+    // Multi-line JSX text detection
+    // Check if current line is text content between JSX tags (not on same line as tags)
+    if (idx > 0 && idx < lines.length - 1) {
+      const prevLine = lines[idx - 1];
+      const nextLine = lines[idx + 1];
+      const trimmedLine = line.trim();
+
+      // Check if we're between JSX tags:
+      // - Previous line ends with > (opening tag)
+      // - Current line has text (not empty, not starting with <)
+      // - Next line starts with </ (closing tag) or current line ends with </
+      const prevEndsWithTag = />\s*$/.test(prevLine);
+      const nextStartsWithClosingTag = /^\s*<\//.test(nextLine);
+      const lineEndsWithClosingTag = /<\//.test(line);
+      const isTextLine =
+        trimmedLine.length > 0 &&
+        !trimmedLine.startsWith('<') &&
+        !trimmedLine.startsWith('{') &&
+        !trimmedLine.startsWith('//') &&
+        !trimmedLine.startsWith('/*');
+
+      if (
+        prevEndsWithTag &&
+        isTextLine &&
+        (nextStartsWithClosingTag || lineEndsWithClosingTag)
+      ) {
+        // This line is JSX text content between tags
+        const text = trimmedLine;
+        const matchIndex = line.indexOf(text);
+
+        // Skip if in a context that should be ignored
+        if (!isInSkipContext(line, matchIndex)) {
+          // Skip if this looks like JavaScript code
+          if (
+            !/(>=|<=|==|!=|===|!==|&&|\|\|)\s*\d+/.test(text) &&
+            !/\d+\s*(>=|<=|==|!=|===|!==|&&|\|\|)/.test(text) &&
+            !/(return|const|let|var|if|while|for)\s+.*(>=|<=|==|!=|===|!==)/.test(
+              prevLine,
+            )
+          ) {
+            if (!isAllowedString(text)) {
+              violations.push({ line: lineNumber, text });
+            }
+          }
+        }
+      }
+    }
+
     // Template literals in JSX expressions with hardcoded text
     // But only if they're not in className, style, or routing attributes
-    const templateLiteralRegex = /\{`([^`]*)`\}/g;
+    // Match template literals that appear inside JSX expressions {`...`} or standalone `...`
+    // We need to match individual template literals, not the entire JSX expression
+    const templateLiteralRegex = /`([^`]*)`/g;
     let templateMatch;
     while ((templateMatch = templateLiteralRegex.exec(line)) !== null) {
       const fullText = templateMatch[1];
       const matchIndex = templateMatch.index;
+
+      // Only process template literals that are inside JSX expressions (after {)
+      // or are clearly JSX content (not in strings, comments, etc.)
+      const beforeMatch = line.substring(0, matchIndex);
+      // Check if this template literal is inside a JSX expression { ... }
+      // Look backwards for an opening brace { that hasn't been closed
+      let braceCount = 0;
+      let foundJsxExpression = false;
+      for (let i = beforeMatch.length - 1; i >= 0; i--) {
+        if (beforeMatch[i] === '}') braceCount++;
+        else if (beforeMatch[i] === '{') {
+          if (braceCount === 0) {
+            foundJsxExpression = true;
+            break;
+          }
+          braceCount--;
+        }
+      }
+
+      // Skip if not in a JSX expression context (unless it's clearly user-visible)
+      if (!foundJsxExpression) {
+        // Still check if it's in a JSX attribute context
+        const afterMatch = line.substring(matchIndex + templateMatch[0].length);
+        if (!/^\s*=/.test(afterMatch) && !/=\s*$/.test(beforeMatch)) {
+          continue;
+        }
+      }
 
       // Skip if in a context that should be ignored
       if (isInSkipContext(line, matchIndex)) {
@@ -405,7 +475,7 @@ const collectViolations = (filePath) => {
 
       // Also check if the line contains className=, style=, to=, etc. before this match
       // This is a fallback for cases where getAttributeName might not work perfectly
-      const beforeMatch = line.substring(0, matchIndex);
+      // (beforeMatch is already declared above)
       // Check for any non-user-visible attribute assignment before the template literal
       // Pattern: attributeName = { or attributeName = " or attributeName = '
       const hasNonUserVisibleAttr = NON_USER_VISIBLE_ATTRS.some((attr) => {
