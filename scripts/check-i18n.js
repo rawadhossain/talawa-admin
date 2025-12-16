@@ -430,13 +430,42 @@ const collectViolations = (filePath) => {
 
     // Template literals in JSX expressions with hardcoded text
     // But only if they're not in className, style, or routing attributes
-    // Match template literals that appear inside JSX expressions {`...`} or standalone `...`
-    // We need to match individual template literals, not the entire JSX expression
-    const templateLiteralRegex = /`([^`]*)`/g;
-    let templateMatch;
-    while ((templateMatch = templateLiteralRegex.exec(line)) !== null) {
-      const fullText = templateMatch[1];
-      const matchIndex = templateMatch.index;
+    // Handle nested template literals by tracking backtick depth
+    const templateLiterals = [];
+    let templateStart = -1;
+    let backtickDepth = 0;
+    let inTemplateLiteral = false;
+    
+    for (let i = 0; i < line.length; i++) {
+      if (line[i] === '`') {
+        if (!inTemplateLiteral) {
+          // Start of a template literal
+          templateStart = i;
+          inTemplateLiteral = true;
+          backtickDepth = 1;
+        } else {
+          // Check if this is a nested template literal opening ${`
+          if (i > 0 && line[i - 1] === '{' && i > 1 && line[i - 2] === '$') {
+            // Nested template literal opening ${`
+            backtickDepth++;
+          } else {
+            // Closing backtick
+            backtickDepth--;
+            if (backtickDepth === 0) {
+              // Complete template literal found
+              const fullText = line.substring(templateStart + 1, i);
+              templateLiterals.push({ fullText, matchIndex: templateStart });
+              inTemplateLiteral = false;
+            }
+          }
+        }
+      }
+    }
+    
+    // Process each complete template literal
+    for (const templateMatch of templateLiterals) {
+      const fullText = templateMatch.fullText;
+      const matchIndex = templateMatch.matchIndex;
 
       // Only process template literals that are inside JSX expressions (after {)
       // or are clearly JSX content (not in strings, comments, etc.)
@@ -459,7 +488,8 @@ const collectViolations = (filePath) => {
       // Skip if not in a JSX expression context (unless it's clearly user-visible)
       if (!foundJsxExpression) {
         // Still check if it's in a JSX attribute context
-        const afterMatch = line.substring(matchIndex + templateMatch[0].length);
+        const templateLength = fullText.length + 2; // +2 for backticks
+        const afterMatch = line.substring(matchIndex + templateLength);
         if (!/^\s*=/.test(afterMatch) && !/=\s*$/.test(beforeMatch)) {
           continue;
         }
@@ -475,7 +505,6 @@ const collectViolations = (filePath) => {
 
       // Also check if the line contains className=, style=, to=, etc. before this match
       // This is a fallback for cases where getAttributeName might not work perfectly
-      // (beforeMatch is already declared above)
       // Check for any non-user-visible attribute assignment before the template literal
       // Pattern: attributeName = { or attributeName = " or attributeName = '
       const hasNonUserVisibleAttr = NON_USER_VISIBLE_ATTRS.some((attr) => {
@@ -515,8 +544,14 @@ const collectViolations = (filePath) => {
         continue;
       }
 
-      // Strip out variables FIRST
-      const staticText = fullText.replace(/\$\{[^}]*\}/g, '').trim();
+      // Strip out variables FIRST (including nested template literals)
+      // Remove ${...} patterns, but be careful with nested backticks
+      let staticText = fullText;
+      // Remove simple ${var} patterns
+      staticText = staticText.replace(/\$\{[^}]*\}/g, '');
+      // Remove nested template literals ${`...`}
+      staticText = staticText.replace(/\$\{[^`]*`[^`]*`[^}]*\}/g, '');
+      staticText = staticText.trim();
 
       // If it's a URL-like pattern, allow it
       if (looksLikeUrl(staticText) || looksLikeUrl(fullText)) {

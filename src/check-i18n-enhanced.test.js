@@ -567,6 +567,25 @@ describe('check-i18n script - enhanced features', () => {
   });
 
   describe('Edge cases and boundary conditions', () => {
+    it('handles nested template literals correctly', () => {
+      const tmp = makeTempDir();
+      const file = writeTempFile(
+        tmp,
+        'nested-templates.tsx',
+        '<div>{`outer ${`inner`} text`}</div>',
+      );
+      const res = runScript([file]);
+      expect(res.status).toBe(1);
+      // Should flag the entire template literal content, not partial strings
+      expect(res.stdout).toContain('outer');
+      expect(res.stdout).toContain('inner');
+      expect(res.stdout).toContain('text');
+      // Should flag the complete template literal, not just "outer ${"
+      expect(res.stdout).toContain('outer ${`inner`} text');
+      // Should NOT flag incomplete strings like "outer ${" as a separate violation
+      expect(res.stdout).not.toMatch(/-> "outer \$\{$/);
+    });
+
     it('handles empty template literals', () => {
       const tmp = makeTempDir();
       const file = writeTempFile(tmp, 'empty-template.tsx', '<div>{``}</div>');
