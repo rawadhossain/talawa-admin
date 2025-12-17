@@ -4,7 +4,11 @@
 
 # Interface: IEventFormValues
 
-Defined in: [src/types/EventForm/interface.ts:3](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L3)
+Defined in: [src/types/EventForm/interface.ts:14](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L14)
+
+## Extends
+
+- `IEventFormBase`
 
 ## Properties
 
@@ -12,7 +16,11 @@ Defined in: [src/types/EventForm/interface.ts:3](https://github.com/PalisadoesFo
 
 > **allDay**: `boolean`
 
-Defined in: [src/types/EventForm/interface.ts:11](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L11)
+Defined in: [src/types/EventForm/interface.ts:7](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L7)
+
+#### Inherited from
+
+`IEventFormBase.allDay`
 
 ***
 
@@ -20,7 +28,11 @@ Defined in: [src/types/EventForm/interface.ts:11](https://github.com/PalisadoesF
 
 > `optional` **createChat**: `boolean`
 
-Defined in: [src/types/EventForm/interface.ts:15](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L15)
+Defined in: [src/types/EventForm/interface.ts:11](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L11)
+
+#### Inherited from
+
+`IEventFormBase.createChat`
 
 ***
 
@@ -30,13 +42,17 @@ Defined in: [src/types/EventForm/interface.ts:15](https://github.com/PalisadoesF
 
 Defined in: [src/types/EventForm/interface.ts:5](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L5)
 
+#### Inherited from
+
+`IEventFormBase.description`
+
 ***
 
 ### endDate
 
 > **endDate**: `Date`
 
-Defined in: [src/types/EventForm/interface.ts:8](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L8)
+Defined in: [src/types/EventForm/interface.ts:16](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L16)
 
 ***
 
@@ -44,7 +60,7 @@ Defined in: [src/types/EventForm/interface.ts:8](https://github.com/PalisadoesFo
 
 > **endTime**: `string`
 
-Defined in: [src/types/EventForm/interface.ts:10](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L10)
+Defined in: [src/types/EventForm/interface.ts:18](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L18)
 
 ***
 
@@ -52,7 +68,11 @@ Defined in: [src/types/EventForm/interface.ts:10](https://github.com/PalisadoesF
 
 > **isPublic**: `boolean`
 
-Defined in: [src/types/EventForm/interface.ts:12](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L12)
+Defined in: [src/types/EventForm/interface.ts:8](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L8)
+
+#### Inherited from
+
+`IEventFormBase.isPublic`
 
 ***
 
@@ -60,7 +80,11 @@ Defined in: [src/types/EventForm/interface.ts:12](https://github.com/PalisadoesF
 
 > **isRegisterable**: `boolean`
 
-Defined in: [src/types/EventForm/interface.ts:13](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L13)
+Defined in: [src/types/EventForm/interface.ts:9](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L9)
+
+#### Inherited from
+
+`IEventFormBase.isRegisterable`
 
 ***
 
@@ -70,6 +94,10 @@ Defined in: [src/types/EventForm/interface.ts:13](https://github.com/PalisadoesF
 
 Defined in: [src/types/EventForm/interface.ts:6](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L6)
 
+#### Inherited from
+
+`IEventFormBase.location`
+
 ***
 
 ### name
@@ -78,13 +106,21 @@ Defined in: [src/types/EventForm/interface.ts:6](https://github.com/PalisadoesFo
 
 Defined in: [src/types/EventForm/interface.ts:4](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L4)
 
+#### Inherited from
+
+`IEventFormBase.name`
+
 ***
 
 ### recurrenceRule
 
 > **recurrenceRule**: [`InterfaceRecurrenceRule`](../../../../utils/recurrenceUtils/recurrenceTypes/interfaces/InterfaceRecurrenceRule.md)
 
-Defined in: [src/types/EventForm/interface.ts:14](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L14)
+Defined in: [src/types/EventForm/interface.ts:10](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L10)
+
+#### Inherited from
+
+`IEventFormBase.recurrenceRule`
 
 ***
 
@@ -92,7 +128,7 @@ Defined in: [src/types/EventForm/interface.ts:14](https://github.com/PalisadoesF
 
 > **startDate**: `Date`
 
-Defined in: [src/types/EventForm/interface.ts:7](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L7)
+Defined in: [src/types/EventForm/interface.ts:15](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L15)
 
 ***
 
@@ -100,4 +136,4 @@ Defined in: [src/types/EventForm/interface.ts:7](https://github.com/PalisadoesFo
 
 > **startTime**: `string`
 
-Defined in: [src/types/EventForm/interface.ts:9](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L9)
+Defined in: [src/types/EventForm/interface.ts:17](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L17)

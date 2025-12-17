@@ -4,7 +4,7 @@
 
 # Interface: IEventFormProps
 
-Defined in: [src/types/EventForm/interface.ts:33](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L33)
+Defined in: [src/types/EventForm/interface.ts:28](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L28)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/types/EventForm/interface.ts:33](https://github.com/PalisadoesF
 
 > `optional` **disableRecurrence**: `boolean`
 
-Defined in: [src/types/EventForm/interface.ts:43](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L43)
+Defined in: [src/types/EventForm/interface.ts:38](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L38)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: [src/types/EventForm/interface.ts:43](https://github.com/PalisadoesF
 
 > **initialValues**: [`IEventFormValues`](IEventFormValues.md)
 
-Defined in: [src/types/EventForm/interface.ts:34](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L34)
+Defined in: [src/types/EventForm/interface.ts:29](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L29)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [src/types/EventForm/interface.ts:34](https://github.com/PalisadoesF
 
 > **onCancel**: () => `void`
 
-Defined in: [src/types/EventForm/interface.ts:36](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L36)
+Defined in: [src/types/EventForm/interface.ts:31](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L31)
 
 #### Returns
 
@@ -40,7 +40,7 @@ Defined in: [src/types/EventForm/interface.ts:36](https://github.com/PalisadoesF
 
 > **onSubmit**: (`payload`) => `void` \| `Promise`\<`void`\>
 
-Defined in: [src/types/EventForm/interface.ts:35](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L35)
+Defined in: [src/types/EventForm/interface.ts:30](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L30)
 
 #### Parameters
 
@@ -58,7 +58,7 @@ Defined in: [src/types/EventForm/interface.ts:35](https://github.com/PalisadoesF
 
 > `optional` **showCreateChat**: `boolean`
 
-Defined in: [src/types/EventForm/interface.ts:40](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L40)
+Defined in: [src/types/EventForm/interface.ts:35](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L35)
 
 ***
 
@@ -66,7 +66,7 @@ Defined in: [src/types/EventForm/interface.ts:40](https://github.com/PalisadoesF
 
 > `optional` **showPublicToggle**: `boolean`
 
-Defined in: [src/types/EventForm/interface.ts:42](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L42)
+Defined in: [src/types/EventForm/interface.ts:37](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L37)
 
 ***
 
@@ -74,7 +74,7 @@ Defined in: [src/types/EventForm/interface.ts:42](https://github.com/PalisadoesF
 
 > `optional` **showRecurrenceToggle**: `boolean`
 
-Defined in: [src/types/EventForm/interface.ts:45](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L45)
+Defined in: [src/types/EventForm/interface.ts:40](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L40)
 
 ***
 
@@ -82,7 +82,7 @@ Defined in: [src/types/EventForm/interface.ts:45](https://github.com/PalisadoesF
 
 > `optional` **showRegisterable**: `boolean`
 
-Defined in: [src/types/EventForm/interface.ts:41](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L41)
+Defined in: [src/types/EventForm/interface.ts:36](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L36)
 
 ***
 
@@ -90,7 +90,7 @@ Defined in: [src/types/EventForm/interface.ts:41](https://github.com/PalisadoesF
 
 > **submitLabel**: `string`
 
-Defined in: [src/types/EventForm/interface.ts:37](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L37)
+Defined in: [src/types/EventForm/interface.ts:32](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L32)
 
 ***
 
@@ -98,7 +98,7 @@ Defined in: [src/types/EventForm/interface.ts:37](https://github.com/PalisadoesF
 
 > `optional` **submitting**: `boolean`
 
-Defined in: [src/types/EventForm/interface.ts:44](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L44)
+Defined in: [src/types/EventForm/interface.ts:39](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L39)
 
 ***
 
@@ -106,7 +106,7 @@ Defined in: [src/types/EventForm/interface.ts:44](https://github.com/PalisadoesF
 
 > **t**: (`key`, `options?`) => `string`
 
-Defined in: [src/types/EventForm/interface.ts:38](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L38)
+Defined in: [src/types/EventForm/interface.ts:33](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L33)
 
 #### Parameters
 
@@ -128,7 +128,7 @@ Defined in: [src/types/EventForm/interface.ts:38](https://github.com/PalisadoesF
 
 > **tCommon**: (`key`, `options?`) => `string`
 
-Defined in: [src/types/EventForm/interface.ts:39](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L39)
+Defined in: [src/types/EventForm/interface.ts:34](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L34)
 
 #### Parameters
 
