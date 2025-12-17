@@ -1,13 +1,9 @@
 import type { InterfaceRecurrenceRule } from 'utils/recurrenceUtils';
 
-export interface IEventFormValues {
+interface IEventFormBase {
   name: string;
   description: string;
   location: string;
-  startDate: Date;
-  endDate: Date;
-  startTime: string;
-  endTime: string;
   allDay: boolean;
   isPublic: boolean;
   isRegisterable: boolean;
@@ -15,15 +11,14 @@ export interface IEventFormValues {
   createChat?: boolean;
 }
 
-export interface IEventFormSubmitPayload {
-  name: string;
-  description: string;
-  location: string;
-  allDay: boolean;
-  isPublic: boolean;
-  isRegisterable: boolean;
-  recurrenceRule: InterfaceRecurrenceRule | null;
-  createChat?: boolean;
+export interface IEventFormValues extends IEventFormBase {
+  startDate: Date;
+  endDate: Date;
+  startTime: string;
+  endTime: string;
+}
+
+export interface IEventFormSubmitPayload extends IEventFormBase {
   startAtISO: string;
   endAtISO: string;
   startDate: Date;

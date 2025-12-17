@@ -424,14 +424,16 @@ const CustomRecurrenceModal: React.FC<InterfaceCustomRecurrenceModalProps> = ({
               <br />
               <div className="mx-2 mt-3 d-flex gap-1">
                 {daysOptions.map((day, index) => (
-                  <div
+                  <button
                     key={index}
+                    type="button"
                     className={`${styles.recurrenceDayButton} ${byDay?.includes(Days[index]) ? styles.selected : ''}`}
                     onClick={() => handleDayClick(Days[index])}
                     data-testid="recurrenceWeekDay"
+                    aria-pressed={byDay?.includes(Days[index])}
                   >
                     <span>{day}</span>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
