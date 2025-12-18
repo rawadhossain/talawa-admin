@@ -193,7 +193,7 @@ const EventForm: React.FC<IEventFormProps> = ({
       : dayjs(formState.startDate)
           .hour(parseInt(startTimeParts[0]))
           .minute(parseInt(startTimeParts[1]))
-          .second(parseInt(startTimeParts[2]))
+          .second(parseInt(startTimeParts[2]) || 0)
           .format('YYYY-MM-DDTHH:mm:ss.SSS[Z]');
 
     const endAtISO = formState.allDay
@@ -203,7 +203,7 @@ const EventForm: React.FC<IEventFormProps> = ({
       : dayjs(formState.endDate)
           .hour(parseInt(endTimeParts[0]))
           .minute(parseInt(endTimeParts[1]))
-          .second(parseInt(endTimeParts[2]))
+          .second(parseInt(endTimeParts[2]) || 0)
           .format('YYYY-MM-DDTHH:mm:ss.SSS[Z]');
 
     if (recurrenceEnabled && formState.recurrenceRule) {
@@ -260,10 +260,10 @@ const EventForm: React.FC<IEventFormProps> = ({
   return (
     <>
       <Form onSubmit={handleSubmit}>
-        <label htmlFor="eventName">{t('eventName')}</label>
+        <label htmlFor="eventitle">{t('eventName')}</label>
         <Form.Control
           type="text"
-          id="eventitle"
+          id="eventName"
           placeholder={t('enterName')}
           data-testid="eventTitleInput"
           data-cy="eventTitleInput"
@@ -562,6 +562,13 @@ const EventForm: React.FC<IEventFormProps> = ({
   );
 };
 
+/**
+ * Formats a recurrence rule for API submission.
+ * @param recurrenceRule - The recurrence rule to format
+ * @param startDate - The event start date
+ * @returns The formatted recurrence string or null
+ * @throws Error if the recurrence rule is invalid
+ */
 export const formatRecurrenceForPayload = (
   recurrenceRule: InterfaceRecurrenceRule | null,
   startDate: Date,

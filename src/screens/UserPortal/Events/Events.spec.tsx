@@ -809,7 +809,7 @@ describe('Testing Events Screen [User Portal]', () => {
       expect(screen.getByTestId('eventTitleInput')).toBeInTheDocument();
     });
 
-    await userEvent.click(screen.getByTestId('allDayEventCheck'));
+    await userEvent.click(screen.getByTestId('alldayCheck'));
 
     const newDateSet = dayjs(new Date());
     const startDatePicker = screen.getByLabelText('Start Date');
@@ -927,25 +927,25 @@ describe('Testing Events Screen [User Portal]', () => {
     // Open modal
     await userEvent.click(screen.getByTestId('createEventModalBtn'));
 
-    const allDayCheckbox = await screen.findByTestId('allDayEventCheck');
+    const allDayCheckbox = await screen.findByTestId('alldayCheck');
 
-    const startTimeInput = screen.getByLabelText(
-      'Start Time',
-    ) as HTMLInputElement;
-    const endTimeInput = screen.getByLabelText('End Time') as HTMLInputElement;
-
-    // BEFORE toggle → disabled
-    expect(startTimeInput).toBeDisabled();
-    expect(endTimeInput).toBeDisabled();
+    // When all-day is enabled, time pickers are not rendered at all
+    expect(screen.queryByLabelText('Start Time')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('End Time')).not.toBeInTheDocument();
 
     // Toggle all-day OFF
     await userEvent.click(allDayCheckbox);
 
-    // AFTER toggle → enabled
-    await waitFor(() => {
-      expect(startTimeInput).not.toBeDisabled();
-      expect(endTimeInput).not.toBeDisabled();
-    });
+    const startTimeInput = (await screen.findByLabelText(
+      'Start Time',
+    )) as HTMLInputElement;
+    const endTimeInput = (await screen.findByLabelText(
+      'End Time',
+    )) as HTMLInputElement;
+
+    // AFTER toggle → visible + enabled
+    expect(startTimeInput).not.toBeDisabled();
+    expect(endTimeInput).not.toBeDisabled();
 
     // Optional sanity: values unchanged
     expect(startTimeInput.value).toBe('08:00:00');
@@ -975,23 +975,23 @@ describe('Testing Events Screen [User Portal]', () => {
     await userEvent.click(screen.getByTestId('createEventModalBtn'));
 
     await waitFor(() => {
-      expect(screen.getByTestId('publicEventCheck')).toBeInTheDocument();
+      expect(screen.getByTestId('ispublicCheck')).toBeInTheDocument();
     });
 
     // Toggle all checkboxes
-    await userEvent.click(screen.getByTestId('publicEventCheck'));
-    await userEvent.click(screen.getByTestId('registerableEventCheck'));
+    await userEvent.click(screen.getByTestId('ispublicCheck'));
+    await userEvent.click(screen.getByTestId('registrableCheck'));
     await userEvent.click(screen.getByTestId('recurringEventCheck'));
     await userEvent.click(screen.getByTestId('createChatCheck'));
 
     // Toggle back
-    await userEvent.click(screen.getByTestId('publicEventCheck'));
-    await userEvent.click(screen.getByTestId('registerableEventCheck'));
+    await userEvent.click(screen.getByTestId('ispublicCheck'));
+    await userEvent.click(screen.getByTestId('registrableCheck'));
     await userEvent.click(screen.getByTestId('recurringEventCheck'));
     await userEvent.click(screen.getByTestId('createChatCheck'));
 
     // All toggles should work without errors
-    expect(screen.getByTestId('publicEventCheck')).toBeInTheDocument();
+    expect(screen.getByTestId('ispublicCheck')).toBeInTheDocument();
   });
 
   it('Should handle date picker changes', async () => {
@@ -1061,11 +1061,11 @@ describe('Testing Events Screen [User Portal]', () => {
     await userEvent.click(screen.getByTestId('createEventModalBtn'));
 
     await waitFor(() => {
-      expect(screen.getByTestId('allDayEventCheck')).toBeInTheDocument();
+      expect(screen.getByTestId('alldayCheck')).toBeInTheDocument();
     });
 
     // Disable all-day
-    await userEvent.click(screen.getByTestId('allDayEventCheck'));
+    await userEvent.click(screen.getByTestId('alldayCheck'));
 
     await waitFor(() => {
       const startTimePicker = getPickerInputByLabel('Start Time');
