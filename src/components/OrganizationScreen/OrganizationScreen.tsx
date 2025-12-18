@@ -99,18 +99,19 @@ const OrganizationScreen = (): JSX.Element => {
       setEventName(null);
       return;
     }
-
-    const edges = eventsData?.organization?.events?.edges ?? [];
+    // Wait until event data has been fetched before attempting lookup
+    if (!eventsData?.organization?.events) {
+      return;
+    }
+    const edges = eventsData.organization.events.edges ?? [];
     const matched = edges.find((edge: { node?: { id?: string } }) => {
       return edge?.node?.id === eventId;
     });
-
     if (!matched?.node?.id) {
       console.warn(`Event with id ${eventId} not found`);
       setEventName(null);
       return;
     }
-
     setEventName(matched.node.name ?? null);
   }, [eventId, eventsData]);
 

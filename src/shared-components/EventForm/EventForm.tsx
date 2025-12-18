@@ -248,19 +248,22 @@ const EventForm: React.FC<IEventFormProps> = ({
 
   const toggleRecurrence = (): void => {
     if (disableRecurrence || !showRecurrenceToggle) return;
-    setRecurrenceEnabled((prev) => !prev);
-    if (recurrenceEnabled) {
-      setFormState((prev) => ({
-        ...prev,
-        recurrenceRule: null,
-      }));
-    }
+    setRecurrenceEnabled((prev) => {
+      // Clear recurrence rule when disabling (prev was true, becoming false)
+      if (prev) {
+        setFormState((formPrev) => ({
+          ...formPrev,
+          recurrenceRule: null,
+        }));
+      }
+      return !prev;
+    });
   };
 
   return (
     <>
       <Form onSubmit={handleSubmit}>
-        <label htmlFor="eventitle">{t('eventName')}</label>
+        <label htmlFor="eventName">{t('eventName')}</label>
         <Form.Control
           type="text"
           id="eventName"
@@ -466,7 +469,7 @@ const EventForm: React.FC<IEventFormProps> = ({
                 <Dropdown.Menu>
                   {recurrenceOptions.map((option, index) => (
                     <Dropdown.Item
-                      key={index}
+                      key={option.label}
                       onClick={() =>
                         handleRecurrenceSelect({
                           ...option,
@@ -510,6 +513,7 @@ const EventForm: React.FC<IEventFormProps> = ({
             className={styles.addButton}
             value="createevent"
             data-testid="createEventBtn"
+            data-cy="createEventBtn"
             disabled={submitting}
           >
             {submitLabel}
