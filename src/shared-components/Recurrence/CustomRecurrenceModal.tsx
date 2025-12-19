@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Dropdown, Form, FormControl, Modal } from 'react-bootstrap';
+import { toast } from 'react-toastify';
 import styles from '../../style/app-fixed.module.css';
 import { DatePicker } from '@mui/x-date-pickers';
 import {
@@ -49,6 +50,51 @@ export interface InterfaceCustomRecurrenceModalProps {
   startDate: Date;
 }
 
+/**
+ * CustomRecurrenceModal Component
+ *
+ * A shared modal component for configuring custom recurrence rules for events.
+ * This component is used by both Admin and User portals via the shared EventForm.
+ *
+ * @component
+ * @param {InterfaceCustomRecurrenceModalProps} props - The props for the component
+ * @param {InterfaceRecurrenceRule} props.recurrenceRuleState - Current recurrence rule state
+ * @param {(state: React.SetStateAction<InterfaceRecurrenceRule>) => void} props.setRecurrenceRuleState - Function to update recurrence rule state
+ * @param {Date | null} props.endDate - Event end date
+ * @param {(state: React.SetStateAction<Date | null>) => void} props.setEndDate - Function to set event end date
+ * @param {boolean} props.customRecurrenceModalIsOpen - Whether the modal is open
+ * @param {() => void} props.hideCustomRecurrenceModal - Function to hide the modal
+ * @param {(state: React.SetStateAction<boolean>) => void} props.setCustomRecurrenceModalIsOpen - Function to set modal open state
+ * @param {(key: string) => string} props.t - Translation function
+ * @param {Date} props.startDate - Event start date
+ *
+ * @returns {React.ReactElement} The rendered CustomRecurrenceModal component
+ *
+ * @remarks
+ * - Supports daily, weekly, monthly, and yearly recurrence frequencies
+ * - Allows configuration of interval (every N days/weeks/months/years)
+ * - Weekly recurrence supports day-of-week selection
+ * - Monthly recurrence supports by-date or by-weekday options
+ * - End conditions: never, on specific date, or after N occurrences
+ * - Includes comprehensive ARIA attributes for accessibility
+ * - Supports keyboard navigation for weekday selection
+ * - Includes data-cy attributes for E2E testing
+ *
+ * @example
+ * ```tsx
+ * <CustomRecurrenceModal
+ *   recurrenceRuleState={recurrenceRule}
+ *   setRecurrenceRuleState={setRecurrenceRule}
+ *   endDate={eventEndDate}
+ *   setEndDate={setEventEndDate}
+ *   customRecurrenceModalIsOpen={isOpen}
+ *   hideCustomRecurrenceModal={() => setIsOpen(false)}
+ *   setCustomRecurrenceModalIsOpen={setIsOpen}
+ *   t={t}
+ *   startDate={eventStartDate}
+ * />
+ * ```
+ */
 const CustomRecurrenceModal: React.FC<InterfaceCustomRecurrenceModalProps> = ({
   recurrenceRuleState,
   setRecurrenceRuleState,
@@ -116,7 +162,13 @@ const CustomRecurrenceModal: React.FC<InterfaceCustomRecurrenceModalProps> = ({
 
   /**
    * Generates monthly recurrence options based on the start date
-   * @returns Object containing monthly recurrence display strings and values
+   * @returns {Object} Object containing monthly recurrence display strings and values
+   * @returns {string} returns.byDate - Display string for by-date option (e.g., "Monthly on day 15")
+   * @returns {string} returns.byWeekday - Display string for by-weekday option (e.g., "Monthly on the third Wednesday")
+   * @returns {number} returns.dateValue - The day of the month (1-31)
+   * @returns {Object} returns.weekdayValue - Object with week number and day
+   * @returns {number} returns.weekdayValue.week - Week number within the month (1-5)
+   * @returns {WeekDays} returns.weekdayValue.day - The weekday enum value
    */
   const getMonthlyOptions = () => {
     const eventDate = new Date(startDate);
@@ -132,6 +184,10 @@ const CustomRecurrenceModal: React.FC<InterfaceCustomRecurrenceModalProps> = ({
     };
   };
 
+  /**
+   * Synchronizes the selected recurrence end option when the recurrence rule's endDate changes
+   * Automatically selects "endsOn" option if endDate is set and neither never nor count are set
+   */
   useEffect(() => {
     // Update selected end option when recurrence rule's endDate changes
     if (recurrenceRuleState.endDate && !never && !count) {
@@ -279,6 +335,39 @@ const CustomRecurrenceModal: React.FC<InterfaceCustomRecurrenceModalProps> = ({
   };
 
   /**
+   * Handles keyboard navigation for weekday buttons
+   * @param e - The keyboard event
+   * @param currentIndex - The current day button index
+   */
+  const handleWeekdayKeyDown = (
+    e: React.KeyboardEvent<HTMLButtonElement>,
+    currentIndex: number,
+  ): void => {
+    const total = daysOptions.length;
+    let newIndex = currentIndex;
+
+    if (e.key === 'ArrowLeft') {
+      newIndex = (currentIndex - 1 + total) % total;
+    } else if (e.key === 'ArrowRight') {
+      newIndex = (currentIndex + 1) % total;
+    } else if (e.key === 'Home') {
+      newIndex = 0;
+    } else if (e.key === 'End') {
+      newIndex = total - 1;
+    } else {
+      return; // Not a navigation key, let default behavior handle it
+    }
+
+    e.preventDefault();
+    const button = document.querySelector(
+      `[data-cy="recurrenceWeekDay-${newIndex}"]`,
+    ) as HTMLButtonElement;
+    if (button) {
+      button.focus();
+    }
+  };
+
+  /**
    * Handles submission of the custom recurrence modal
    * Validates inputs and updates the recurrence rule state
    */
@@ -290,7 +379,10 @@ const CustomRecurrenceModal: React.FC<InterfaceCustomRecurrenceModalProps> = ({
         ? parseInt(localInterval)
         : localInterval;
     if (isNaN(parsedInterval) || parsedInterval < 1) {
-      console.error('Invalid interval:', localInterval);
+      toast.error(
+        t('invalidDetailsMessage') ||
+          'Please enter a valid interval (must be at least 1)',
+      );
       return;
     }
     finalRule.interval = parsedInterval;
@@ -317,7 +409,10 @@ const CustomRecurrenceModal: React.FC<InterfaceCustomRecurrenceModalProps> = ({
       const parsedCount =
         typeof localCount === 'string' ? parseInt(localCount) : localCount;
       if (isNaN(parsedCount) || parsedCount < 1) {
-        console.error('Invalid count:', localCount);
+        toast.error(
+          t('invalidDetailsMessage') ||
+            'Please enter a valid occurrence count (must be at least 1)',
+        );
         return;
       }
 
@@ -339,13 +434,19 @@ const CustomRecurrenceModal: React.FC<InterfaceCustomRecurrenceModalProps> = ({
         show={customRecurrenceModalIsOpen}
         onHide={hideCustomRecurrenceModal}
         centered
+        aria-labelledby="custom-recurrence-modal-title"
+        aria-modal="true"
       >
         <Modal.Header>
-          <p className={styles.titlemodal}>{t('customRecurrence')}</p>
+          <p id="custom-recurrence-modal-title" className={styles.titlemodal}>
+            {t('customRecurrence')}
+          </p>
           <Button
             variant="danger"
             onClick={hideCustomRecurrenceModal}
             data-testid="customRecurrenceModalCloseBtn"
+            data-cy="customRecurrenceModalCloseBtn"
+            aria-label={t('close')}
           >
             <i className="fa fa-times"></i>
           </Button>
@@ -375,6 +476,9 @@ const CustomRecurrenceModal: React.FC<InterfaceCustomRecurrenceModalProps> = ({
               min="1"
               className={`${styles.recurrenceRuleNumberInput} ms-2 d-inline-block py-2`}
               data-testid="customRecurrenceIntervalInput"
+              data-cy="customRecurrenceIntervalInput"
+              aria-label={t('repeatsEvery')}
+              aria-required="true"
               placeholder="1"
             />
             <Dropdown className="ms-3 d-inline-block">
@@ -383,6 +487,8 @@ const CustomRecurrenceModal: React.FC<InterfaceCustomRecurrenceModalProps> = ({
                 variant="outline-secondary"
                 id="dropdown-basic"
                 data-testid="customRecurrenceFrequencyDropdown"
+                data-cy="customRecurrenceFrequencyDropdown"
+                aria-label={t('frequency')}
               >
                 {frequencies[frequency]}
               </Dropdown.Toggle>
@@ -391,24 +497,28 @@ const CustomRecurrenceModal: React.FC<InterfaceCustomRecurrenceModalProps> = ({
                 <Dropdown.Item
                   onClick={() => handleFrequencyChange(Frequency.DAILY)}
                   data-testid="customDailyRecurrence"
+                  data-cy="customDailyRecurrence"
                 >
                   {t('day')}
                 </Dropdown.Item>
                 <Dropdown.Item
                   onClick={() => handleFrequencyChange(Frequency.WEEKLY)}
                   data-testid="customWeeklyRecurrence"
+                  data-cy="customWeeklyRecurrence"
                 >
                   {t('week')}
                 </Dropdown.Item>
                 <Dropdown.Item
                   onClick={() => handleFrequencyChange(Frequency.MONTHLY)}
                   data-testid="customMonthlyRecurrence"
+                  data-cy="customMonthlyRecurrence"
                 >
                   {t('month')}
                 </Dropdown.Item>
                 <Dropdown.Item
                   onClick={() => handleFrequencyChange(Frequency.YEARLY)}
                   data-testid="customYearlyRecurrence"
+                  data-cy="customYearlyRecurrence"
                 >
                   {t('year')}
                 </Dropdown.Item>
@@ -422,15 +532,31 @@ const CustomRecurrenceModal: React.FC<InterfaceCustomRecurrenceModalProps> = ({
                 {t('repeatsOn')}
               </span>
               <br />
-              <div className="mx-2 mt-3 d-flex gap-1">
+              <div
+                className="mx-2 mt-3 d-flex gap-1"
+                role="group"
+                aria-label={t('repeatsOn')}
+              >
                 {daysOptions.map((day, index) => (
                   <button
                     key={index}
                     type="button"
                     className={`${styles.recurrenceDayButton} ${byDay?.includes(Days[index]) ? styles.selected : ''}`}
                     onClick={() => handleDayClick(Days[index])}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleDayClick(Days[index]);
+                      } else {
+                        handleWeekdayKeyDown(e, index);
+                      }
+                    }}
                     data-testid="recurrenceWeekDay"
+                    data-cy={`recurrenceWeekDay-${index}`}
                     aria-pressed={byDay?.includes(Days[index])}
+                    aria-label={`${t('select')} ${day}`}
+                    role="button"
+                    tabIndex={0}
                   >
                     <span>{day}</span>
                   </button>
@@ -453,6 +579,8 @@ const CustomRecurrenceModal: React.FC<InterfaceCustomRecurrenceModalProps> = ({
                     variant="outline-secondary"
                     id="monthly-dropdown"
                     data-testid="monthlyRecurrenceDropdown"
+                    data-cy="monthlyRecurrenceDropdown"
+                    aria-label={t('monthlyOn')}
                   >
                     {recurrenceRuleState.byDay
                       ? getMonthlyOptions().byWeekday
@@ -469,6 +597,7 @@ const CustomRecurrenceModal: React.FC<InterfaceCustomRecurrenceModalProps> = ({
                         }));
                       }}
                       data-testid="monthlyByDate"
+                      data-cy="monthlyByDate"
                     >
                       {getMonthlyOptions().byDate}
                     </Dropdown.Item>
@@ -518,12 +647,16 @@ const CustomRecurrenceModal: React.FC<InterfaceCustomRecurrenceModalProps> = ({
                         onChange={handleRecurrenceEndOptionChange}
                         checked={option === selectedRecurrenceEndOption}
                         data-testid={`${option}`}
+                        data-cy={`recurrenceEndOption-${option}`}
+                        aria-label={t(option)}
                       />
 
                       {option === endsOn && (
                         <div className="ms-3">
                           <DatePicker
                             label={t('endDate')}
+                            data-testid="customRecurrenceEndDatePicker"
+                            data-cy="customRecurrenceEndDatePicker"
                             className={styles.recurrenceRuleDateBox}
                             disabled={selectedRecurrenceEndOption !== endsOn}
                             value={dayjs(
@@ -541,6 +674,11 @@ const CustomRecurrenceModal: React.FC<InterfaceCustomRecurrenceModalProps> = ({
                               }
                             }}
                             minDate={dayjs()}
+                            slotProps={{
+                              textField: {
+                                'aria-label': t('endDate'),
+                              },
+                            }}
                           />
                         </div>
                       )}
@@ -567,6 +705,13 @@ const CustomRecurrenceModal: React.FC<InterfaceCustomRecurrenceModalProps> = ({
                             className={`${styles.recurrenceRuleNumberInput} ms-1 me-2 d-inline-block py-2`}
                             disabled={selectedRecurrenceEndOption !== endsAfter}
                             data-testid="customRecurrenceCountInput"
+                            data-cy="customRecurrenceCountInput"
+                            aria-label={t('occurences')}
+                            aria-required={
+                              selectedRecurrenceEndOption === endsAfter
+                                ? 'true'
+                                : 'false'
+                            }
                             placeholder="1"
                           />{' '}
                           {t('occurences')}
@@ -584,7 +729,9 @@ const CustomRecurrenceModal: React.FC<InterfaceCustomRecurrenceModalProps> = ({
             <Button
               className={styles.recurrenceRuleSubmitBtn}
               data-testid="customRecurrenceSubmitBtn"
+              data-cy="customRecurrenceSubmitBtn"
               onClick={handleCustomRecurrenceSubmit}
+              aria-label={t('done')}
             >
               {t('done')}
             </Button>
