@@ -244,4 +244,50 @@ describe('Testing OrganizationScreen', () => {
       expect(eventNameElement.tagName).toBe('H4');
     });
   });
+
+  test('sets eventName to null when eventId is not provided', async () => {
+    // Set up mocks for valid orgId but no eventId (not on event path)
+    mockUseParams.mockReturnValue({ orgId: '123' });
+    // Return null to simulate not being on an event path
+    mockUseMatch.mockReturnValue(null);
+
+    renderComponent();
+
+    await waitFor(() => {
+      const mainPage = screen.getByTestId('mainpageright');
+      expect(mainPage).toBeInTheDocument();
+    });
+
+    // Verify that no event name is displayed (eventName should be null)
+    const eventNameElement = screen.queryByText(/Test Event Title/i);
+    expect(eventNameElement).not.toBeInTheDocument();
+
+    // Verify that the main page renders without event name
+    const h4Elements = screen.queryAllByRole('heading', { level: 4 });
+    expect(h4Elements.length).toBe(0);
+  });
+
+  test('sets eventName to null when eventId is undefined in match params', async () => {
+    // Set up mocks for valid orgId but eventId is undefined in params
+    mockUseParams.mockReturnValue({ orgId: '123' });
+    // Return a match object but with undefined eventId
+    mockUseMatch.mockReturnValue({
+      params: { orgId: '123', eventId: undefined },
+    });
+
+    renderComponent();
+
+    await waitFor(() => {
+      const mainPage = screen.getByTestId('mainpageright');
+      expect(mainPage).toBeInTheDocument();
+    });
+
+    // Verify that no event name is displayed (eventName should be null)
+    const eventNameElement = screen.queryByText(/Test Event Title/i);
+    expect(eventNameElement).not.toBeInTheDocument();
+
+    // Verify that the main page renders without event name
+    const h4Elements = screen.queryAllByRole('heading', { level: 4 });
+    expect(h4Elements.length).toBe(0);
+  });
 });

@@ -681,6 +681,127 @@ describe('CustomRecurrenceModal – full coverage', () => {
     expect(setCustomRecurrenceModalIsOpen).not.toHaveBeenCalled();
   });
 
+  it('uses fallback error message for invalid interval when translation returns falsy', async () => {
+    // Create a translation function that returns empty string for invalidDetailsMessage
+    // This will trigger the fallback message on line 321
+    const t = vi.fn((key: string) => {
+      if (key === 'invalidDetailsMessage') {
+        return ''; // Return falsy to trigger fallback
+      }
+      return key;
+    });
+
+    const { setCustomRecurrenceModalIsOpen } = renderModal({ t });
+    vi.clearAllMocks();
+
+    const intervalInput = screen.getByTestId(
+      'customRecurrenceIntervalInput',
+    ) as HTMLInputElement;
+
+    // Change input to invalid value '0'
+    await act(async () => {
+      fireEvent.change(intervalInput, {
+        target: { value: '0' },
+      });
+    });
+
+    // Wait for component to re-render with new state
+    await waitFor(() => {
+      expect(intervalInput.value).toBe('0');
+    });
+
+    // Clear previous calls to isolate this test
+    setCustomRecurrenceModalIsOpen.mockClear();
+    (toast.error as ReturnType<typeof vi.fn>).mockClear();
+
+    // Try to submit with invalid value
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('customRecurrenceSubmitBtn'));
+    });
+
+    // Wait for toast.error to be called
+    await waitFor(
+      () => {
+        expect(toast.error).toHaveBeenCalled();
+      },
+      { timeout: 2000 },
+    );
+
+    // Verify that toast.error was called with the fallback message (line 321)
+    expect(toast.error).toHaveBeenCalled();
+    const errorCall = (toast.error as ReturnType<typeof vi.fn>).mock
+      .calls[0][0];
+    expect(errorCall).toBe(
+      'Please enter a valid interval (must be at least 1)',
+    );
+
+    // Verify that modal is NOT closed when validation fails
+    expect(setCustomRecurrenceModalIsOpen).not.toHaveBeenCalled();
+  });
+
+  it('uses fallback error message for invalid count when translation returns falsy', async () => {
+    // Create a translation function that returns empty string for invalidDetailsMessage
+    // This will trigger the fallback message on line 352
+    const t = vi.fn((key: string) => {
+      if (key === 'invalidDetailsMessage') {
+        return ''; // Return falsy to trigger fallback
+      }
+      return key;
+    });
+
+    const { setCustomRecurrenceModalIsOpen } = renderModal({ t });
+    vi.clearAllMocks();
+
+    // Select endsAfter option
+    await act(async () => {
+      fireEvent.click(screen.getByTestId(endsAfter));
+    });
+
+    const countInput = screen.getByTestId(
+      'customRecurrenceCountInput',
+    ) as HTMLInputElement;
+
+    // Change count input to invalid value '0'
+    await act(async () => {
+      fireEvent.change(countInput, {
+        target: { value: '0' },
+      });
+    });
+
+    // Wait for component to re-render with new state
+    await waitFor(() => {
+      expect(countInput.value).toBe('0');
+    });
+
+    // Clear previous calls to isolate this test
+    setCustomRecurrenceModalIsOpen.mockClear();
+    (toast.error as ReturnType<typeof vi.fn>).mockClear();
+
+    // Try to submit with invalid value
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('customRecurrenceSubmitBtn'));
+    });
+
+    // Wait for toast.error to be called
+    await waitFor(
+      () => {
+        expect(toast.error).toHaveBeenCalled();
+      },
+      { timeout: 2000 },
+    );
+
+    // Verify that toast.error was called with the fallback message (line 352)
+    expect(toast.error).toHaveBeenCalled();
+    const errorCall = (toast.error as ReturnType<typeof vi.fn>).mock
+      .calls[0][0];
+    expect(errorCall).toBe(
+      'Please enter a valid occurrence count (must be at least 1)',
+    );
+
+    // Verify that modal is NOT closed when validation fails
+    expect(setCustomRecurrenceModalIsOpen).not.toHaveBeenCalled();
+  });
+
   it('handles endsOn with endDate prop', () => {
     const { setRecurrenceRuleState } = renderModal({
       endDate: new Date('2025-02-01'),
