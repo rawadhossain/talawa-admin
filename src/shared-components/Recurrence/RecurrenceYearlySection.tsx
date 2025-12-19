@@ -23,8 +23,7 @@ export const RecurrenceYearlySection: React.FC<
       <br />
       <div className="mx-2 mt-3">
         <span className="text-muted">
-          {monthNames[new Date(startDate).getMonth()]}{' '}
-          {new Date(startDate).getDate()}
+          {monthNames[startDate.getMonth()]} {startDate.getDate()}
         </span>
         <p className="small mt-1 text-muted mb-0">
           {t('yearlyRecurrenceDesc')}

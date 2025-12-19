@@ -343,16 +343,8 @@ export const getOrdinalString = (num: number): string => {
  * @returns The full day name
  */
 export const getDayName = (dayIndex: number): string => {
-  const days = [
-    'Sunday',
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-  ];
-  return days[dayIndex];
+  const dayValues = Object.values(WeekDays); // ['SU','MO','TU','WE','TH','FR','SA']
+  return dayNames[dayValues[dayIndex]];
 };
 
 /**
@@ -367,8 +359,8 @@ export const getMonthlyOptions = (startDate: Date) => {
   const weekOfMonth = getWeekOfMonth(eventDate);
 
   return {
-    byDate: `Monthly on day ${dayOfMonth}`,
-    byWeekday: `Monthly on the ${getOrdinalString(weekOfMonth)} ${getDayName(dayOfWeek)}`,
+    byDate: `Monthly on day ${dayOfMonth}`, // i18n-ignore-line
+    byWeekday: `Monthly on the ${getOrdinalString(weekOfMonth)} ${getDayName(dayOfWeek)}`, // i18n-ignore-line
     dateValue: dayOfMonth,
     weekdayValue: { week: weekOfMonth, day: Days[dayOfWeek] },
   };

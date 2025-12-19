@@ -124,11 +124,7 @@ export const RecurrenceEndOptionsSection: React.FC<
                       data-testid="customRecurrenceCountInput"
                       data-cy="customRecurrenceCountInput"
                       aria-label={t('occurences')}
-                      aria-required={
-                        selectedRecurrenceEndOption === endsAfter
-                          ? 'true'
-                          : 'false'
-                      }
+                      aria-required={selectedRecurrenceEndOption === endsAfter}
                       placeholder="1"
                     />{' '}
                     {t('occurences')}

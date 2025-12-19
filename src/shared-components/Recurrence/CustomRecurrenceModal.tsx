@@ -315,6 +315,7 @@ const CustomRecurrenceModal: React.FC<InterfaceCustomRecurrenceModalProps> = ({
         ? parseInt(localInterval)
         : localInterval;
     if (isNaN(parsedInterval) || parsedInterval < 1) {
+      console.error('Invalid interval:', localInterval);
       toast.error(
         t('invalidDetailsMessage') ||
           'Please enter a valid interval (must be at least 1)',
@@ -345,6 +346,7 @@ const CustomRecurrenceModal: React.FC<InterfaceCustomRecurrenceModalProps> = ({
       const parsedCount =
         typeof localCount === 'string' ? parseInt(localCount) : localCount;
       if (isNaN(parsedCount) || parsedCount < 1) {
+        console.error('Invalid count:', localCount);
         toast.error(
           t('invalidDetailsMessage') ||
             'Please enter a valid occurrence count (must be at least 1)',

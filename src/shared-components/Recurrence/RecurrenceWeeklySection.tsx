@@ -55,7 +55,6 @@ export const RecurrenceWeeklySection: React.FC<
             data-cy={`recurrenceWeekDay-${index}`}
             aria-pressed={byDay?.includes(Days[index])}
             aria-label={`${t('select')} ${day}`}
-            role="button"
             tabIndex={0}
           >
             <span>{day}</span>
