@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Dropdown, Form, FormControl, Modal } from 'react-bootstrap';
+import { Button, Modal } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import styles from '../../style/app-fixed.module.css';
-import { DatePicker } from '@mui/x-date-pickers';
 import {
   Days,
   Frequency,
@@ -10,17 +9,17 @@ import {
   endsAfter,
   endsNever,
   endsOn,
-  frequencies,
-  recurrenceEndOptions,
-  monthNames,
 } from '../../utils/recurrenceUtils';
 import type {
   InterfaceRecurrenceRule,
   RecurrenceEndOptionType,
   WeekDays,
 } from '../../utils/recurrenceUtils';
-import type { Dayjs } from 'dayjs';
-import dayjs from 'dayjs';
+import { RecurrenceFrequencySection } from './RecurrenceFrequencySection';
+import { RecurrenceWeeklySection } from './RecurrenceWeeklySection';
+import { RecurrenceMonthlySection } from './RecurrenceMonthlySection';
+import { RecurrenceYearlySection } from './RecurrenceYearlySection';
+import { RecurrenceEndOptionsSection } from './RecurrenceEndOptionsSection';
 
 /**
  * Props interface for the CustomRecurrenceModal component
@@ -120,69 +119,6 @@ const CustomRecurrenceModal: React.FC<InterfaceCustomRecurrenceModalProps> = ({
   const [localCount, setLocalCount] = useState<number | string>(
     count || (frequency === Frequency.YEARLY ? 5 : 1),
   );
-
-  /**
-   * Calculates which week of the month a given date falls in
-   * @param date - The date to calculate the week for
-   * @returns The week number (1-5) within the month
-   */
-  const getWeekOfMonth = (date: Date): number => {
-    const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
-    const weekNumber = Math.ceil((date.getDate() + firstDay.getDay()) / 7);
-    return weekNumber;
-  };
-
-  /**
-   * Converts a number to its ordinal string representation
-   * @param num - The number to convert (1-5)
-   * @returns The ordinal string (e.g., "first", "second", etc.)
-   */
-  const getOrdinalString = (num: number): string => {
-    const ordinals = ['', 'first', 'second', 'third', 'fourth', 'fifth'];
-    return ordinals[num] || 'last';
-  };
-
-  /**
-   * Gets the full day name from a day index
-   * @param dayIndex - The day index (0-6, where 0 is Sunday)
-   * @returns The full day name
-   */
-  const getDayName = (dayIndex: number): string => {
-    const days = [
-      'Sunday',
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-    ];
-    return days[dayIndex];
-  };
-
-  /**
-   * Generates monthly recurrence options based on the start date
-   * @returns {Object} Object containing monthly recurrence display strings and values
-   * @returns {string} returns.byDate - Display string for by-date option (e.g., "Monthly on day 15")
-   * @returns {string} returns.byWeekday - Display string for by-weekday option (e.g., "Monthly on the third Wednesday")
-   * @returns {number} returns.dateValue - The day of the month (1-31)
-   * @returns {Object} returns.weekdayValue - Object with week number and day
-   * @returns {number} returns.weekdayValue.week - Week number within the month (1-5)
-   * @returns {WeekDays} returns.weekdayValue.day - The weekday enum value
-   */
-  const getMonthlyOptions = () => {
-    const eventDate = new Date(startDate);
-    const dayOfMonth = eventDate.getDate();
-    const dayOfWeek = eventDate.getDay();
-    const weekOfMonth = getWeekOfMonth(eventDate);
-
-    return {
-      byDate: `Monthly on day ${dayOfMonth}`,
-      byWeekday: `Monthly on the ${getOrdinalString(weekOfMonth)} ${getDayName(dayOfWeek)}`,
-      dateValue: dayOfMonth,
-      weekdayValue: { week: weekOfMonth, day: Days[dayOfWeek] },
-    };
-  };
 
   /**
    * Synchronizes the selected recurrence end option when the recurrence rule's endDate changes
@@ -452,276 +388,46 @@ const CustomRecurrenceModal: React.FC<InterfaceCustomRecurrenceModalProps> = ({
           </Button>
         </Modal.Header>
         <Modal.Body className="pb-2">
-          <div className="mb-4">
-            <span className="fw-semibold text-secondary">
-              {t('repeatsEvery')}
-            </span>{' '}
-            <FormControl
-              type="number"
-              value={localInterval}
-              onChange={handleIntervalChange}
-              onDoubleClick={(e) => {
-                (e.target as HTMLInputElement).select();
-              }}
-              onKeyDown={(e) => {
-                if (
-                  e.key === '-' ||
-                  e.key === '+' ||
-                  e.key === 'e' ||
-                  e.key === 'E'
-                ) {
-                  e.preventDefault();
-                }
-              }}
-              min="1"
-              className={`${styles.recurrenceRuleNumberInput} ms-2 d-inline-block py-2`}
-              data-testid="customRecurrenceIntervalInput"
-              data-cy="customRecurrenceIntervalInput"
-              aria-label={t('repeatsEvery')}
-              aria-required="true"
-              placeholder="1"
-            />
-            <Dropdown className="ms-3 d-inline-block">
-              <Dropdown.Toggle
-                className={`${styles.dropdown}`}
-                variant="outline-secondary"
-                id="dropdown-basic"
-                data-testid="customRecurrenceFrequencyDropdown"
-                data-cy="customRecurrenceFrequencyDropdown"
-                aria-label={t('frequency')}
-              >
-                {frequencies[frequency]}
-              </Dropdown.Toggle>
+          <RecurrenceFrequencySection
+            frequency={frequency}
+            localInterval={localInterval}
+            onIntervalChange={handleIntervalChange}
+            onFrequencyChange={handleFrequencyChange}
+            t={t}
+          />
 
-              <Dropdown.Menu>
-                <Dropdown.Item
-                  onClick={() => handleFrequencyChange(Frequency.DAILY)}
-                  data-testid="customDailyRecurrence"
-                  data-cy="customDailyRecurrence"
-                >
-                  {t('day')}
-                </Dropdown.Item>
-                <Dropdown.Item
-                  onClick={() => handleFrequencyChange(Frequency.WEEKLY)}
-                  data-testid="customWeeklyRecurrence"
-                  data-cy="customWeeklyRecurrence"
-                >
-                  {t('week')}
-                </Dropdown.Item>
-                <Dropdown.Item
-                  onClick={() => handleFrequencyChange(Frequency.MONTHLY)}
-                  data-testid="customMonthlyRecurrence"
-                  data-cy="customMonthlyRecurrence"
-                >
-                  {t('month')}
-                </Dropdown.Item>
-                <Dropdown.Item
-                  onClick={() => handleFrequencyChange(Frequency.YEARLY)}
-                  data-testid="customYearlyRecurrence"
-                  data-cy="customYearlyRecurrence"
-                >
-                  {t('year')}
-                </Dropdown.Item>
-              </Dropdown.Menu>
-            </Dropdown>
-          </div>
+          <RecurrenceWeeklySection
+            frequency={frequency}
+            byDay={byDay}
+            onDayClick={handleDayClick}
+            onWeekdayKeyDown={handleWeekdayKeyDown}
+            t={t}
+          />
 
-          {frequency === Frequency.WEEKLY && (
-            <div className="mb-4">
-              <span className="fw-semibold text-secondary">
-                {t('repeatsOn')}
-              </span>
-              <br />
-              <div
-                className="mx-2 mt-3 d-flex gap-1"
-                role="group"
-                aria-label={t('repeatsOn')}
-              >
-                {daysOptions.map((day, index) => (
-                  <button
-                    key={index}
-                    type="button"
-                    className={`${styles.recurrenceDayButton} ${byDay?.includes(Days[index]) ? styles.selected : ''}`}
-                    onClick={() => handleDayClick(Days[index])}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        handleDayClick(Days[index]);
-                      } else {
-                        handleWeekdayKeyDown(e, index);
-                      }
-                    }}
-                    data-testid="recurrenceWeekDay"
-                    data-cy={`recurrenceWeekDay-${index}`}
-                    aria-pressed={byDay?.includes(Days[index])}
-                    aria-label={`${t('select')} ${day}`}
-                    role="button"
-                    tabIndex={0}
-                  >
-                    <span>{day}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+          <RecurrenceMonthlySection
+            frequency={frequency}
+            recurrenceRuleState={recurrenceRuleState}
+            setRecurrenceRuleState={setRecurrenceRuleState}
+            startDate={startDate}
+            t={t}
+          />
 
-          {/* Monthly Options */}
-          {frequency === Frequency.MONTHLY && (
-            <div className="mb-4">
-              <span className="fw-semibold text-secondary">
-                {t('monthlyOn')}
-              </span>
-              <br />
-              <div className="mx-2 mt-3">
-                <Dropdown className="d-inline-block">
-                  <Dropdown.Toggle
-                    className="py-2"
-                    variant="outline-secondary"
-                    id="monthly-dropdown"
-                    data-testid="monthlyRecurrenceDropdown"
-                    data-cy="monthlyRecurrenceDropdown"
-                    aria-label={t('monthlyOn')}
-                  >
-                    {recurrenceRuleState.byDay
-                      ? getMonthlyOptions().byWeekday
-                      : getMonthlyOptions().byDate}
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu>
-                    <Dropdown.Item
-                      onClick={() => {
-                        const options = getMonthlyOptions();
-                        setRecurrenceRuleState((prev) => ({
-                          ...prev,
-                          byMonthDay: [options.dateValue],
-                          byDay: undefined,
-                        }));
-                      }}
-                      data-testid="monthlyByDate"
-                      data-cy="monthlyByDate"
-                    >
-                      {getMonthlyOptions().byDate}
-                    </Dropdown.Item>
-                  </Dropdown.Menu>
-                </Dropdown>
-              </div>
-            </div>
-          )}
+          <RecurrenceYearlySection
+            frequency={frequency}
+            startDate={startDate}
+            t={t}
+          />
 
-          {/* Yearly Options */}
-          {frequency === Frequency.YEARLY && (
-            <div className="mb-4">
-              <span className="fw-semibold text-secondary">
-                {t('yearlyOn')}
-              </span>
-              <br />
-              <div className="mx-2 mt-3">
-                <span className="text-muted">
-                  {monthNames[new Date(startDate).getMonth()]}{' '}
-                  {new Date(startDate).getDate()}
-                </span>
-                <p className="small mt-1 text-muted mb-0">
-                  {t('yearlyRecurrenceDesc')}
-                </p>
-              </div>
-            </div>
-          )}
-
-          <div className="mb-3">
-            <span className="fw-semibold text-secondary">{t('ends')}</span>
-            <div className="ms-3 mt-3">
-              <Form>
-                {recurrenceEndOptions
-                  .filter(
-                    (option) =>
-                      frequency !== Frequency.YEARLY || option !== endsNever,
-                  )
-                  .map((option, index) => (
-                    <div key={index} className="my-2 d-flex align-items-center">
-                      <Form.Check
-                        type="radio"
-                        id={`radio-${index}`}
-                        label={t(option)}
-                        name="recurrenceEndOption"
-                        className="d-inline-block me-5"
-                        value={option}
-                        onChange={handleRecurrenceEndOptionChange}
-                        checked={option === selectedRecurrenceEndOption}
-                        data-testid={`${option}`}
-                        data-cy={`recurrenceEndOption-${option}`}
-                        aria-label={t(option)}
-                      />
-
-                      {option === endsOn && (
-                        <div className="ms-3">
-                          <DatePicker
-                            label={t('endDate')}
-                            data-testid="customRecurrenceEndDatePicker"
-                            data-cy="customRecurrenceEndDatePicker"
-                            className={styles.recurrenceRuleDateBox}
-                            disabled={selectedRecurrenceEndOption !== endsOn}
-                            value={dayjs(
-                              recurrenceRuleState.endDate ?? new Date(),
-                            )}
-                            onChange={(date: Dayjs | null): void => {
-                              if (date) {
-                                const newRecurrenceEndDate = date.toDate();
-                                setRecurrenceRuleState((prev) => ({
-                                  ...prev,
-                                  endDate: newRecurrenceEndDate,
-                                  never: false,
-                                  count: undefined,
-                                }));
-                              }
-                            }}
-                            minDate={dayjs()}
-                            slotProps={{
-                              textField: {
-                                'aria-label': t('endDate'),
-                              },
-                            }}
-                          />
-                        </div>
-                      )}
-                      {option === endsAfter && (
-                        <>
-                          <FormControl
-                            type="number"
-                            value={localCount}
-                            onChange={handleCountChange}
-                            onDoubleClick={(e) => {
-                              (e.target as HTMLInputElement).select();
-                            }}
-                            onKeyDown={(e) => {
-                              if (
-                                e.key === '-' ||
-                                e.key === '+' ||
-                                e.key === 'e' ||
-                                e.key === 'E'
-                              ) {
-                                e.preventDefault();
-                              }
-                            }}
-                            min="1"
-                            className={`${styles.recurrenceRuleNumberInput} ms-1 me-2 d-inline-block py-2`}
-                            disabled={selectedRecurrenceEndOption !== endsAfter}
-                            data-testid="customRecurrenceCountInput"
-                            data-cy="customRecurrenceCountInput"
-                            aria-label={t('occurences')}
-                            aria-required={
-                              selectedRecurrenceEndOption === endsAfter
-                                ? 'true'
-                                : 'false'
-                            }
-                            placeholder="1"
-                          />{' '}
-                          {t('occurences')}
-                        </>
-                      )}
-                    </div>
-                  ))}
-              </Form>
-            </div>
-          </div>
+          <RecurrenceEndOptionsSection
+            frequency={frequency}
+            selectedRecurrenceEndOption={selectedRecurrenceEndOption}
+            recurrenceRuleState={recurrenceRuleState}
+            localCount={localCount}
+            onRecurrenceEndOptionChange={handleRecurrenceEndOptionChange}
+            onCountChange={handleCountChange}
+            setRecurrenceRuleState={setRecurrenceRuleState}
+            t={t}
+          />
 
           <hr className="mt-4 mb-2 mx-2" />
 

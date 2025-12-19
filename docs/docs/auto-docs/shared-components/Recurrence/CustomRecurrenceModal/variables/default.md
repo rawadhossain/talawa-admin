@@ -6,7 +6,7 @@
 
 > `const` **default**: `React.FC`\<[`InterfaceCustomRecurrenceModalProps`](../interfaces/InterfaceCustomRecurrenceModalProps.md)\>
 
-Defined in: [src/shared-components/Recurrence/CustomRecurrenceModal.tsx:98](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/shared-components/Recurrence/CustomRecurrenceModal.tsx#L98)
+Defined in: [src/shared-components/Recurrence/CustomRecurrenceModal.tsx:97](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/shared-components/Recurrence/CustomRecurrenceModal.tsx#L97)
 
 CustomRecurrenceModal Component
 
