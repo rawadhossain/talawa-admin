@@ -268,6 +268,7 @@ const EventForm: React.FC<IEventFormProps> = ({
           type="text"
           id="eventName"
           placeholder={t('enterName')}
+          aria-label={t('eventName')}
           data-testid="eventTitleInput"
           data-cy="eventTitleInput"
           autoComplete="off"
@@ -283,6 +284,7 @@ const EventForm: React.FC<IEventFormProps> = ({
           as="textarea"
           id="eventdescrip"
           placeholder={t('enterDescrip')}
+          aria-label={tCommon('description')}
           data-testid="eventDescriptionInput"
           data-cy="eventDescriptionInput"
           autoComplete="off"
@@ -298,6 +300,7 @@ const EventForm: React.FC<IEventFormProps> = ({
           type="text"
           id="eventLocation"
           placeholder={tCommon('enterLocation')}
+          aria-label={tCommon('enterLocation')}
           data-testid="eventLocationInput"
           data-cy="eventLocationInput"
           autoComplete="off"
@@ -312,6 +315,7 @@ const EventForm: React.FC<IEventFormProps> = ({
           <div>
             <DatePicker
               label={tCommon('startDate')}
+              aria-label={tCommon('startDate')}
               className={styles.dateboxOrganizationEvents}
               value={dayjs(formState.startDate)}
               onChange={(date): void => {
@@ -331,6 +335,7 @@ const EventForm: React.FC<IEventFormProps> = ({
           <div>
             <DatePicker
               label={tCommon('endDate')}
+              aria-label={tCommon('endDate')}
               className={styles.dateboxOrganizationEvents}
               value={dayjs(formState.endDate)}
               onChange={(date): void => {
@@ -350,6 +355,7 @@ const EventForm: React.FC<IEventFormProps> = ({
             <div className="mr-3">
               <TimePicker
                 label={tCommon('startTime')}
+                aria-label={tCommon('startTime')}
                 className={styles.dateboxOrganizationEvents}
                 timeSteps={{ hours: 1, minutes: 1, seconds: 1 }}
                 value={timeToDayJs(formState.startTime)}
@@ -371,6 +377,7 @@ const EventForm: React.FC<IEventFormProps> = ({
             <div>
               <TimePicker
                 label={tCommon('endTime')}
+                aria-label={tCommon('endTime')}
                 className={styles.dateboxOrganizationEvents}
                 timeSteps={{ hours: 1, minutes: 1, seconds: 1 }}
                 value={timeToDayJs(formState.endTime)}
@@ -396,6 +403,7 @@ const EventForm: React.FC<IEventFormProps> = ({
               id="allday"
               type="checkbox"
               checked={formState.allDay}
+              aria-label={t('allDay')}
               data-testid="alldayCheck"
               onChange={toggleAllDay}
             />
@@ -408,6 +416,7 @@ const EventForm: React.FC<IEventFormProps> = ({
                 id="ispublic"
                 type="checkbox"
                 checked={formState.isPublic}
+                aria-label={t('isPublic')}
                 data-testid="ispublicCheck"
                 onChange={(): void =>
                   setFormState((prev) => ({
@@ -426,6 +435,7 @@ const EventForm: React.FC<IEventFormProps> = ({
                 id="registrable"
                 type="checkbox"
                 checked={formState.isRegisterable}
+                aria-label={t('isRegistrable')}
                 data-testid="registrableCheck"
                 onChange={(): void =>
                   setFormState((prev) => ({
@@ -447,6 +457,7 @@ const EventForm: React.FC<IEventFormProps> = ({
                   id="recurring"
                   type="checkbox"
                   checked={recurrenceEnabled}
+                  aria-label={t('recurring')}
                   data-testid="recurringEventCheck"
                   onChange={toggleRecurrence}
                 />
@@ -498,6 +509,7 @@ const EventForm: React.FC<IEventFormProps> = ({
               type="checkbox"
               data-testid="createChatCheck"
               checked={formState.createChat}
+              aria-label={t('createChat')}
               onChange={(): void =>
                 setFormState((prev) => ({
                   ...prev,
