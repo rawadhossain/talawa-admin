@@ -502,7 +502,7 @@ const EventForm: React.FC<IEventFormProps> = ({
         )}
         {showCreateChat && (
           <div className={styles.dispflex}>
-            <label htmlFor="createChat">{t('createChat')}?</label>
+            <label htmlFor="chat">{t('createChat')}?</label>
             <Form.Switch
               className={`me-4 ${styles.switch}`}
               id="chat"
