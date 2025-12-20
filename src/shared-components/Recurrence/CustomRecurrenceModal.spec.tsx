@@ -77,10 +77,6 @@ const renderModal = (
 describe('CustomRecurrenceModal – full coverage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Clear toast mocks before each test
-    if (toast.error) {
-      (toast.error as ReturnType<typeof vi.fn>).mockClear();
-    }
   });
 
   afterEach(() => {
@@ -835,53 +831,6 @@ describe('CustomRecurrenceModal – full coverage', () => {
     expect(screen.queryByTestId(endsNever)).not.toBeInTheDocument();
   });
 
-  it('handles DatePicker onChange with valid date', () => {
-    renderModal({
-      recurrenceRuleState: {
-        ...baseRecurrenceRule,
-        never: false,
-        endDate: new Date(),
-      },
-    });
-
-    // Find the DatePicker input and trigger onChange
-    const dateInputs = screen.getAllByLabelText('endDate');
-    const datePickerInput = dateInputs.find(
-      (input) => input.tagName === 'INPUT',
-    ) as HTMLInputElement;
-
-    if (datePickerInput) {
-      // Simulate date change by directly calling the onChange handler
-      // We need to find the DatePicker component and trigger its onChange
-      const datePicker = dateInputs[0].closest('[class*="MuiPickers"]');
-      if (datePicker) {
-        // Try to find and trigger the actual DatePicker onChange
-        // Since MUI DatePicker is complex, we'll test it differently
-        fireEvent.change(datePickerInput, {
-          target: { value: '02/15/2025' },
-        });
-      }
-    }
-
-    // The DatePicker onChange should be triggered when a date is selected
-    // This is tested indirectly through the component's behavior
-    expect(screen.getByTestId(endsOn)).toBeChecked();
-  });
-
-  it('handles DatePicker onChange with null date', () => {
-    renderModal({
-      recurrenceRuleState: {
-        ...baseRecurrenceRule,
-        never: false,
-        endDate: new Date(),
-      },
-    });
-
-    // The DatePicker onChange handler checks for null date
-    // This branch is covered when the DatePicker is cleared
-    expect(screen.getByTestId(endsOn)).toBeInTheDocument();
-  });
-
   it('prevents invalid keys in interval input', () => {
     renderModal();
 
@@ -889,18 +838,32 @@ describe('CustomRecurrenceModal – full coverage', () => {
       'customRecurrenceIntervalInput',
     ) as HTMLInputElement;
 
-    // Test that invalid keys don't change the input value
-    // We'll verify the handler is working by checking the input behavior
+    // Set an initial value
+    fireEvent.change(intervalInput, { target: { value: '5' } });
+    const initialValue = intervalInput.value;
 
-    // Try to type invalid keys - they should be prevented
-    fireEvent.keyDown(intervalInput, { key: '-' });
-    fireEvent.keyDown(intervalInput, { key: '+' });
-    fireEvent.keyDown(intervalInput, { key: 'e' });
-    fireEvent.keyDown(intervalInput, { key: 'E' });
+    // Test invalid keys - they should be prevented via preventDefault
+    const invalidKeys = ['-', '+', 'e', 'E'];
+    invalidKeys.forEach((key) => {
+      const preventDefaultSpy = vi.fn();
 
-    // The input should still have its initial value (or be unchanged)
-    // This verifies the onKeyDown handler is being called
-    expect(intervalInput).toBeInTheDocument();
+      // Create a synthetic keyboard event
+      const syntheticEvent = new KeyboardEvent('keydown', {
+        key,
+        bubbles: true,
+        cancelable: true,
+      });
+
+      // Override preventDefault to spy on it
+      Object.defineProperty(syntheticEvent, 'preventDefault', {
+        value: preventDefaultSpy,
+        writable: true,
+      });
+
+      intervalInput.dispatchEvent(syntheticEvent);
+      expect(preventDefaultSpy).toHaveBeenCalled();
+    });
+    expect(intervalInput.value).toBe(initialValue);
   });
 
   it('prevents invalid keys in count input', () => {
@@ -912,18 +875,32 @@ describe('CustomRecurrenceModal – full coverage', () => {
       'customRecurrenceCountInput',
     ) as HTMLInputElement;
 
-    // Test that invalid keys don't change the input value
-    // We'll verify the handler is working by checking the input behavior
+    // Set an initial value
+    fireEvent.change(countInput, { target: { value: '10' } });
+    const initialValue = countInput.value;
 
-    // Try to type invalid keys - they should be prevented
-    fireEvent.keyDown(countInput, { key: '-' });
-    fireEvent.keyDown(countInput, { key: '+' });
-    fireEvent.keyDown(countInput, { key: 'e' });
-    fireEvent.keyDown(countInput, { key: 'E' });
+    // Test invalid keys - they should be prevented via preventDefault
+    const invalidKeys = ['-', '+', 'e', 'E'];
+    invalidKeys.forEach((key) => {
+      const preventDefaultSpy = vi.fn();
 
-    // The input should still have its initial value (or be unchanged)
-    // This verifies the onKeyDown handler is being called
-    expect(countInput).toBeInTheDocument();
+      // Create a synthetic keyboard event
+      const syntheticEvent = new KeyboardEvent('keydown', {
+        key,
+        bubbles: true,
+        cancelable: true,
+      });
+
+      // Override preventDefault to spy on it
+      Object.defineProperty(syntheticEvent, 'preventDefault', {
+        value: preventDefaultSpy,
+        writable: true,
+      });
+
+      countInput.dispatchEvent(syntheticEvent);
+      expect(preventDefaultSpy).toHaveBeenCalled();
+    });
+    expect(countInput.value).toBe(initialValue);
   });
 
   it('handles onDoubleClick for interval input', () => {
@@ -1250,20 +1227,11 @@ describe('CustomRecurrenceModal – full coverage', () => {
     expect(setRecurrenceRuleState).toHaveBeenCalled();
   });
 
-  it('handles Modal onHide when backdrop is clicked', () => {
+  it('renders modal with onHide handler configured', () => {
     const { hideCustomRecurrenceModal } = renderModal();
-
-    // Find the Modal component
     const modal = screen.getByRole('dialog');
     expect(modal).toBeInTheDocument();
-
-    // In React Bootstrap Modal, onHide is called when backdrop is clicked
-    // We test this by verifying the modal has the onHide handler
-    // The actual backdrop click behavior is tested through the close button
-    // which also calls hideCustomRecurrenceModal
     expect(hideCustomRecurrenceModal).toBeDefined();
-
-    // Verify modal is visible
     expect(modal).toBeVisible();
   });
 
