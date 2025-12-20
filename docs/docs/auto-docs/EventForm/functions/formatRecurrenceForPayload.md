@@ -6,7 +6,7 @@
 
 > **formatRecurrenceForPayload**(`recurrenceRule`, `startDate`): `Omit`\<[`InterfaceRecurrenceRule`](../../utils/recurrenceUtils/recurrenceTypes/interfaces/InterfaceRecurrenceRule.md), `"endDate"`\> & `object`
 
-Defined in: [src/shared-components/EventForm/EventForm.tsx:578](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/shared-components/EventForm/EventForm.tsx#L578)
+Defined in: [src/shared-components/EventForm/EventForm.tsx:607](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/shared-components/EventForm/EventForm.tsx#L607)
 
 Formats a recurrence rule for API submission.
 

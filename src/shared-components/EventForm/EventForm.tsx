@@ -278,6 +278,7 @@ const EventForm: React.FC<IEventFormProps> = ({
           }}
           data-testid="eventTitleInput"
           data-cy="eventTitleInput"
+          aria-label={t('eventName')}
         />
         <label htmlFor="eventDescription">{tCommon('description')}</label>
         <Form.Control
@@ -293,6 +294,7 @@ const EventForm: React.FC<IEventFormProps> = ({
           }}
           data-testid="eventDescriptionInput"
           data-cy="eventDescriptionInput"
+          aria-label={tCommon('description')}
         />
         <label htmlFor="eventLocation">{tCommon('location')}</label>
         <Form.Control
@@ -308,6 +310,7 @@ const EventForm: React.FC<IEventFormProps> = ({
           }}
           data-testid="eventLocationInput"
           data-cy="eventLocationInput"
+          aria-label={tCommon('location')}
         />
         <div className={styles.datedivEvents}>
           <div>
@@ -328,6 +331,11 @@ const EventForm: React.FC<IEventFormProps> = ({
                 }
               }}
               data-testid="eventStartAt"
+              slotProps={{
+                textField: {
+                  'aria-label': tCommon('startDate'),
+                },
+              }}
             />
           </div>
           <div>
@@ -345,6 +353,11 @@ const EventForm: React.FC<IEventFormProps> = ({
               }}
               minDate={dayjs(formState.startDate)}
               data-testid="eventEndAt"
+              slotProps={{
+                textField: {
+                  'aria-label': tCommon('endDate'),
+                },
+              }}
             />
           </div>
         </div>
@@ -368,6 +381,11 @@ const EventForm: React.FC<IEventFormProps> = ({
                 }
               }}
               disabled={formState.allDay}
+              slotProps={{
+                textField: {
+                  'aria-label': tCommon('startTime'),
+                },
+              }}
             />
           </div>
           <div>
@@ -386,6 +404,11 @@ const EventForm: React.FC<IEventFormProps> = ({
               }}
               minTime={timeToDayJs(formState.startTime)}
               disabled={formState.allDay}
+              slotProps={{
+                textField: {
+                  'aria-label': tCommon('endTime'),
+                },
+              }}
             />
           </div>
         </div>
@@ -399,6 +422,7 @@ const EventForm: React.FC<IEventFormProps> = ({
               checked={formState.allDay}
               data-testid="allDayEventCheck"
               onChange={toggleAllDay}
+              aria-label={t('allDay')}
             />
           </div>
           {showRecurrenceToggle && (
@@ -411,6 +435,7 @@ const EventForm: React.FC<IEventFormProps> = ({
                 checked={recurrenceEnabled}
                 data-testid="recurringEventCheck"
                 onChange={toggleRecurrence}
+                aria-label={t('recurring')}
               />
             </div>
           )}
@@ -431,6 +456,7 @@ const EventForm: React.FC<IEventFormProps> = ({
                     isPublic: !prev.isPublic,
                   }))
                 }
+                aria-label={t('publicEvent')}
               />
             </div>
           )}
@@ -449,6 +475,7 @@ const EventForm: React.FC<IEventFormProps> = ({
                     isRegisterable: !prev.isRegisterable,
                   }))
                 }
+                aria-label={t('registerable')}
               />
             </div>
           )}
@@ -469,6 +496,7 @@ const EventForm: React.FC<IEventFormProps> = ({
                     createChat: !prev.createChat,
                   }))
                 }
+                aria-label={t('createChat')}
               />
             </div>
           </div>
@@ -484,6 +512,7 @@ const EventForm: React.FC<IEventFormProps> = ({
                 id="recurrence-dropdown"
                 data-testid="recurrenceDropdown"
                 className={`${styles.dropdown}`}
+                aria-label={t('recurring')}
               >
                 {currentRecurrenceLabel()}
               </Dropdown.Toggle>
