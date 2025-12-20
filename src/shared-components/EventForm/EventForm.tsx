@@ -277,6 +277,7 @@ const EventForm: React.FC<IEventFormProps> = ({
             setFormState({ ...formState, name: e.target.value });
           }}
           data-testid="eventTitleInput"
+          data-cy="eventTitleInput"
         />
         <label htmlFor="eventDescription">{tCommon('description')}</label>
         <Form.Control
@@ -291,6 +292,7 @@ const EventForm: React.FC<IEventFormProps> = ({
             setFormState({ ...formState, description: e.target.value });
           }}
           data-testid="eventDescriptionInput"
+          data-cy="eventDescriptionInput"
         />
         <label htmlFor="eventLocation">{tCommon('location')}</label>
         <Form.Control
@@ -305,6 +307,7 @@ const EventForm: React.FC<IEventFormProps> = ({
             setFormState({ ...formState, location: e.target.value });
           }}
           data-testid="eventLocationInput"
+          data-cy="eventLocationInput"
         />
         <div className={styles.datedivEvents}>
           <div>
@@ -470,49 +473,48 @@ const EventForm: React.FC<IEventFormProps> = ({
             </div>
           </div>
         )}
-        {!disableRecurrence &&
-          recurrenceEnabled &&
-          (!showRecurrenceToggle || formState.recurrenceRule) && (
-            <div>
-              <Dropdown
-                show={recurrenceDropdownOpen}
-                onToggle={setRecurrenceDropdownOpen}
+        {!disableRecurrence && recurrenceEnabled && (
+          <div>
+            <Dropdown
+              show={recurrenceDropdownOpen}
+              onToggle={setRecurrenceDropdownOpen}
+            >
+              <Dropdown.Toggle
+                variant="outline-secondary"
+                id="recurrence-dropdown"
+                data-testid="recurrenceDropdown"
+                className={`${styles.dropdown}`}
               >
-                <Dropdown.Toggle
-                  variant="outline-secondary"
-                  id="recurrence-dropdown"
-                  data-testid="recurrenceDropdown"
-                  className={`${styles.dropdown}`}
-                >
-                  {currentRecurrenceLabel()}
-                </Dropdown.Toggle>
-                <Dropdown.Menu>
-                  {recurrenceOptions.map((option, index) => (
-                    <Dropdown.Item
-                      key={option.label}
-                      onClick={() =>
-                        handleRecurrenceSelect({
-                          ...option,
-                          value: option.value as
-                            | InterfaceRecurrenceRule
-                            | 'custom'
-                            | null,
-                        })
-                      }
-                      data-testid={`recurrenceOption-${index}`}
-                    >
-                      {option.label}
-                    </Dropdown.Item>
-                  ))}
-                </Dropdown.Menu>
-              </Dropdown>
-            </div>
-          )}
+                {currentRecurrenceLabel()}
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                {recurrenceOptions.map((option, index) => (
+                  <Dropdown.Item
+                    key={option.label}
+                    onClick={() =>
+                      handleRecurrenceSelect({
+                        ...option,
+                        value: option.value as
+                          | InterfaceRecurrenceRule
+                          | 'custom'
+                          | null,
+                      })
+                    }
+                    data-testid={`recurrenceOption-${index}`}
+                  >
+                    {option.label}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
+          </div>
+        )}
         <Button
           type="submit"
           className={styles.addButton}
           value="createevent"
           data-testid="createEventBtn"
+          data-cy="createEventBtn"
           disabled={submitting}
         >
           {submitLabel}
