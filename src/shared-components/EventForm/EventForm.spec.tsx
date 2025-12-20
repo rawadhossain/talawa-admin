@@ -220,9 +220,14 @@ describe('EventForm', () => {
 
   test('enables recurrence toggle and opens custom modal', async () => {
     const handleSubmit = vi.fn();
+    // Start with a rule so dropdown is visible
+    const rule = createDefaultRecurrenceRule(
+      new Date('2025-01-01'),
+      Frequency.DAILY,
+    );
     render(
       <EventForm
-        initialValues={baseValues}
+        initialValues={{ ...baseValues, recurrenceRule: rule }}
         onSubmit={handleSubmit}
         onCancel={vi.fn()}
         submitLabel="Create"
@@ -232,10 +237,7 @@ describe('EventForm', () => {
       />,
     );
 
-    const recurrenceToggle = screen.getByTestId('recurringEventCheck');
-    await act(async () => {
-      fireEvent.click(recurrenceToggle);
-    });
+    // Recurrence is already enabled when rule exists, so dropdown is visible
     await act(async () => {
       fireEvent.click(screen.getByTestId('recurrenceDropdown'));
     });
@@ -411,9 +413,14 @@ describe('EventForm', () => {
 
   test('selects recurrence preset option', async () => {
     const handleSubmit = vi.fn();
+    // Start with a rule so dropdown is visible
+    const rule = createDefaultRecurrenceRule(
+      new Date('2025-01-01'),
+      Frequency.WEEKLY,
+    );
     render(
       <EventForm
-        initialValues={baseValues}
+        initialValues={{ ...baseValues, recurrenceRule: rule }}
         onSubmit={handleSubmit}
         onCancel={vi.fn()}
         submitLabel="Create"
@@ -423,12 +430,7 @@ describe('EventForm', () => {
       />,
     );
 
-    // Enable recurrence
-    await act(async () => {
-      fireEvent.click(screen.getByTestId('recurringEventCheck'));
-    });
-
-    // Open dropdown
+    // Recurrence is already enabled when rule exists, so dropdown is visible
     await act(async () => {
       fireEvent.click(screen.getByTestId('recurrenceDropdown'));
     });
@@ -501,7 +503,7 @@ describe('EventForm', () => {
       />,
     );
 
-    const startDateInput = screen.getByTestId('startDate');
+    const startDateInput = screen.getByTestId('eventStartAt');
     await act(async () => {
       fireEvent.change(startDateInput, {
         target: { value: '2025-01-05' },
@@ -529,7 +531,7 @@ describe('EventForm', () => {
       />,
     );
 
-    const endDateInput = screen.getByTestId('endDate');
+    const endDateInput = screen.getByTestId('eventEndAt');
     await act(async () => {
       fireEvent.change(endDateInput, {
         target: { value: '2025-01-10' },
@@ -611,7 +613,7 @@ describe('EventForm', () => {
     );
 
     await act(async () => {
-      fireEvent.click(screen.getByTestId('alldayCheck'));
+      fireEvent.click(screen.getByTestId('allDayEventCheck'));
     });
 
     await act(async () => {
@@ -640,7 +642,7 @@ describe('EventForm', () => {
     );
 
     await act(async () => {
-      fireEvent.click(screen.getByTestId('ispublicCheck'));
+      fireEvent.click(screen.getByTestId('publicEventCheck'));
     });
 
     await act(async () => {
@@ -669,7 +671,7 @@ describe('EventForm', () => {
     );
 
     await act(async () => {
-      fireEvent.click(screen.getByTestId('registrableCheck'));
+      fireEvent.click(screen.getByTestId('registerableEventCheck'));
     });
 
     await act(async () => {
@@ -1136,6 +1138,7 @@ describe('EventForm', () => {
         submitLabel="Create"
         t={t}
         tCommon={tCommon}
+        showCancelButton
       />,
     );
 
@@ -1162,9 +1165,18 @@ describe('EventForm', () => {
 
   test('buildRecurrenceOptions handles invalid date', () => {
     const invalidDate = new Date('invalid');
+    // Need a rule for dropdown to show when showRecurrenceToggle is true
+    const rule = createDefaultRecurrenceRule(
+      new Date('2025-01-01'),
+      Frequency.DAILY,
+    );
     render(
       <EventForm
-        initialValues={{ ...baseValues, startDate: invalidDate }}
+        initialValues={{
+          ...baseValues,
+          startDate: invalidDate,
+          recurrenceRule: rule,
+        }}
         onSubmit={vi.fn()}
         onCancel={vi.fn()}
         submitLabel="Create"
@@ -1195,11 +1207,7 @@ describe('EventForm', () => {
       />,
     );
 
-    // Enable recurrence
-    await act(async () => {
-      fireEvent.click(screen.getByTestId('recurringEventCheck'));
-    });
-
+    // Recurrence is already enabled when rule exists, so dropdown is visible
     const dropdown = screen.getByTestId('recurrenceDropdown');
     expect(dropdown).toBeInTheDocument();
   });
@@ -1239,7 +1247,7 @@ describe('EventForm', () => {
       />,
     );
 
-    const startDateInput = screen.getByTestId('startDate');
+    const startDateInput = screen.getByTestId('eventStartAt');
     await act(async () => {
       fireEvent.change(startDateInput, {
         target: { value: '2025-01-10' }, // After end date
@@ -1311,9 +1319,9 @@ describe('EventForm', () => {
       />,
     );
 
-    const startDateInput = screen.getByTestId('startDate');
+    const startDateInput = screen.getByTestId('eventStartAt');
     // Simulate onChange with null (date cleared)
-    const datePicker = container.querySelector('[data-testid="startDate"]');
+    const datePicker = container.querySelector('[data-testid="eventStartAt"]');
     if (datePicker) {
       await act(async () => {
         // The mock DatePicker should handle null gracefully
@@ -1354,9 +1362,13 @@ describe('EventForm', () => {
 
   test('selects weekly recurrence preset', async () => {
     const handleSubmit = vi.fn();
+    const rule = createDefaultRecurrenceRule(
+      new Date('2025-01-01'),
+      Frequency.DAILY,
+    );
     render(
       <EventForm
-        initialValues={baseValues}
+        initialValues={{ ...baseValues, recurrenceRule: rule }}
         onSubmit={handleSubmit}
         onCancel={vi.fn()}
         submitLabel="Create"
@@ -1366,10 +1378,7 @@ describe('EventForm', () => {
       />,
     );
 
-    await act(async () => {
-      fireEvent.click(screen.getByTestId('recurringEventCheck'));
-    });
-
+    // Recurrence is already enabled when rule exists
     await act(async () => {
       fireEvent.click(screen.getByTestId('recurrenceDropdown'));
     });
@@ -1395,9 +1404,13 @@ describe('EventForm', () => {
 
   test('selects monthly recurrence preset', async () => {
     const handleSubmit = vi.fn();
+    const rule = createDefaultRecurrenceRule(
+      new Date('2025-01-01'),
+      Frequency.DAILY,
+    );
     render(
       <EventForm
-        initialValues={baseValues}
+        initialValues={{ ...baseValues, recurrenceRule: rule }}
         onSubmit={handleSubmit}
         onCancel={vi.fn()}
         submitLabel="Create"
@@ -1407,10 +1420,7 @@ describe('EventForm', () => {
       />,
     );
 
-    await act(async () => {
-      fireEvent.click(screen.getByTestId('recurringEventCheck'));
-    });
-
+    // Recurrence is already enabled when rule exists
     await act(async () => {
       fireEvent.click(screen.getByTestId('recurrenceDropdown'));
     });
@@ -1436,9 +1446,13 @@ describe('EventForm', () => {
 
   test('selects annually recurrence preset', async () => {
     const handleSubmit = vi.fn();
+    const rule = createDefaultRecurrenceRule(
+      new Date('2025-01-01'),
+      Frequency.DAILY,
+    );
     render(
       <EventForm
-        initialValues={baseValues}
+        initialValues={{ ...baseValues, recurrenceRule: rule }}
         onSubmit={handleSubmit}
         onCancel={vi.fn()}
         submitLabel="Create"
@@ -1448,10 +1462,7 @@ describe('EventForm', () => {
       />,
     );
 
-    await act(async () => {
-      fireEvent.click(screen.getByTestId('recurringEventCheck'));
-    });
-
+    // Recurrence is already enabled when rule exists
     await act(async () => {
       fireEvent.click(screen.getByTestId('recurrenceDropdown'));
     });
@@ -1477,9 +1488,13 @@ describe('EventForm', () => {
 
   test('selects every weekday recurrence preset', async () => {
     const handleSubmit = vi.fn();
+    const rule = createDefaultRecurrenceRule(
+      new Date('2025-01-01'),
+      Frequency.DAILY,
+    );
     render(
       <EventForm
-        initialValues={baseValues}
+        initialValues={{ ...baseValues, recurrenceRule: rule }}
         onSubmit={handleSubmit}
         onCancel={vi.fn()}
         submitLabel="Create"
@@ -1489,10 +1504,7 @@ describe('EventForm', () => {
       />,
     );
 
-    await act(async () => {
-      fireEvent.click(screen.getByTestId('recurringEventCheck'));
-    });
-
+    // Recurrence is already enabled when rule exists
     await act(async () => {
       fireEvent.click(screen.getByTestId('recurrenceDropdown'));
     });
@@ -1635,9 +1647,13 @@ describe('EventForm', () => {
 
   test('creates default recurrence rule when selecting custom without existing rule', async () => {
     const handleSubmit = vi.fn();
+    const rule = createDefaultRecurrenceRule(
+      new Date('2025-01-01'),
+      Frequency.DAILY,
+    );
     render(
       <EventForm
-        initialValues={baseValues}
+        initialValues={{ ...baseValues, recurrenceRule: rule }}
         onSubmit={handleSubmit}
         onCancel={vi.fn()}
         submitLabel="Create"
@@ -1647,10 +1663,7 @@ describe('EventForm', () => {
       />,
     );
 
-    await act(async () => {
-      fireEvent.click(screen.getByTestId('recurringEventCheck'));
-    });
-
+    // Recurrence is already enabled when rule exists
     await act(async () => {
       fireEvent.click(screen.getByTestId('recurrenceDropdown'));
     });

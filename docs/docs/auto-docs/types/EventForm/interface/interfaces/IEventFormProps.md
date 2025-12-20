@@ -54,6 +54,14 @@ Defined in: [src/types/EventForm/interface.ts:30](https://github.com/PalisadoesF
 
 ***
 
+### showCancelButton?
+
+> `optional` **showCancelButton**: `boolean`
+
+Defined in: [src/types/EventForm/interface.ts:41](https://github.com/PalisadoesFoundation/talawa-admin/blob/main/src/types/EventForm/interface.ts#L41)
+
+***
+
 ### showCreateChat?
 
 > `optional` **showCreateChat**: `boolean`

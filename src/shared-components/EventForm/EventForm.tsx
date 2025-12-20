@@ -111,6 +111,7 @@ const EventForm: React.FC<IEventFormProps> = ({
   disableRecurrence = false,
   submitting = false,
   showRecurrenceToggle = false,
+  showCancelButton = false,
 }) => {
   const [formState, setFormState] = useState<IEventFormValues>(initialValues);
   const [recurrenceDropdownOpen, setRecurrenceDropdownOpen] = useState(false);
@@ -263,14 +264,11 @@ const EventForm: React.FC<IEventFormProps> = ({
   return (
     <>
       <Form onSubmit={handleSubmit}>
-        <label htmlFor="eventName">{t('eventName')}</label>
+        <label htmlFor="eventTitle">{t('eventName')}</label>
         <Form.Control
           type="text"
-          id="eventName"
+          id="eventTitle"
           placeholder={t('enterName')}
-          aria-label={t('eventName')}
-          data-testid="eventTitleInput"
-          data-cy="eventTitleInput"
           autoComplete="off"
           required
           value={formState.name}
@@ -278,15 +276,13 @@ const EventForm: React.FC<IEventFormProps> = ({
           onChange={(e): void => {
             setFormState({ ...formState, name: e.target.value });
           }}
+          data-testid="eventTitleInput"
         />
-        <label htmlFor="eventdescrip">{tCommon('description')}</label>
+        <label htmlFor="eventDescription">{tCommon('description')}</label>
         <Form.Control
           as="textarea"
-          id="eventdescrip"
-          placeholder={t('enterDescrip')}
-          aria-label={tCommon('description')}
-          data-testid="eventDescriptionInput"
-          data-cy="eventDescriptionInput"
+          id="eventDescription"
+          placeholder={t('enterDescription')}
           autoComplete="off"
           required
           value={formState.description}
@@ -294,15 +290,13 @@ const EventForm: React.FC<IEventFormProps> = ({
           onChange={(e): void => {
             setFormState({ ...formState, description: e.target.value });
           }}
+          data-testid="eventDescriptionInput"
         />
-        <label htmlFor="eventLocation">{tCommon('enterLocation')}</label>
+        <label htmlFor="eventLocation">{tCommon('location')}</label>
         <Form.Control
           type="text"
           id="eventLocation"
           placeholder={tCommon('enterLocation')}
-          aria-label={tCommon('enterLocation')}
-          data-testid="eventLocationInput"
-          data-cy="eventLocationInput"
           autoComplete="off"
           required
           value={formState.location}
@@ -310,13 +304,13 @@ const EventForm: React.FC<IEventFormProps> = ({
           onChange={(e): void => {
             setFormState({ ...formState, location: e.target.value });
           }}
+          data-testid="eventLocationInput"
         />
-        <div className={styles.datedivOrganizationEvents}>
+        <div className={styles.datedivEvents}>
           <div>
             <DatePicker
               label={tCommon('startDate')}
-              aria-label={tCommon('startDate')}
-              className={styles.dateboxOrganizationEvents}
+              className={styles.dateboxEvents}
               value={dayjs(formState.startDate)}
               onChange={(date): void => {
                 if (date) {
@@ -330,13 +324,13 @@ const EventForm: React.FC<IEventFormProps> = ({
                   }));
                 }
               }}
+              data-testid="eventStartAt"
             />
           </div>
           <div>
             <DatePicker
               label={tCommon('endDate')}
-              aria-label={tCommon('endDate')}
-              className={styles.dateboxOrganizationEvents}
+              className={styles.dateboxEvents}
               value={dayjs(formState.endDate)}
               onChange={(date): void => {
                 if (date) {
@@ -347,77 +341,87 @@ const EventForm: React.FC<IEventFormProps> = ({
                 }
               }}
               minDate={dayjs(formState.startDate)}
+              data-testid="eventEndAt"
             />
           </div>
         </div>
-        {!formState.allDay && (
-          <div className={styles.datediv}>
-            <div className="mr-3">
-              <TimePicker
-                label={tCommon('startTime')}
-                aria-label={tCommon('startTime')}
-                className={styles.dateboxOrganizationEvents}
-                timeSteps={{ hours: 1, minutes: 1, seconds: 1 }}
-                value={timeToDayJs(formState.startTime)}
-                onChange={(time): void => {
-                  if (time) {
-                    setFormState((prev) => ({
-                      ...prev,
-                      startTime: time.format('HH:mm:ss'),
-                      endTime:
-                        timeToDayJs(prev.endTime) < time
-                          ? time.format('HH:mm:ss')
-                          : prev.endTime,
-                    }));
-                  }
-                }}
-                disabled={formState.allDay}
-              />
-            </div>
-            <div>
-              <TimePicker
-                label={tCommon('endTime')}
-                aria-label={tCommon('endTime')}
-                className={styles.dateboxOrganizationEvents}
-                timeSteps={{ hours: 1, minutes: 1, seconds: 1 }}
-                value={timeToDayJs(formState.endTime)}
-                onChange={(time): void => {
-                  if (time) {
-                    setFormState((prev) => ({
-                      ...prev,
-                      endTime: time.format('HH:mm:ss'),
-                    }));
-                  }
-                }}
-                minTime={timeToDayJs(formState.startTime)}
-                disabled={formState.allDay}
-              />
-            </div>
+        <div className={styles.datediv}>
+          <div className="mr-3">
+            <TimePicker
+              label={tCommon('startTime')}
+              className={styles.dateboxEvents}
+              timeSteps={{ hours: 1, minutes: 1, seconds: 1 }}
+              value={timeToDayJs(formState.startTime)}
+              onChange={(time): void => {
+                if (time) {
+                  setFormState((prev) => ({
+                    ...prev,
+                    startTime: time.format('HH:mm:ss'),
+                    endTime:
+                      timeToDayJs(prev.endTime) < time
+                        ? time.format('HH:mm:ss')
+                        : prev.endTime,
+                  }));
+                }
+              }}
+              disabled={formState.allDay}
+            />
           </div>
-        )}
-        <div className={styles.checkboxdiv}>
-          <div className={styles.dispflexOrganizationEvents}>
+          <div>
+            <TimePicker
+              label={tCommon('endTime')}
+              className={styles.dateboxEvents}
+              timeSteps={{ hours: 1, minutes: 1, seconds: 1 }}
+              value={timeToDayJs(formState.endTime)}
+              onChange={(time): void => {
+                if (time) {
+                  setFormState((prev) => ({
+                    ...prev,
+                    endTime: time.format('HH:mm:ss'),
+                  }));
+                }
+              }}
+              minTime={timeToDayJs(formState.startTime)}
+              disabled={formState.allDay}
+            />
+          </div>
+        </div>
+        <div className={styles.checkboxdivEvents}>
+          <div className={styles.dispflexEvents}>
             <label htmlFor="allday">{t('allDay')}?</label>
             <Form.Switch
               className={`me-4 ${styles.switch}`}
               id="allday"
               type="checkbox"
               checked={formState.allDay}
-              aria-label={t('allDay')}
-              data-testid="alldayCheck"
+              data-testid="allDayEventCheck"
               onChange={toggleAllDay}
             />
           </div>
+          {showRecurrenceToggle && (
+            <div className={styles.dispflexEvents}>
+              <label htmlFor="recurring">{t('recurring')}:</label>
+              <Form.Switch
+                className={`me-4 ${styles.switch}`}
+                id="recurring"
+                type="checkbox"
+                checked={recurrenceEnabled}
+                data-testid="recurringEventCheck"
+                onChange={toggleRecurrence}
+              />
+            </div>
+          )}
+        </div>
+        <div className={styles.checkboxdivEvents}>
           {showPublicToggle && (
-            <div className={styles.dispflexOrganizationEvents}>
-              <label htmlFor="ispublic">{t('isPublic')}?</label>
+            <div className={styles.dispflexEvents}>
+              <label htmlFor="ispublic">{t('publicEvent')}?</label>
               <Form.Switch
                 className={`me-4 ${styles.switch}`}
                 id="ispublic"
                 type="checkbox"
                 checked={formState.isPublic}
-                aria-label={t('isPublic')}
-                data-testid="ispublicCheck"
+                data-testid="publicEventCheck"
                 onChange={(): void =>
                   setFormState((prev) => ({
                     ...prev,
@@ -428,15 +432,14 @@ const EventForm: React.FC<IEventFormProps> = ({
             </div>
           )}
           {showRegisterable && (
-            <div className={styles.dispflexOrganizationEvents}>
-              <label htmlFor="registrable">{t('isRegistrable')}?</label>
+            <div className={styles.dispflexEvents}>
+              <label htmlFor="registrable">{t('registerable')}?</label>
               <Form.Switch
                 className={`me-4 ${styles.switch}`}
                 id="registrable"
                 type="checkbox"
                 checked={formState.isRegisterable}
-                aria-label={t('isRegistrable')}
-                data-testid="registrableCheck"
+                data-testid="registerableEventCheck"
                 onChange={(): void =>
                   setFormState((prev) => ({
                     ...prev,
@@ -447,22 +450,29 @@ const EventForm: React.FC<IEventFormProps> = ({
             </div>
           )}
         </div>
-        {!disableRecurrence && (
-          <div className={styles.checkboxdiv}>
-            {showRecurrenceToggle && (
-              <div className={styles.dispflexOrganizationEvents}>
-                <label htmlFor="recurring">{t('recurring')}</label>
-                <Form.Switch
-                  className={`me-4 ${styles.switch}`}
-                  id="recurring"
-                  type="checkbox"
-                  checked={recurrenceEnabled}
-                  aria-label={t('recurring')}
-                  data-testid="recurringEventCheck"
-                  onChange={toggleRecurrence}
-                />
-              </div>
-            )}
+        {showCreateChat && (
+          <div>
+            <div className={styles.dispflex}>
+              <label htmlFor="createChat">{t('createChat')}?</label>
+              <Form.Switch
+                className={`me-4 ${styles.switch}`}
+                id="chat"
+                type="checkbox"
+                data-testid="createChatCheck"
+                checked={formState.createChat}
+                onChange={(): void =>
+                  setFormState((prev) => ({
+                    ...prev,
+                    createChat: !prev.createChat,
+                  }))
+                }
+              />
+            </div>
+          </div>
+        )}
+        {!disableRecurrence &&
+          recurrenceEnabled &&
+          (!showRecurrenceToggle || formState.recurrenceRule) && (
             <div>
               <Dropdown
                 show={recurrenceDropdownOpen}
@@ -473,7 +483,6 @@ const EventForm: React.FC<IEventFormProps> = ({
                   id="recurrence-dropdown"
                   data-testid="recurrenceDropdown"
                   className={`${styles.dropdown}`}
-                  disabled={!recurrenceEnabled}
                 >
                   {currentRecurrenceLabel()}
                 </Dropdown.Toggle>
@@ -498,38 +507,17 @@ const EventForm: React.FC<IEventFormProps> = ({
                 </Dropdown.Menu>
               </Dropdown>
             </div>
-          </div>
-        )}
-        {showCreateChat && (
-          <div className={styles.dispflex}>
-            <label htmlFor="chat">{t('createChat')}?</label>
-            <Form.Switch
-              className={`me-4 ${styles.switch}`}
-              id="chat"
-              type="checkbox"
-              data-testid="createChatCheck"
-              checked={formState.createChat}
-              aria-label={t('createChat')}
-              onChange={(): void =>
-                setFormState((prev) => ({
-                  ...prev,
-                  createChat: !prev.createChat,
-                }))
-              }
-            />
-          </div>
-        )}
-        <div className="d-flex gap-2 mt-3">
-          <Button
-            type="submit"
-            className={styles.addButton}
-            value="createevent"
-            data-testid="createEventBtn"
-            data-cy="createEventBtn"
-            disabled={submitting}
-          >
-            {submitLabel}
-          </Button>
+          )}
+        <Button
+          type="submit"
+          className={styles.addButton}
+          value="createevent"
+          data-testid="createEventBtn"
+          disabled={submitting}
+        >
+          {submitLabel}
+        </Button>
+        {showCancelButton && (
           <Button
             variant="secondary"
             onClick={onCancel}
@@ -537,7 +525,7 @@ const EventForm: React.FC<IEventFormProps> = ({
           >
             {tCommon('cancel')}
           </Button>
-        </div>
+        )}
       </Form>
 
       {recurrenceEnabled && formState.recurrenceRule && (

@@ -268,8 +268,8 @@ describe('Organisation Events Page', () => {
     });
 
     // flip public/registrable for branch coverage
-    await userEvent.click(screen.getByTestId('ispublicCheck'));
-    await userEvent.click(screen.getByTestId('registrableCheck'));
+    await userEvent.click(screen.getByTestId('publicEventCheck'));
+    await userEvent.click(screen.getByTestId('registerableEventCheck'));
 
     await wait();
 
@@ -356,7 +356,7 @@ describe('Organisation Events Page', () => {
       target: { value: formData.startDate },
     });
 
-    await userEvent.click(screen.getByTestId('alldayCheck'));
+    await userEvent.click(screen.getByTestId('allDayEventCheck'));
 
     await waitFor(() =>
       expect(getPickerInputByLabel(translations.startTime)).toBeInTheDocument(),

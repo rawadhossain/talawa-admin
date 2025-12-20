@@ -38,4 +38,5 @@ export interface IEventFormProps {
   disableRecurrence?: boolean;
   submitting?: boolean;
   showRecurrenceToggle?: boolean;
+  showCancelButton?: boolean;
 }

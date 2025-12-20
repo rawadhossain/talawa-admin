@@ -141,6 +141,7 @@ const CreateEventModal: React.FC<ICreateEventModalProps> = ({
             showPublicToggle
             showRecurrenceToggle={false}
             submitting={createLoading}
+            showCancelButton
           />
         </Modal.Body>
       </Modal>
