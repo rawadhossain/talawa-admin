@@ -427,8 +427,8 @@ const ERROR_MOCKS = [
         id: 'org123',
         first: 150,
         after: null,
-        startDate,
-        endDate,
+        startAt: startDate,
+        endAt: endDate,
         includeRecurring: true,
       },
     },
@@ -929,23 +929,29 @@ describe('Testing Events Screen [User Portal]', () => {
 
     const allDayCheckbox = await screen.findByTestId('allDayEventCheck');
 
-    const startTimeInput = screen.getByLabelText(
+    // When all-day is enabled, time pickers are disabled
+    const startTimeInputWhenAllDay = screen.getByLabelText(
       'Start Time',
     ) as HTMLInputElement;
-    const endTimeInput = screen.getByLabelText('End Time') as HTMLInputElement;
+    const endTimeInputWhenAllDay = screen.getByLabelText(
+      'End Time',
+    ) as HTMLInputElement;
+    expect(startTimeInputWhenAllDay).toBeDisabled();
+    expect(endTimeInputWhenAllDay).toBeDisabled();
 
-    // BEFORE toggle → disabled
-    expect(startTimeInput).toBeDisabled();
-    expect(endTimeInput).toBeDisabled();
-
-    // Toggle all-day OFF
+    // Toggle all-day OFF (uncheck it)
     await userEvent.click(allDayCheckbox);
 
-    // AFTER toggle → enabled
-    await waitFor(() => {
-      expect(startTimeInput).not.toBeDisabled();
-      expect(endTimeInput).not.toBeDisabled();
-    });
+    const startTimeInput = (await screen.findByLabelText(
+      'Start Time',
+    )) as HTMLInputElement;
+    const endTimeInput = (await screen.findByLabelText(
+      'End Time',
+    )) as HTMLInputElement;
+
+    // AFTER toggle → visible + enabled
+    expect(startTimeInput).not.toBeDisabled();
+    expect(endTimeInput).not.toBeDisabled();
 
     // Optional sanity: values unchanged
     expect(startTimeInput.value).toBe('08:00:00');
