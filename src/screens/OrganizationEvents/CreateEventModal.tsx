@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { useMutation } from '@apollo/client';
@@ -54,23 +54,20 @@ const CreateEventModal: React.FC<ICreateEventModalProps> = ({
     CREATE_EVENT_MUTATION,
   );
 
-  const defaultValues: IEventFormValues = useMemo(
-    () => ({
-      name: '',
-      description: '',
-      location: '',
-      startDate: new Date(),
-      endDate: new Date(),
-      startTime: '08:00:00',
-      endTime: '18:00:00',
-      allDay: true,
-      isPublic: true,
-      isRegisterable: false,
-      recurrenceRule: null,
-      createChat: false,
-    }),
-    [],
-  );
+  const defaultValues: IEventFormValues = {
+    name: '',
+    description: '',
+    location: '',
+    startDate: new Date(),
+    endDate: new Date(),
+    startTime: '08:00:00',
+    endTime: '18:00:00',
+    allDay: true,
+    isPublic: true,
+    isRegisterable: false,
+    recurrenceRule: null,
+    createChat: false,
+  };
   const [formResetKey, setFormResetKey] = useState(0);
 
   const handleClose = (): void => {
