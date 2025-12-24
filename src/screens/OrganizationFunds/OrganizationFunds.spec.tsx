@@ -341,9 +341,9 @@ describe('OrganizationFunds Screen =>', () => {
     });
 
     const rows = screen.getAllByTestId('fundName');
-    const fundNames = rows.map((row) => row.textContent);
-    expect(fundNames).toContain('Fund 1');
-    expect(fundNames).toContain('Fund 2');
+    // Verify Fund 2 (2024-06-21, earlier) appears before Fund 1 (2024-06-22, later)
+    expect(rows[0]).toHaveTextContent('Fund 2');
+    expect(rows[1]).toHaveTextContent('Fund 1');
   });
 
   it('Click on Fund Name', async () => {
@@ -439,8 +439,6 @@ describe('OrganizationFunds Screen =>', () => {
       expect(screen.getByText('Active Fund')).toBeInTheDocument();
       expect(screen.getByText('Archived Fund')).toBeInTheDocument();
     });
-    expect(screen.getByText('Active Fund')).toBeInTheDocument();
-    expect(screen.getByText('Archived Fund')).toBeInTheDocument();
   });
 
   it('should set document title', async () => {
