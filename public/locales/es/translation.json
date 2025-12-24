@@ -1704,6 +1704,8 @@
     "noPluginsAvailable": "No hay plugins disponibles",
     "installPluginsToSeeHere": "Instala plugins para verlos aquí",
     "checkBackLater": "Vuelve más tarde para nuevos plugins",
+    "tryDifferentSearch": "Prueba con un término de búsqueda diferente o explora todos los plugins",
+    "explorePluginStore": "Explora la tienda de plugins para descubrir nuevos plugins",
     "noResultsFoundFor": "No se encontraron resultados para"
   },
   "commentCard": {

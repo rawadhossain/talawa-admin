@@ -268,10 +268,9 @@ describe('OrganizationFunds Screen =>', () => {
         screen.getByTestId('funds-empty-state-message'),
       ).toBeInTheDocument();
       expect(screen.getByText(translations.noFundsFound)).toBeInTheDocument();
-      expect(
-        screen.getByTestId('funds-empty-state-action'),
-      ).toBeInTheDocument();
-      expect(screen.getByText(translations.createFund)).toBeInTheDocument();
+      const emptyStateAction = screen.getByTestId('funds-empty-state-action');
+      expect(emptyStateAction).toBeInTheDocument();
+      expect(emptyStateAction).toHaveTextContent(translations.createFund);
     });
   });
 

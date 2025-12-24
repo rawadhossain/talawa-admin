@@ -31,9 +31,9 @@ export default function PluginList({
   };
 
   const getEmptyDescription = (): string | undefined => {
-    if (searchTerm) return undefined;
+    if (searchTerm) return t('tryDifferentSearch');
     if (filterOption === 'installed') return t('installPluginsToSeeHere');
-    return t('checkBackLater');
+    return t('explorePluginStore');
   };
 
   if (plugins.length === 0) {

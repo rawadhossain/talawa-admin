@@ -4,9 +4,14 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { vi, describe, it, expect } from 'vitest';
 import { I18nextProvider } from 'react-i18next';
-import i18nForTest from 'utils/i18nForTest';
 import PluginList from '../PluginList';
 import type { IPluginMeta } from 'plugin';
+import styles from '../PluginList.module.css';
+
+// Ensure react-i18next is not mocked before importing i18nForTest
+// This allows i18nForTest to properly initialize with initReactI18next
+vi.unmock('react-i18next');
+import i18nForTest from 'utils/i18nForTest';
 
 // Mock the PluginCard component - Fix ESLint errors
 vi.mock('../PluginCard', () => ({
@@ -39,26 +44,6 @@ vi.mock('../PluginCard', () => ({
       </div>
     );
   },
-}));
-
-// Mock react-i18next - Vitest syntax
-const mockT = vi.hoisted(() =>
-  vi.fn((key: string) => {
-    const translations: Record<string, string> = {
-      noPluginsFound: 'No plugins found for your search',
-      noInstalledPlugins: 'No installed plugins',
-      noPluginsAvailable: 'No plugins available',
-      installPluginsToSeeHere: 'Install plugins to see them here',
-      checkBackLater: 'Check back later for new plugins',
-    };
-    return translations[key];
-  }),
-);
-
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: mockT,
-  }),
 }));
 
 describe('PluginList', () => {
@@ -150,7 +135,7 @@ describe('PluginList', () => {
     ).toBeInTheDocument();
     expect(screen.getByText('No plugins available')).toBeInTheDocument();
     expect(
-      screen.getByText('Check back later for new plugins'),
+      screen.getByText('Explore the plugin store to discover new plugins'),
     ).toBeInTheDocument();
   });
 
@@ -170,10 +155,13 @@ describe('PluginList', () => {
     expect(
       screen.getByText('No plugins found matching your search'),
     ).toBeInTheDocument();
-    // Description should not be shown when searchTerm exists
+    // Description should be shown when searchTerm exists
     expect(
-      screen.queryByTestId('plugins-empty-state-description'),
-    ).not.toBeInTheDocument();
+      screen.getByTestId('plugins-empty-state-description'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Try a different search term or browse all plugins'),
+    ).toBeInTheDocument();
   });
 
   // Test 6: When no plugins and filter is "installed" - shows "no installed plugins"
@@ -225,11 +213,8 @@ describe('PluginList', () => {
 
     // Check that the container has the CSS module class applied
     expect(listContainer).toBeInTheDocument();
-    // Styles are now in CSS module, so we verify the element exists with the class
-    // The computed styles will still match the CSS module styles
-    expect(listContainer).toHaveStyle('display: flex');
-    expect(listContainer).toHaveStyle('flex-direction: column');
-    expect(listContainer).toHaveStyle('gap: 20px');
+    // Verify the CSS module class is applied (CSS modules apply styles via classes, not inline)
+    expect(listContainer.className).toContain(styles.pluginListContainer);
   });
 
   // Test 9: renders one item per plugin id for each PluginCard
@@ -264,8 +249,11 @@ describe('PluginList', () => {
       screen.getByText('No plugins found matching your search'),
     ).toBeInTheDocument();
     expect(
-      screen.queryByTestId('plugins-empty-state-description'),
-    ).not.toBeInTheDocument();
+      screen.getByTestId('plugins-empty-state-description'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Try a different search term or browse all plugins'),
+    ).toBeInTheDocument();
 
     // Test case 2: Empty with installed filter
     rerender(
@@ -296,7 +284,7 @@ describe('PluginList', () => {
     );
     expect(screen.getByText('No plugins available')).toBeInTheDocument();
     expect(
-      screen.getByText('Check back later for new plugins'),
+      screen.getByText('Explore the plugin store to discover new plugins'),
     ).toBeInTheDocument();
   });
   // Test 11: Edge case - searchTerm takes precedence over filterOption
@@ -316,9 +304,11 @@ describe('PluginList', () => {
     expect(
       screen.getByText('No plugins found matching your search'),
     ).toBeInTheDocument();
-    // Description should not be shown when searchTerm exists
     expect(
-      screen.queryByTestId('plugins-empty-state-description'),
-    ).not.toBeInTheDocument();
+      screen.getByTestId('plugins-empty-state-description'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Try a different search term or browse all plugins'),
+    ).toBeInTheDocument();
   });
 });

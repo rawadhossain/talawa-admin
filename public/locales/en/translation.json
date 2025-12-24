@@ -1704,6 +1704,8 @@
     "noPluginsAvailable": "No plugins available",
     "installPluginsToSeeHere": "Install plugins to see them here",
     "checkBackLater": "Check back later for new plugins",
+    "tryDifferentSearch": "Try a different search term or browse all plugins",
+    "explorePluginStore": "Explore the plugin store to discover new plugins",
     "noResultsFoundFor": "No results found for"
   },
   "commentCard": {
