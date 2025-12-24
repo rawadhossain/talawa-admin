@@ -261,9 +261,18 @@ describe('OrganizationFunds Screen =>', () => {
   it('renders the empty fund component', async () => {
     mockedUseParams.mockReturnValue({ orgId: 'orgId' });
     renderOrganizationFunds(link3);
-    await waitFor(() =>
-      expect(screen.getByText(translations.noFundsFound)).toBeInTheDocument(),
-    );
+    await waitFor(() => {
+      expect(screen.getByTestId('funds-empty-state')).toBeInTheDocument();
+      expect(screen.getByTestId('funds-empty-state-icon')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('funds-empty-state-message'),
+      ).toBeInTheDocument();
+      expect(screen.getByText(translations.noFundsFound)).toBeInTheDocument();
+      expect(
+        screen.getByTestId('funds-empty-state-action'),
+      ).toBeInTheDocument();
+      expect(screen.getByText(translations.createFund)).toBeInTheDocument();
+    });
   });
 
   it('Sort the Pledges list by Latest created Date', async () => {

@@ -3,6 +3,8 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { vi, describe, it, expect } from 'vitest';
+import { I18nextProvider } from 'react-i18next';
+import i18nForTest from 'utils/i18nForTest';
 import PluginList from '../PluginList';
 import type { IPluginMeta } from 'plugin';
 
@@ -91,15 +93,23 @@ describe('PluginList', () => {
 
   // Test 1: When plugins are available - renders plugin list
   it('renders plugin list container when plugins are available', () => {
-    render(<PluginList {...defaultProps} />);
+    render(
+      <I18nextProvider i18n={i18nForTest}>
+        <PluginList {...defaultProps} />
+      </I18nextProvider>,
+    );
 
     expect(screen.getByTestId('plugin-list-container')).toBeInTheDocument();
-    expect(screen.queryByTestId('plugin-list-empty')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('plugins-empty-state')).not.toBeInTheDocument();
   });
 
   // Test 2: When plugins are available - renders all plugin cards
   it('renders all plugin cards when plugins are available', () => {
-    render(<PluginList {...defaultProps} />);
+    render(
+      <I18nextProvider i18n={i18nForTest}>
+        <PluginList {...defaultProps} />
+      </I18nextProvider>,
+    );
 
     expect(screen.getByTestId('plugin-list-item-1')).toBeInTheDocument();
     expect(screen.getByTestId('plugin-list-item-2')).toBeInTheDocument();
@@ -110,7 +120,11 @@ describe('PluginList', () => {
   // Test 3: When plugins are available - passes correct props to PluginCard
   it('passes correct plugin and onManage function to PluginCard', () => {
     const mockOnManage = vi.fn();
-    render(<PluginList {...defaultProps} onManagePlugin={mockOnManage} />);
+    render(
+      <I18nextProvider i18n={i18nForTest}>
+        <PluginList {...defaultProps} onManagePlugin={mockOnManage} />
+      </I18nextProvider>,
+    );
 
     const manageButton = screen.getByTestId('plugin-action-btn-1');
     fireEvent.click(manageButton);
@@ -120,11 +134,20 @@ describe('PluginList', () => {
 
   // Test 4: When no plugins and no search term - shows "no plugins available"
   it('shows "no plugins available" when no plugins and no search term', () => {
-    render(<PluginList {...defaultProps} plugins={[]} searchTerm="" />);
+    render(
+      <I18nextProvider i18n={i18nForTest}>
+        <PluginList {...defaultProps} plugins={[]} searchTerm="" />
+      </I18nextProvider>,
+    );
 
-    expect(screen.getByTestId('plugin-list-empty')).toBeInTheDocument();
-    expect(mockT).toHaveBeenCalledWith('noPluginsAvailable');
-    expect(mockT).toHaveBeenCalledWith('checkBackLater');
+    expect(screen.getByTestId('plugins-empty-state')).toBeInTheDocument();
+    expect(screen.getByTestId('plugins-empty-state-icon')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('plugins-empty-state-message'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId('plugins-empty-state-description'),
+    ).toBeInTheDocument();
     expect(screen.getByText('No plugins available')).toBeInTheDocument();
     expect(
       screen.getByText('Check back later for new plugins'),
@@ -133,54 +156,77 @@ describe('PluginList', () => {
 
   // Test 5: When no plugins and has search term - shows "no plugins found"
   it('shows "no plugins found" when no plugins and search term exists', () => {
-    render(<PluginList {...defaultProps} plugins={[]} searchTerm="react" />);
+    render(
+      <I18nextProvider i18n={i18nForTest}>
+        <PluginList {...defaultProps} plugins={[]} searchTerm="react" />
+      </I18nextProvider>,
+    );
 
-    expect(screen.getByTestId('plugin-list-empty')).toBeInTheDocument();
-    expect(mockT).toHaveBeenCalledWith('noPluginsFound');
-    expect(mockT).toHaveBeenCalledWith('checkBackLater');
+    expect(screen.getByTestId('plugins-empty-state')).toBeInTheDocument();
+    expect(screen.getByTestId('plugins-empty-state-icon')).toBeInTheDocument();
     expect(
-      screen.getByText('No plugins found for your search'),
+      screen.getByTestId('plugins-empty-state-message'),
     ).toBeInTheDocument();
     expect(
-      screen.getByText('Check back later for new plugins'),
+      screen.getByText('No plugins found matching your search'),
     ).toBeInTheDocument();
+    // Description should not be shown when searchTerm exists
+    expect(
+      screen.queryByTestId('plugins-empty-state-description'),
+    ).not.toBeInTheDocument();
   });
 
   // Test 6: When no plugins and filter is "installed" - shows "no installed plugins"
   it('shows "no installed plugins" when no plugins and filter is installed', () => {
     render(
-      <PluginList {...defaultProps} plugins={[]} filterOption="installed" />,
+      <I18nextProvider i18n={i18nForTest}>
+        <PluginList {...defaultProps} plugins={[]} filterOption="installed" />
+      </I18nextProvider>,
     );
 
-    expect(screen.getByTestId('plugin-list-empty')).toBeInTheDocument();
-    expect(mockT).toHaveBeenCalledWith('noInstalledPlugins');
-    expect(mockT).toHaveBeenCalledWith('installPluginsToSeeHere');
-    expect(screen.getByText('No installed plugins')).toBeInTheDocument();
+    expect(screen.getByTestId('plugins-empty-state')).toBeInTheDocument();
+    expect(screen.getByTestId('plugins-empty-state-icon')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('plugins-empty-state-message'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId('plugins-empty-state-description'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('No plugins installed yet')).toBeInTheDocument();
     expect(
       screen.getByText('Install plugins to see them here'),
     ).toBeInTheDocument();
   });
 
-  // Test 7: Empty state has correct styles
-  it('applies correct styles to empty state container', () => {
-    render(<PluginList {...defaultProps} plugins={[]} />);
+  // Test 7: Empty state renders with icon
+  it('renders empty state with extension icon', () => {
+    render(
+      <I18nextProvider i18n={i18nForTest}>
+        <PluginList {...defaultProps} plugins={[]} />
+      </I18nextProvider>,
+    );
 
-    const emptyState = screen.getByTestId('plugin-list-empty');
+    const emptyState = screen.getByTestId('plugins-empty-state');
+    const icon = screen.getByTestId('plugins-empty-state-icon');
 
-    // Check main container styles
-    expect(emptyState).toHaveStyle('text-align: center');
-    expect(emptyState).toHaveStyle('padding: 40px 20px');
-    expect(emptyState).toHaveStyle('background: #fff');
-    expect(emptyState).toHaveStyle('border-radius: 12px');
-    expect(emptyState).toHaveStyle('border: 1px solid #e7e7e7');
+    expect(emptyState).toBeInTheDocument();
+    expect(icon).toBeInTheDocument();
   });
 
   // Test 8: Plugin list container has correct styles
   it('applies correct styles to plugin list container', () => {
-    render(<PluginList {...defaultProps} />);
+    render(
+      <I18nextProvider i18n={i18nForTest}>
+        <PluginList {...defaultProps} />
+      </I18nextProvider>,
+    );
 
     const listContainer = screen.getByTestId('plugin-list-container');
 
+    // Check that the container has the CSS module class applied
+    expect(listContainer).toBeInTheDocument();
+    // Styles are now in CSS module, so we verify the element exists with the class
+    // The computed styles will still match the CSS module styles
     expect(listContainer).toHaveStyle('display: flex');
     expect(listContainer).toHaveStyle('flex-direction: column');
     expect(listContainer).toHaveStyle('gap: 20px');
@@ -188,7 +234,11 @@ describe('PluginList', () => {
 
   // Test 9: renders one item per plugin id for each PluginCard
   it('renders one item per plugin id for each PluginCard in the list', () => {
-    render(<PluginList {...defaultProps} />);
+    render(
+      <I18nextProvider i18n={i18nForTest}>
+        <PluginList {...defaultProps} />
+      </I18nextProvider>,
+    );
 
     mockPlugins.forEach((plugin) => {
       expect(
@@ -201,40 +251,49 @@ describe('PluginList', () => {
   it('covers all conditional rendering paths for empty states', () => {
     // Test case 1: Empty with search term
     const { rerender } = render(
-      <PluginList
-        {...defaultProps}
-        plugins={[]}
-        searchTerm="search"
-        filterOption="all"
-      />,
+      <I18nextProvider i18n={i18nForTest}>
+        <PluginList
+          {...defaultProps}
+          plugins={[]}
+          searchTerm="search"
+          filterOption="all"
+        />
+      </I18nextProvider>,
     );
-    expect(mockT).toHaveBeenCalledWith('noPluginsFound');
     expect(
-      screen.getByText('No plugins found for your search'),
+      screen.getByText('No plugins found matching your search'),
     ).toBeInTheDocument();
+    expect(
+      screen.queryByTestId('plugins-empty-state-description'),
+    ).not.toBeInTheDocument();
 
     // Test case 2: Empty with installed filter
     rerender(
-      <PluginList
-        {...defaultProps}
-        plugins={[]}
-        searchTerm=""
-        filterOption="installed"
-      />,
+      <I18nextProvider i18n={i18nForTest}>
+        <PluginList
+          {...defaultProps}
+          plugins={[]}
+          searchTerm=""
+          filterOption="installed"
+        />
+      </I18nextProvider>,
     );
-    expect(mockT).toHaveBeenCalledWith('noInstalledPlugins');
-    expect(screen.getByText('No installed plugins')).toBeInTheDocument();
+    expect(screen.getByText('No plugins installed yet')).toBeInTheDocument();
+    expect(
+      screen.getByText('Install plugins to see them here'),
+    ).toBeInTheDocument();
 
     // Test case 3: Empty with no filters or search
     rerender(
-      <PluginList
-        {...defaultProps}
-        plugins={[]}
-        searchTerm=""
-        filterOption="all"
-      />,
+      <I18nextProvider i18n={i18nForTest}>
+        <PluginList
+          {...defaultProps}
+          plugins={[]}
+          searchTerm=""
+          filterOption="all"
+        />
+      </I18nextProvider>,
     );
-    expect(mockT).toHaveBeenCalledWith('noPluginsAvailable');
     expect(screen.getByText('No plugins available')).toBeInTheDocument();
     expect(
       screen.getByText('Check back later for new plugins'),
@@ -243,22 +302,23 @@ describe('PluginList', () => {
   // Test 11: Edge case - searchTerm takes precedence over filterOption
   it('shows "no plugins found" when searchTerm exists even with installed filter', () => {
     render(
-      <PluginList
-        {...defaultProps}
-        plugins={[]}
-        searchTerm="test"
-        filterOption="installed"
-      />,
+      <I18nextProvider i18n={i18nForTest}>
+        <PluginList
+          {...defaultProps}
+          plugins={[]}
+          searchTerm="test"
+          filterOption="installed"
+        />
+      </I18nextProvider>,
     );
 
-    expect(screen.getByTestId('plugin-list-empty')).toBeInTheDocument();
-    expect(mockT).toHaveBeenCalledWith('noPluginsFound');
-    expect(mockT).toHaveBeenCalledWith('installPluginsToSeeHere');
+    expect(screen.getByTestId('plugins-empty-state')).toBeInTheDocument();
     expect(
-      screen.getByText('No plugins found for your search'),
+      screen.getByText('No plugins found matching your search'),
     ).toBeInTheDocument();
+    // Description should not be shown when searchTerm exists
     expect(
-      screen.getByText('Install plugins to see them here'),
-    ).toBeInTheDocument();
+      screen.queryByTestId('plugins-empty-state-description'),
+    ).not.toBeInTheDocument();
   });
 });
