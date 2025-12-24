@@ -10,7 +10,7 @@ import styles from '../PluginList.module.css';
 
 // Ensure react-i18next is not mocked before importing i18nForTest
 // This allows i18nForTest to properly initialize with initReactI18next
-vi.unmock('react-i18next');
+// vi.unmock('react-i18next');
 import i18nForTest from 'utils/i18nForTest';
 
 // Mock the PluginCard component - Fix ESLint errors

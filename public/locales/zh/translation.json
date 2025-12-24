@@ -150,7 +150,8 @@
     "allCaughtUp": "全部已读！",
     "prev": "上一页",
     "next": "下一页",
-    "markAsRead": "标记为已读"
+    "markAsRead": "标记为已读",
+    "markAsReadAriaLabel": "将通知'{{title}}'标记为已读"
   },
   "orgList": {
     "title": "塔拉瓦组织",

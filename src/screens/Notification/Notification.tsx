@@ -137,6 +137,9 @@ const Notification: React.FC = () => {
                       <Button
                         variant="primary"
                         size="sm"
+                        aria-label={t('markAsReadAriaLabel', {
+                          title: notification.title,
+                        })}
                         className={styles.markButton}
                         onClick={() => handleMarkAsRead([notification.id])}
                       >

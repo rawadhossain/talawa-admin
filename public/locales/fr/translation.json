@@ -150,7 +150,8 @@
     "allCaughtUp": "Vous êtes à jour !",
     "prev": "Précédent",
     "next": "Suivant",
-    "markAsRead": "Marquer comme lues"
+    "markAsRead": "Marquer comme lues",
+    "markAsReadAriaLabel": "Marquer la notification '{{title}}' comme lue"
   },
   "orgList": {
     "title": "Organisations Talawa",

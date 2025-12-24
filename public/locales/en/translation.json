@@ -150,7 +150,8 @@
     "allCaughtUp": "You're all caught up!",
     "prev": "Prev",
     "next": "Next",
-    "markAsRead": "Mark as Read"
+    "markAsRead": "Mark as Read",
+    "markAsReadAriaLabel": "Mark notification '{{title}}' as read"
   },
   "orgList": {
     "title": "Organizations",

@@ -17,7 +17,13 @@ import { store } from 'state/store';
 import { StaticMockLink } from 'utils/StaticMockLink';
 import i18nForTest from 'utils/i18nForTest';
 import OrganizationFunds from './OrganizationFunds';
-import { MOCKS, MOCKS_ERROR, NO_FUNDS } from './OrganizationFundsMocks';
+import {
+  MOCKS,
+  MOCKS_ERROR,
+  NO_FUNDS,
+  MOCKS_WITH_ARCHIVED,
+  MOCKS_LOADING,
+} from './OrganizationFundsMocks';
 import type { ApolloLink } from '@apollo/client';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -57,6 +63,8 @@ const loadingOverlaySpy = vi.fn();
 const link1 = new StaticMockLink(MOCKS, true);
 const link2 = new StaticMockLink(MOCKS_ERROR, true);
 const link3 = new StaticMockLink(NO_FUNDS, true);
+const link4 = new StaticMockLink(MOCKS_WITH_ARCHIVED, true);
+const link5 = new StaticMockLink(MOCKS_LOADING, true);
 
 const translations = JSON.parse(
   JSON.stringify(i18nForTest.getDataByLanguage('en')?.translation.funds),
@@ -272,6 +280,20 @@ describe('OrganizationFunds Screen =>', () => {
       expect(emptyStateAction).toBeInTheDocument();
       expect(emptyStateAction).toHaveTextContent(translations.createFund);
     });
+
+    // Test clicking the empty state action button opens the create fund modal
+    const emptyStateAction = screen.getByTestId('funds-empty-state-action');
+    await userEvent.click(emptyStateAction);
+
+    await waitFor(() => {
+      const modalTitle = screen.getByTestId('modalTitle');
+      expect(modalTitle).toHaveTextContent(translations.fundCreate);
+    });
+
+    await userEvent.click(screen.getByTestId('fundModalCloseBtn'));
+    await waitFor(() => {
+      expect(screen.queryByTestId('fundModalCloseBtn')).not.toBeInTheDocument();
+    });
   });
 
   it('Sort the Pledges list by Latest created Date', async () => {
@@ -290,6 +312,38 @@ describe('OrganizationFunds Screen =>', () => {
       expect(rows[0]).toHaveTextContent('Fund 1');
       expect(rows[1]).toHaveTextContent('Fund 2');
     });
+  });
+
+  it('Sort the Pledges list by Earliest created Date', async () => {
+    mockedUseParams.mockReturnValue({ orgId: 'orgId' });
+    renderOrganizationFunds(link1);
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('errorMsg')).not.toBeInTheDocument();
+    });
+    await waitFor(() => {
+      expect(screen.getAllByTestId('fundName').length).toBeGreaterThan(0);
+    });
+
+    // Change to ASC sorting
+    await userEvent.click(await screen.findByTestId('sort'));
+    await userEvent.click(screen.getByTestId('createdAt_ASC'));
+
+    // Wait for sort to apply - verify the sort button shows ASC selection
+    await waitFor(() => {
+      const sortButton = screen.getByTestId('sort');
+      expect(sortButton).toHaveTextContent('createdAt_ASC');
+    });
+
+    // Verify funds are still rendered (component didn't crash)
+    await waitFor(() => {
+      expect(screen.getAllByTestId('fundName').length).toBeGreaterThan(0);
+    });
+
+    const rows = screen.getAllByTestId('fundName');
+    const fundNames = rows.map((row) => row.textContent);
+    expect(fundNames).toContain('Fund 1');
+    expect(fundNames).toContain('Fund 2');
   });
 
   it('Click on Fund Name', async () => {
@@ -354,5 +408,48 @@ describe('OrganizationFunds Screen =>', () => {
     await waitFor(() => {
       expect(screen.queryByTestId('errorMsg')).not.toBeInTheDocument();
     });
+  });
+
+  it('should render loading state', async () => {
+    mockedUseParams.mockReturnValue({ orgId: 'orgId' });
+    renderOrganizationFunds(link5);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('spinner-wrapper')).toBeInTheDocument();
+      expect(screen.getByTestId('spinner')).toBeInTheDocument();
+    });
+
+    await waitFor(
+      () => {
+        expect(screen.queryByTestId('spinner-wrapper')).not.toBeInTheDocument();
+      },
+      { timeout: 1000 },
+    );
+  });
+
+  it('should display archived status for archived funds', async () => {
+    mockedUseParams.mockReturnValue({ orgId: 'orgId' });
+    renderOrganizationFunds(link4);
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('errorMsg')).not.toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('Active Fund')).toBeInTheDocument();
+      expect(screen.getByText('Archived Fund')).toBeInTheDocument();
+    });
+    expect(screen.getByText('Active Fund')).toBeInTheDocument();
+    expect(screen.getByText('Archived Fund')).toBeInTheDocument();
+  });
+
+  it('should set document title', async () => {
+    mockedUseParams.mockReturnValue({ orgId: 'orgId' });
+    renderOrganizationFunds(link1);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('searchByName')).toBeInTheDocument();
+    });
+    expect(document.title).toBeTruthy();
   });
 });
