@@ -774,6 +774,7 @@
     "moreUsers": "+{{count}} de plus...",
     "togglePledgedRaised": "Basculer entre les montants Promis et Collectés",
     "pledgeDate": "Date d'Engagement",
+    "pledged": "Promis",
     "donated": "Donné"
   },
   "orgPost": {

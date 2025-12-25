@@ -774,6 +774,7 @@
     "moreUsers": "+{{count}} more...",
     "togglePledgedRaised": "Toggle between Pledged and Raised amounts",
     "pledgeDate": "Pledge Date",
+    "pledged": "Pledged",
     "donated": "Donated"
   },
   "orgPost": {

@@ -368,7 +368,7 @@ describe('Testing Campaign Pledge Screen', () => {
       expect(screen.getByTestId('searchPledger')).toBeInTheDocument();
     });
 
-    // Get translation values
+    // Get translation values with fallbacks
     const t = (i18nForTest.getDataByLanguage('en')?.translation?.pledges ??
       {}) as Record<string, string>;
     const tCommon = (i18nForTest.getDataByLanguage('en')?.common ??
@@ -377,11 +377,15 @@ describe('Testing Campaign Pledge Screen', () => {
     // Wait for DataGrid headers to render - they may take time to appear
     await waitFor(
       () => {
-        expect(screen.getByText(t.pledgers)).toBeInTheDocument();
-        expect(screen.getByText(t.pledgeDate)).toBeInTheDocument();
-        expect(screen.getByText(t.pledged)).toBeInTheDocument();
-        expect(screen.getByText(t.donated)).toBeInTheDocument();
-        expect(screen.getByText(tCommon.action)).toBeInTheDocument();
+        expect(screen.getByText(t.pledgers ?? 'Pledgers')).toBeInTheDocument();
+        expect(
+          screen.getByText(t.pledgeDate ?? 'Pledge Date'),
+        ).toBeInTheDocument();
+        expect(screen.getByText(t.pledged ?? 'Pledged')).toBeInTheDocument();
+        expect(screen.getByText(t.donated ?? 'Donated')).toBeInTheDocument();
+        expect(
+          screen.getByText(tCommon.action ?? 'Action'),
+        ).toBeInTheDocument();
       },
       { timeout: 3000 },
     );

@@ -774,6 +774,7 @@
     "moreUsers": "+{{count}} और...",
     "togglePledgedRaised": "प्रतिबद्ध और उठाई गई राशि के बीच टॉगल करें",
     "pledgeDate": "प्रतिज्ञा तिथि",
+    "pledged": "प्रतिबद्ध",
     "donated": "दान किया गया"
   },
   "orgPost": {

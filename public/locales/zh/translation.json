@@ -774,6 +774,7 @@
     "moreUsers": "+{{count}} 更多...",
     "togglePledgedRaised": "在承诺金额和募集金额之间切换",
     "pledgeDate": "承诺日期",
+    "pledged": "已承诺",
     "donated": "已捐赠"
   },
   "orgPost": {

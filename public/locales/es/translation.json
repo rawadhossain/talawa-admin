@@ -774,6 +774,7 @@
     "moreUsers": "+{{count}} más...",
     "togglePledgedRaised": "Alternar entre montos Comprometidos y Recaudados",
     "pledgeDate": "Fecha de Compromiso",
+    "pledged": "Comprometido",
     "donated": "Donado"
   },
   "orgPost": {
