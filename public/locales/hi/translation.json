@@ -768,7 +768,7 @@
     "searchByPlaceholder": "{{field}} द्वारा खोजें",
     "selectPledger": "कृपया एक प्रतिज्ञाकर्ता का चयन करें",
     "moreUsers": "+{{count}} और...",
-    "togglePledgedRaised": "प्रतिबद्ध और उठाए गए राशि के बीच टॉगल करें"
+    "togglePledgedRaised": "प्रतिबद्ध और उठाई गई राशि के बीच टॉगल करें"
   },
   "orgPost": {
     "title": "पदों",
@@ -1740,7 +1740,7 @@
   "common": {
     "signOut": "साइन आउट",
     "signingOut": "साइन आउट हो रहा है...",
-    "retryPrompt": "सेशन रद्द करने में विफल। पुनः प्रयास करें?",
+    "retryPrompt": "सेशन रद्द करना विफल रहा। पुनः प्रयास करें?",
     "breadcrumb": "ब्रेडक्रम्ब"
   }
 }

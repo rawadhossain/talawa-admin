@@ -76,8 +76,6 @@ enum TimeFrame {
   Yearly = 'yearly',
 }
 
-// MUI sx prop styles - camelCase required by MUI API
-
 function leaderboard(): JSX.Element {
   const { t } = useTranslation('translation', { keyPrefix: 'leaderboard' });
   const { t: tCommon } = useTranslation('common');
