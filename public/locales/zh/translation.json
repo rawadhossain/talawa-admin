@@ -12,7 +12,11 @@
     "noVolunteers": "未找到志愿者!",
     "goldMedal": "金牌",
     "silverMedal": "银牌",
-    "bronzeMedal": "铜牌"
+    "bronzeMedal": "铜牌",
+    "rank": "排名",
+    "volunteer": "志愿者",
+    "email": "电子邮件",
+    "hoursVolunteered": "志愿服务时数"
   },
   "loginPage": {
     "title": "塔拉瓦管理员",
@@ -768,7 +772,9 @@
     "searchByPlaceholder": "按{{field}}搜索",
     "selectPledger": "请选择一个承诺者",
     "moreUsers": "+{{count}} 更多...",
-    "togglePledgedRaised": "在承诺金额和募集金额之间切换"
+    "togglePledgedRaised": "在承诺金额和募集金额之间切换",
+    "pledgeDate": "承诺日期",
+    "donated": "已捐赠"
   },
   "orgPost": {
     "title": "帖子",
@@ -1741,6 +1747,7 @@
     "signOut": "退出登录",
     "signingOut": "正在退出...",
     "retryPrompt": "撤销会话失败。重试？",
-    "breadcrumb": "面包屑"
+    "breadcrumb": "面包屑",
+    "action": "操作"
   }
 }

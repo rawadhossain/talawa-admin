@@ -12,7 +12,11 @@
     "noVolunteers": "No Volunteers Found!",
     "goldMedal": "Gold medal",
     "silverMedal": "Silver medal",
-    "bronzeMedal": "Bronze medal"
+    "bronzeMedal": "Bronze medal",
+    "rank": "Rank",
+    "volunteer": "Volunteer",
+    "email": "Email",
+    "hoursVolunteered": "Hours Volunteered"
   },
   "loginPage": {
     "title": "Talawa Admin",
@@ -768,7 +772,9 @@
     "searchByPlaceholder": "Search by {{field}}",
     "selectPledger": "Please select a pledger",
     "moreUsers": "+{{count}} more...",
-    "togglePledgedRaised": "Toggle between Pledged and Raised amounts"
+    "togglePledgedRaised": "Toggle between Pledged and Raised amounts",
+    "pledgeDate": "Pledge Date",
+    "donated": "Donated"
   },
   "orgPost": {
     "title": "Posts",
@@ -1741,6 +1747,7 @@
     "signOut": "Sign out",
     "signingOut": "Signing out...",
     "retryPrompt": "Failed to revoke session. Retry?",
-    "breadcrumb": "Breadcrumb"
+    "breadcrumb": "Breadcrumb",
+    "action": "Action"
   }
 }

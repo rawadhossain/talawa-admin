@@ -143,7 +143,7 @@ function leaderboard(): JSX.Element {
   const columns: GridColDef[] = [
     {
       field: 'rank',
-      headerName: 'Rank',
+      headerName: t('rank'),
       flex: 1,
       align: 'center',
       minWidth: 100,
@@ -186,7 +186,7 @@ function leaderboard(): JSX.Element {
     },
     {
       field: 'volunteer',
-      headerName: 'Volunteer',
+      headerName: t('volunteer'),
       flex: 2,
       align: 'center',
       minWidth: 100,
@@ -231,7 +231,7 @@ function leaderboard(): JSX.Element {
     },
     {
       field: 'email',
-      headerName: 'Email',
+      headerName: t('email'),
       flex: 2,
       align: 'center',
       minWidth: 100,
@@ -251,7 +251,7 @@ function leaderboard(): JSX.Element {
     },
     {
       field: 'hoursVolunteered',
-      headerName: 'Hours Volunteered',
+      headerName: t('hoursVolunteered'),
       flex: 2,
       align: 'center',
       headerAlign: 'center',

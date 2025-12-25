@@ -165,7 +165,6 @@ const fundCampaignPledge = (): JSX.Element => {
   useEffect(() => {
     refetchPledge();
   }, [sortBy, refetchPledge]);
-  console.log('campaignInfo', campaignInfo);
 
   const openModal = (modal: ModalState): void => {
     setModalState((prevState) => ({ ...prevState, [modal]: true }));
@@ -229,7 +228,7 @@ const fundCampaignPledge = (): JSX.Element => {
   const columns: GridColDef[] = [
     {
       field: 'pledgers',
-      headerName: 'Pledgers',
+      headerName: t('pledgers'),
       flex: 3,
       minWidth: 50,
       align: 'left',
@@ -284,7 +283,7 @@ const fundCampaignPledge = (): JSX.Element => {
     },
     {
       field: 'pledgeDate',
-      headerName: 'Pledge Date',
+      headerName: t('pledgeDate'),
       flex: 1,
       minWidth: 150,
       align: 'center',
@@ -297,7 +296,7 @@ const fundCampaignPledge = (): JSX.Element => {
     },
     {
       field: 'amount',
-      headerName: 'Pledged',
+      headerName: t('pledged'),
       flex: 1,
       minWidth: 100,
       align: 'center',
@@ -322,7 +321,7 @@ const fundCampaignPledge = (): JSX.Element => {
     },
     {
       field: 'donated',
-      headerName: 'Donated',
+      headerName: t('donated'),
       flex: 1,
       minWidth: 100,
       align: 'center',
@@ -347,7 +346,7 @@ const fundCampaignPledge = (): JSX.Element => {
     },
     {
       field: 'action',
-      headerName: 'Action',
+      headerName: tCommon('action'),
       flex: 1,
       minWidth: 100,
       align: 'center',

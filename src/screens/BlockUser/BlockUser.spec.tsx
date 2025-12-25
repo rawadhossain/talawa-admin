@@ -435,7 +435,7 @@ describe('BlockUser Component', () => {
       });
     });
 
-    it('displays empty state when no blocked users are available', async () => {
+    it('displays empty state with noSpammerFound message when blocked tab is selected and searchTerm is empty', async () => {
       render(
         <MockedProvider mocks={createMocks({ emptyBlockedUsers: true })}>
           <BrowserRouter>

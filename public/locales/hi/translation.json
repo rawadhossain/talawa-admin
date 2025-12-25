@@ -12,7 +12,11 @@
     "noVolunteers": "कोई स्वयंसेवक नहीं मिला!",
     "goldMedal": "सोना",
     "silverMedal": "चांदी",
-    "bronzeMedal": "कांस्य"
+    "bronzeMedal": "कांस्य",
+    "rank": "रैंक",
+    "volunteer": "स्वयंसेवक",
+    "email": "ईमेल",
+    "hoursVolunteered": "स्वयंसेवक घंटे"
   },
   "loginPage": {
     "title": "तालावा व्यवस्थापक",
@@ -768,7 +772,9 @@
     "searchByPlaceholder": "{{field}} द्वारा खोजें",
     "selectPledger": "कृपया एक प्रतिज्ञाकर्ता का चयन करें",
     "moreUsers": "+{{count}} और...",
-    "togglePledgedRaised": "प्रतिबद्ध और उठाई गई राशि के बीच टॉगल करें"
+    "togglePledgedRaised": "प्रतिबद्ध और उठाई गई राशि के बीच टॉगल करें",
+    "pledgeDate": "प्रतिज्ञा तिथि",
+    "donated": "दान किया गया"
   },
   "orgPost": {
     "title": "पदों",
@@ -1741,6 +1747,7 @@
     "signOut": "साइन आउट",
     "signingOut": "साइन आउट हो रहा है...",
     "retryPrompt": "सेशन रद्द करना विफल रहा। पुनः प्रयास करें?",
-    "breadcrumb": "ब्रेडक्रम्ब"
+    "breadcrumb": "ब्रेडक्रम्ब",
+    "action": "क्रिया"
   }
 }

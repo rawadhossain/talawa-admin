@@ -1157,7 +1157,7 @@ describe('OrganizationPeople', () => {
     });
   });
 
-  test('displays empty state when no members are available', async () => {
+  test('displays localized notFound message in empty state', async () => {
     const emptyMock = createMemberConnectionMock(
       {
         orgId: 'orgid',
@@ -1202,6 +1202,9 @@ describe('OrganizationPeople', () => {
         expect(
           screen.getByTestId('organization-people-empty-state'),
         ).toBeInTheDocument();
+        const msg =
+          i18nForTest.getDataByLanguage('en')?.common?.notFound ?? 'Not Found';
+        expect(screen.getByText(msg)).toBeInTheDocument();
       },
       { timeout: 3000 },
     );

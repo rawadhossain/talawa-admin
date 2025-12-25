@@ -345,7 +345,7 @@ const BlockUser = (): JSX.Element => {
                   ? !showBlockedMembers
                     ? t('noUsersFound')
                     : t('noSpammerFound')
-                  : `${tCommon('noResultsFoundFor')} "${searchTerm}"`
+                  : `${t('noResultsFoundFor')} "${searchTerm}"`
               }
               dataTestId="block-user-empty-state"
             />

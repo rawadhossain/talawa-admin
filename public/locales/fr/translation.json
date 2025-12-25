@@ -12,7 +12,11 @@
     "noVolunteers": "Aucun Bénévole Trouvé!",
     "goldMedal": "or",
     "silverMedal": "argent",
-    "bronzeMedal": "bronze"
+    "bronzeMedal": "bronze",
+    "rank": "Rang",
+    "volunteer": "Bénévole",
+    "email": "E-mail",
+    "hoursVolunteered": "Heures Bénévoles"
   },
   "loginPage": {
     "title": "Administrateur Talawa",
@@ -768,7 +772,9 @@
     "searchByPlaceholder": "Rechercher par {{field}}",
     "selectPledger": "Veuillez sélectionner un donateur",
     "moreUsers": "+{{count}} de plus...",
-    "togglePledgedRaised": "Basculer entre les montants Promis et Collectés"
+    "togglePledgedRaised": "Basculer entre les montants Promis et Collectés",
+    "pledgeDate": "Date d'Engagement",
+    "donated": "Donné"
   },
   "orgPost": {
     "title": "Des postes",
@@ -1741,6 +1747,7 @@
     "signOut": "Se déconnecter",
     "signingOut": "Déconnexion en cours...",
     "retryPrompt": "Échec de la révocation de session. Réessayer ?",
-    "breadcrumb": "fil d'Ariane"
+    "breadcrumb": "fil d'Ariane",
+    "action": "Action"
   }
 }

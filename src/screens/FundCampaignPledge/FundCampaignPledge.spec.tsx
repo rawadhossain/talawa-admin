@@ -360,6 +360,33 @@ describe('Testing Campaign Pledge Screen', () => {
     });
   });
 
+  it('renders localized column headers', async () => {
+    renderFundCampaignPledge(link1);
+
+    // Wait for component to fully load
+    await waitFor(() => {
+      expect(screen.getByTestId('searchPledger')).toBeInTheDocument();
+    });
+
+    // Get translation values
+    const t = (i18nForTest.getDataByLanguage('en')?.translation?.pledges ??
+      {}) as Record<string, string>;
+    const tCommon = (i18nForTest.getDataByLanguage('en')?.common ??
+      {}) as Record<string, string>;
+
+    // Wait for DataGrid headers to render - they may take time to appear
+    await waitFor(
+      () => {
+        expect(screen.getByText(t.pledgers)).toBeInTheDocument();
+        expect(screen.getByText(t.pledgeDate)).toBeInTheDocument();
+        expect(screen.getByText(t.pledged)).toBeInTheDocument();
+        expect(screen.getByText(t.donated)).toBeInTheDocument();
+        expect(screen.getByText(tCommon.action)).toBeInTheDocument();
+      },
+      { timeout: 3000 },
+    );
+  });
+
   it('open and closes Create Pledge modal', async () => {
     // Set up controlled date for active campaign
     vi.setSystemTime(new Date('2024-06-15'));
