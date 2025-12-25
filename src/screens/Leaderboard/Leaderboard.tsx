@@ -61,12 +61,13 @@ import {
   type GridCellParams,
   type GridColDef,
 } from '@mui/x-data-grid';
-import { debounce, Stack } from '@mui/material';
+import { debounce } from '@mui/material';
 import Avatar from 'components/Avatar/Avatar';
 import { VOLUNTEER_RANKING } from 'GraphQl/Queries/EventVolunteerQueries';
 import { useQuery } from '@apollo/client';
 import SortingButton from 'subComponents/SortingButton';
 import SearchBar from 'shared-components/SearchBar/SearchBar';
+import EmptyState from 'shared-components/EmptyState/EmptyState';
 
 enum TimeFrame {
   All = 'allTime',
@@ -75,18 +76,7 @@ enum TimeFrame {
   Yearly = 'yearly',
 }
 
-const dataGridStyle = {
-  '&.MuiDataGrid-root .MuiDataGrid-cell:focus-within': {
-    outline: 'none !important',
-  },
-  '&.MuiDataGrid-root .MuiDataGrid-columnHeader:focus-within': {
-    outline: 'none',
-  },
-  '& .MuiDataGrid-row:hover': { backgroundColor: 'transparent' },
-  '& .MuiDataGrid-row.Mui-hovered': { backgroundColor: 'transparent' },
-  '& .MuiDataGrid-root': { borderRadius: '0.5rem' },
-  '& .MuiDataGrid-main': { borderRadius: '0.5rem' },
-};
+// MUI sx prop styles - camelCase required by MUI API
 
 function leaderboard(): JSX.Element {
   const { t } = useTranslation('translation', { keyPrefix: 'leaderboard' });
@@ -146,7 +136,7 @@ function leaderboard(): JSX.Element {
   if (rankingsError) {
     return (
       <div className={styles.message} data-testid="errorMsg">
-        <WarningAmberRounded className={styles.icon} fontSize="large" />
+        <WarningAmberRounded className={styles.icon} />
         <h6 className="fw-bold text-danger text-center">
           {tErrors('errorLoading', { entity: 'Volunteer Rankings' })}
         </h6>
@@ -168,19 +158,31 @@ function leaderboard(): JSX.Element {
         if (params.row.rank === 1) {
           return (
             <>
-              <img src={gold} alt="gold" className={styles.rankings} />
+              <img
+                src={gold}
+                alt={t('goldMedal')}
+                className={styles.rankings}
+              />
             </>
           );
         } else if (params.row.rank === 2) {
           return (
             <>
-              <img src={silver} alt="silver" className={styles.rankings} />
+              <img
+                src={silver}
+                alt={t('silverMedal')}
+                className={styles.rankings}
+              />
             </>
           );
         } else if (params.row.rank === 3) {
           return (
             <>
-              <img src={bronze} alt="bronze" className={styles.rankings} />
+              <img
+                src={bronze}
+                alt={t('bronzeMedal')}
+                className={styles.rankings}
+              />
             </>
           );
         } else return <>{params.row.rank}</>;
@@ -201,8 +203,7 @@ function leaderboard(): JSX.Element {
         return (
           <>
             <div
-              className="d-flex fw-bold align-items-center ms-5 "
-              style={{ cursor: 'pointer' }}
+              className={`d-flex fw-bold align-items-center ms-5 ${styles.cursorPointer}`}
               onClick={() =>
                 navigate(`/member/${orgId}`, { state: { id: _id } })
               }
@@ -211,7 +212,7 @@ function leaderboard(): JSX.Element {
               {image ? (
                 <img
                   src={image}
-                  alt="User"
+                  alt={tCommon('user')}
                   data-testid={`image${_id + 1}`}
                   className={styles.TableImage}
                 />
@@ -315,12 +316,22 @@ function leaderboard(): JSX.Element {
         getRowId={(row) => row.user._id}
         slots={{
           noRowsOverlay: () => (
-            <Stack height="100%" alignItems="center" justifyContent="center">
-              {t('noVolunteers')}
-            </Stack>
+            <EmptyState
+              icon="emoji_events"
+              message={t('noVolunteers')}
+              dataTestId="leaderboard-empty-state"
+            />
           ),
         }}
-        sx={dataGridStyle}
+        className={`${styles.dataGridNoHover} ${styles.dataGridRounded}`}
+        sx={{
+          '&.MuiDataGrid-root .MuiDataGrid-cell:focus-within': {
+            outline: 'none !important',
+          },
+          '&.MuiDataGrid-root .MuiDataGrid-columnHeader:focus-within': {
+            outline: 'none',
+          },
+        }}
         getRowClassName={() => `${styles.rowBackground}`}
         autoHeight
         rowHeight={65}

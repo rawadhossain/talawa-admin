@@ -292,6 +292,7 @@ describe('Testing Leaderboard Screen', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('searchBy')).toBeInTheDocument();
+      expect(screen.getByTestId('leaderboard-empty-state')).toBeInTheDocument();
       expect(screen.getByText(t.noVolunteers)).toBeInTheDocument();
     });
   });

@@ -9,7 +9,10 @@
     "weekly": "本周",
     "monthly": "本月",
     "yearly": "今年",
-    "noVolunteers": "未找到志愿者!"
+    "noVolunteers": "未找到志愿者!",
+    "goldMedal": "金牌",
+    "silverMedal": "银牌",
+    "bronzeMedal": "铜牌"
   },
   "loginPage": {
     "title": "塔拉瓦管理员",
@@ -763,7 +766,9 @@
     "startDate": "开始日期",
     "endDate": "结束日期",
     "searchByPlaceholder": "按{{field}}搜索",
-    "selectPledger": "请选择一个承诺者"
+    "selectPledger": "请选择一个承诺者",
+    "moreUsers": "+{{count}} 更多...",
+    "togglePledgedRaised": "在承诺金额和募集金额之间切换"
   },
   "orgPost": {
     "title": "帖子",
@@ -854,6 +859,7 @@
     "searchByFirstName": "按名字搜索",
     "searchByLastName": "按姓氏搜索",
     "noSpammerFound": "未发现垃圾邮件发送者",
+    "noUsersFound": "未找到用户",
     "searchByName": "按名称搜索",
     "name": "名称",
     "email": "电子邮件",
@@ -1734,6 +1740,7 @@
   "common": {
     "signOut": "退出登录",
     "signingOut": "正在退出...",
-    "retryPrompt": "撤销会话失败。重试？"
+    "retryPrompt": "撤销会话失败。重试？",
+    "breadcrumb": "面包屑"
   }
 }

@@ -119,6 +119,7 @@
 
   --font-size-header: 16px;
   --font-size-table-body: 14px;
+  --avatar-placeholder-bg: #ccc;
 
   --tableHeader-bg: #eaebef;
   --tableHeader-color: #000000;
@@ -10056,4 +10057,79 @@ form {
   font-size: 25px;
   margin-bottom: 2px;
   margin-right: 2px;
+}
+
+/* Utility classes for inline style replacements */
+.flexCenter {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.flexColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+.flexWrap {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.flexWrapGap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.maxHeight120 {
+  max-height: 120px;
+}
+
+.cursorPointer {
+  cursor: pointer;
+}
+
+.fullWidthHeight {
+  width: 100%;
+  height: 100%;
+}
+
+.progressBarHeight {
+  height: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.memberNameFontSize {
+  font-size: 15px;
+}
+
+/* Avatar placeholder background */
+.avatarPlaceholder {
+  background-color: var(--avatar-placeholder-bg, #ccc);
+}
+
+.avatarImage {
+  border-radius: 50%;
+  object-fit: cover;
+  width: var(--avatar-size, 40px);
+  height: var(--avatar-size, 40px);
+}
+
+.avatarPlaceholderSize {
+  width: var(--avatar-size, 40px);
+  height: var(--avatar-size, 40px);
+  font-size: calc(var(--avatar-size, 40px) * 0.4);
+  border-radius: 50%;
+}
+
+/* MUI DataGrid styles - using global selectors to target MUI classes */
+.dataGridNoHover :global(.MuiDataGrid-row:hover),
+.dataGridNoHover :global(.MuiDataGrid-row.Mui-hovered) {
+  background-color: transparent;
+}
+
+.dataGridRounded :global(.MuiDataGrid-root),
+.dataGridRounded :global(.MuiDataGrid-main) {
+  border-radius: 0.5rem;
 }

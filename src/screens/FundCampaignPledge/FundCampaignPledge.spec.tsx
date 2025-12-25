@@ -499,6 +499,9 @@ describe('Testing Campaign Pledge Screen', () => {
   it('renders the empty pledge component', async () => {
     renderFundCampaignPledge(link3);
     await waitFor(() => {
+      expect(
+        screen.getByTestId('fund-campaign-pledge-empty-state'),
+      ).toBeInTheDocument();
       expect(screen.getByText(translations.noPledges)).toBeInTheDocument();
     });
   });
@@ -801,6 +804,9 @@ describe('Testing Campaign Pledge Screen', () => {
     await waitFor(() => {
       // Both conditions belong here
       expect(screen.getByTestId('searchPledger')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('fund-campaign-pledge-empty-state'),
+      ).toBeInTheDocument();
       expect(screen.getByText(translations.noPledges)).toBeInTheDocument();
     });
   });

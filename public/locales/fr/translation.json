@@ -9,7 +9,10 @@
     "weekly": "Cette Semaine",
     "monthly": "Ce Mois",
     "yearly": "Cette Année",
-    "noVolunteers": "Aucun Bénévole Trouvé!"
+    "noVolunteers": "Aucun Bénévole Trouvé!",
+    "goldMedal": "or",
+    "silverMedal": "argent",
+    "bronzeMedal": "bronze"
   },
   "loginPage": {
     "title": "Administrateur Talawa",
@@ -763,7 +766,9 @@
     "startDate": "Date de début",
     "endDate": "Date de fin",
     "searchByPlaceholder": "Rechercher par {{field}}",
-    "selectPledger": "Veuillez sélectionner un donateur"
+    "selectPledger": "Veuillez sélectionner un donateur",
+    "moreUsers": "+{{count}} de plus...",
+    "togglePledgedRaised": "Basculer entre les montants Promis et Collectés"
   },
   "orgPost": {
     "title": "Des postes",
@@ -854,6 +859,7 @@
     "searchByFirstName": "Recherche par prénom",
     "searchByLastName": "Rechercher par nom de famille",
     "noSpammerFound": "Aucun spammeur trouvé",
+    "noUsersFound": "Aucun utilisateur trouvé",
     "searchByName": "Rechercher par nom",
     "name": "Nom",
     "email": "Email",
@@ -1734,6 +1740,7 @@
   "common": {
     "signOut": "Se déconnecter",
     "signingOut": "Déconnexion en cours...",
-    "retryPrompt": "Échec de la révocation de session. Réessayer ?"
+    "retryPrompt": "Échec de la révocation de session. Réessayer ?",
+    "breadcrumb": "fil d'Ariane"
   }
 }

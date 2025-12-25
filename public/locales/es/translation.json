@@ -9,7 +9,10 @@
     "weekly": "Esta Semana",
     "monthly": "Este Mes",
     "yearly": "Este Año",
-    "noVolunteers": "¡No Se Encontraron Voluntarios!"
+    "noVolunteers": "¡No Se Encontraron Voluntarios!",
+    "goldMedal": "oro",
+    "silverMedal": "plata",
+    "bronzeMedal": "bronce"
   },
   "loginPage": {
     "title": "Administrador Talawa",
@@ -763,7 +766,9 @@
     "raisedAmount": "Monto recaudado",
     "pledgedAmount": "Monto comprometido",
     "searchByPlaceholder": "Buscar por {{field}}",
-    "selectPledger": "Por favor seleccione un prometedor"
+    "selectPledger": "Por favor seleccione un prometedor",
+    "moreUsers": "+{{count}} más...",
+    "togglePledgedRaised": "Alternar entre montos Comprometidos y Recaudados"
   },
   "orgPost": {
     "title": "Publicaciones de Talawa",
@@ -858,7 +863,8 @@
     "searchByFirstName": "Buscar por nombre de pila",
     "searchByLastName": "Buscar por apellido",
     "noResultsFoundFor": "No se encontraron resultados para ",
-    "noSpammerFound": "No se encontró ningún spammer"
+    "noSpammerFound": "No se encontró ningún spammer",
+    "noUsersFound": "No se encontraron usuarios"
   },
   "eventManagement": {
     "name": "Gestión de eventos",
@@ -1734,6 +1740,7 @@
   "common": {
     "signOut": "Cerrar sesión",
     "signingOut": "Cerrando sesión...",
-    "retryPrompt": "Error al revocar la sesión. ¿Reintentar?"
+    "retryPrompt": "Error al revocar la sesión. ¿Reintentar?",
+    "breadcrumb": "miga de pan"
   }
 }

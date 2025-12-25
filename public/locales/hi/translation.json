@@ -9,7 +9,10 @@
     "weekly": "इस सप्ताह",
     "monthly": "इस माह",
     "yearly": "इस वर्ष",
-    "noVolunteers": "कोई स्वयंसेवक नहीं मिला!"
+    "noVolunteers": "कोई स्वयंसेवक नहीं मिला!",
+    "goldMedal": "सोना",
+    "silverMedal": "चांदी",
+    "bronzeMedal": "कांस्य"
   },
   "loginPage": {
     "title": "तालावा व्यवस्थापक",
@@ -763,7 +766,9 @@
     "startDate": "प्रारंभ तिथि",
     "endDate": "समाप्ति तिथि",
     "searchByPlaceholder": "{{field}} द्वारा खोजें",
-    "selectPledger": "कृपया एक प्रतिज्ञाकर्ता का चयन करें"
+    "selectPledger": "कृपया एक प्रतिज्ञाकर्ता का चयन करें",
+    "moreUsers": "+{{count}} और...",
+    "togglePledgedRaised": "प्रतिबद्ध और उठाए गए राशि के बीच टॉगल करें"
   },
   "orgPost": {
     "title": "पदों",
@@ -854,6 +859,7 @@
     "searchByFirstName": "प्रथम नाम से खोजें",
     "searchByLastName": "अंतिम नाम से खोजें",
     "noSpammerFound": "कोई स्पैमर नहीं मिला",
+    "noUsersFound": "कोई उपयोगकर्ता नहीं मिला",
     "searchByName": "नाम से खोजें",
     "name": "नाम",
     "email": "ईमेल",
@@ -1734,6 +1740,7 @@
   "common": {
     "signOut": "साइन आउट",
     "signingOut": "साइन आउट हो रहा है...",
-    "retryPrompt": "सेशन रद्द करने में विफल। पुनः प्रयास करें?"
+    "retryPrompt": "सेशन रद्द करने में विफल। पुनः प्रयास करें?",
+    "breadcrumb": "ब्रेडक्रम्ब"
   }
 }
