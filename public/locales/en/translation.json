@@ -10,9 +10,9 @@
     "monthly": "This Month",
     "yearly": "This Year",
     "noVolunteers": "No Volunteers Found!",
-    "goldMedal": "gold",
-    "silverMedal": "silver",
-    "bronzeMedal": "bronze"
+    "goldMedal": "Gold medal",
+    "silverMedal": "Silver medal",
+    "bronzeMedal": "Bronze medal"
   },
   "loginPage": {
     "title": "Talawa Admin",

@@ -95,9 +95,7 @@ function leaderboard(): JSX.Element {
   );
   const [timeFrame, setTimeFrame] = useState<TimeFrame>(TimeFrame.All);
 
-  /**
-   * Query to fetch volunteer rankings.
-   */
+  // Query to fetch volunteer rankings.
   const {
     data: rankingsData,
     loading: rankingsLoading,
@@ -210,7 +208,7 @@ function leaderboard(): JSX.Element {
               {image ? (
                 <img
                   src={image}
-                  alt={tCommon('user')}
+                  alt={firstName + ' ' + lastName}
                   data-testid={`image${_id + 1}`}
                   className={styles.TableImage}
                 />
