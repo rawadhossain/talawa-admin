@@ -322,10 +322,12 @@ function leaderboard(): JSX.Element {
         className={`${styles.dataGridNoHover} ${styles.dataGridRounded}`}
         sx={{
           '&.MuiDataGrid-root .MuiDataGrid-cell:focus-within': {
-            outline: 'none !important',
+            outline: '2px solid var(--primary-theme-color)',
+            outlineOffset: '-2px',
           },
           '&.MuiDataGrid-root .MuiDataGrid-columnHeader:focus-within': {
-            outline: 'none',
+            outline: '2px solid var(--primary-theme-color)',
+            outlineOffset: '-2px',
           },
         }}
         getRowClassName={() => `${styles.rowBackground}`}
