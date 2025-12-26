@@ -1,3 +1,49 @@
+/**
+ * Leaderboard component for displaying volunteer rankings within an organization.
+ *
+ * This component fetches and displays a leaderboard of volunteers based on their
+ * hours volunteered. It includes features such as search, sorting, and filtering
+ * by time frame. The leaderboard is displayed in a table format using the MUI DataGrid.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered leaderboard component.
+ *
+ * @remarks
+ * - Redirects to the home page if `orgId` is not present in the URL parameters.
+ * - Displays a loader while fetching data and an error message if the query fails.
+ * - Uses Apollo Client's `useQuery` to fetch volunteer rankings from the GraphQL API.
+ * - Supports debounced search functionality to filter volunteers by name.
+ *
+ * @example
+ * ```tsx
+ * <Leaderboard />
+ * ```
+ *
+ * @dependencies
+ * - `@mui/x-data-grid` for table rendering.
+ * - `@apollo/client` for GraphQL queries.
+ * - `react-router-dom` for navigation and URL parameter handling.
+ * - `@mui/material` for UI components like `Stack`.
+ * - Custom components: `Loader`, `Avatar`, `SortingButton`, `SearchBar`.
+ *
+ * @enum {TimeFrame}
+ * - `All`: All-time rankings.
+ * - `Weekly`: Rankings for the past week.
+ * - `Monthly`: Rankings for the past month.
+ * - `Yearly`: Rankings for the past year.
+ *
+ * @query
+ * - `VOLUNTEER_RANKING`: Fetches volunteer rankings based on organization ID, sort order,
+ *   time frame, and search term.
+ *
+ * @state
+ * - `searchTerm` (`string`): The current search term for filtering volunteers.
+ * - `sortBy` (`'hours_ASC' | 'hours_DESC'`): The current sorting order.
+ * - `timeFrame` (`TimeFrame`): The selected time frame for filtering rankings.
+ *
+ * @styles
+ * - Custom styles are applied using `styles` imported from `app-fixed.module.css`.
+ */
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, useNavigate, useParams } from 'react-router';
@@ -40,10 +86,6 @@ function Leaderboard(): JSX.Element {
   const { orgId } = useParams();
   const navigate = useNavigate();
 
-  if (!orgId) {
-    return <Navigate to="/" replace />;
-  }
-
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'hours_ASC' | 'hours_DESC'>(
     'hours_DESC',
@@ -59,6 +101,7 @@ function Leaderboard(): JSX.Element {
         nameContains: searchTerm,
       },
     },
+    skip: !orgId,
   });
 
   const rankings = useMemo(() => data?.getVolunteerRanks ?? [], [data]);
@@ -96,6 +139,10 @@ function Leaderboard(): JSX.Element {
     ],
     [t, tCommon, sortBy, timeFrame],
   );
+
+  if (!orgId) {
+    return <Navigate to="/" replace />;
+  }
 
   if (loading) {
     return <Loader size="xl" />;
@@ -139,10 +186,22 @@ function Leaderboard(): JSX.Element {
       sortable: false,
       renderCell: (params: GridCellParams) => {
         const { _id, firstName, lastName, image } = params.row.user;
+        const handleNavigation = () => {
+          navigate(`/member/${orgId}`, { state: { id: _id } });
+        };
         return (
           <div
             className={`${leaderboardStyles.volunteerCell}`}
-            onClick={() => navigate(`/member/${orgId}`, { state: { id: _id } })}
+            onClick={handleNavigation}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleNavigation();
+              }
+            }}
+            role="button"
+            tabIndex={0}
+            aria-label={`${tCommon('viewProfile')} ${firstName} ${lastName}`}
             data-testid="userName"
           >
             {image ? (
