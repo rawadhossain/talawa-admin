@@ -3,13 +3,15 @@
  * Allows entering multiple recipient emails/names and an optional message, then sends invites.
  */
 import React, { useState } from 'react';
-import { Modal, Button, Form, Spinner } from 'react-bootstrap';
+import { Button, Form, Spinner } from 'react-bootstrap';
 import TextField from '@mui/material/TextField';
 import { useMutation } from '@apollo/client';
 import { SEND_EVENT_INVITATIONS } from 'GraphQl/Mutations/mutations';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
+import BaseModal from 'shared-components/BaseModal/BaseModal';
 import type { ApolloError } from '@apollo/client/errors';
+import styles from './InviteByEmailModal.module.css';
 
 type Props = {
   show: boolean;
@@ -60,13 +62,13 @@ const InviteByEmailModal: React.FC<Props> = ({
       .filter((r) => r.email !== '');
 
     if (cleaned.length === 0) {
-      toast.error('Please provide at least one recipient email');
+      toast.error(t('atLeastOneEmailRequired') as string);
       return;
     }
 
     const invalid = validateEmails(cleaned.map((r) => r.email));
     if (invalid.length) {
-      toast.error(`Invalid email(s): ${invalid.join(', ')}`);
+      toast.error(t('invalidEmails', { emails: invalid.join(', ') }) as string);
       return;
     }
 
@@ -101,147 +103,147 @@ const InviteByEmailModal: React.FC<Props> = ({
   };
 
   return (
-    <Modal show={show} onHide={handleClose} backdrop="static" centered>
-      <Modal.Header
-        closeButton
-        style={{ backgroundColor: 'var(--tableHeader-bg)' }}
-      >
-        <Modal.Title>
-          {t('title', { defaultValue: 'Invite by Email' })}
-        </Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <Form onSubmit={onSubmit} data-testid="invite-by-email-form">
-          <Form.Group className="mb-3">
-            <Form.Label>
-              {t('emailsLabel', { defaultValue: 'Recipient emails and names' })}
-            </Form.Label>
-
-            {recipients.map((r, idx) => (
-              <div key={idx} className="d-flex align-items-center mb-2">
-                <TextField
-                  label={t('email', { defaultValue: 'Email' })}
-                  variant="outlined"
-                  size="small"
-                  value={r.email}
-                  onChange={(e) => {
-                    const copy = [...recipients];
-                    copy[idx] = { ...copy[idx], email: e.target.value };
-                    setRecipients(copy);
-                  }}
-                  style={{ flex: 1 }}
+    <BaseModal
+      show={show}
+      onHide={handleClose}
+      title={t('title', { defaultValue: 'Invite by Email' })}
+      headerClassName={styles.header}
+      backdrop="static"
+      centered
+      dataTestId="invite-by-email-modal"
+      footer={
+        <>
+          <Button
+            variant="secondary"
+            onClick={handleClose}
+            disabled={isSubmitting}
+          >
+            {tCommon('close', { defaultValue: 'Close' })}
+          </Button>
+          <Button
+            variant="primary"
+            onClick={onSubmit}
+            disabled={isSubmitting}
+            data-testid="send-invites"
+          >
+            {isSubmitting ? (
+              <>
+                <Spinner
+                  as="span"
+                  animation="border"
+                  size="sm"
+                  role="status"
+                  aria-hidden="true"
+                  className="me-2"
                 />
+                {t('sending', { defaultValue: 'Sending...' })}
+              </>
+            ) : (
+              t('sendInvites', { defaultValue: 'Send Invites' })
+            )}
+          </Button>
+        </>
+      }
+    >
+      <Form onSubmit={onSubmit} data-testid="invite-by-email-form">
+        <Form.Group className="mb-3">
+          <Form.Label>
+            {t('emailsLabel', { defaultValue: 'Recipient emails and names' })}
+          </Form.Label>
 
-                <TextField
-                  label={t('name', { defaultValue: 'Name' })}
-                  variant="outlined"
-                  size="small"
-                  value={r.name}
-                  onChange={(e) => {
-                    const copy = [...recipients];
-                    copy[idx] = { ...copy[idx], name: e.target.value };
-                    setRecipients(copy);
-                  }}
-                  style={{ width: 220, marginLeft: 12 }}
-                />
-
-                {recipients.length > 1 ? (
-                  <Button
-                    variant="link"
-                    onClick={() => {
-                      const copy = recipients.filter((_, i) => i !== idx);
-                      setRecipients(copy);
-                    }}
-                    style={{ marginLeft: 8 }}
-                  >
-                    {t('remove', { defaultValue: 'Remove' })}
-                  </Button>
-                ) : null}
-              </div>
-            ))}
-
-            <div className="mb-2">
-              <Button
-                variant="outline-primary"
-                onClick={() =>
-                  setRecipients([...recipients, { email: '', name: '' }])
-                }
-              >
-                {t('addRecipient', { defaultValue: 'Add recipient' })}
-              </Button>
-            </div>
-
-            <small className="text-muted">
-              {t('emailsHelp', {
-                defaultValue:
-                  'Provide email and optional name for each recipient. Add multiple recipients as needed.',
-              })}
-            </small>
-          </Form.Group>
-
-          <Form.Group className="mb-3">
-            <Form.Label>
-              {t('messageLabel', { defaultValue: 'Message (optional)' })}
-            </Form.Label>
-            <TextField
-              fullWidth
-              multiline
-              minRows={2}
-              placeholder={t('messagePlaceholder', {
-                defaultValue: 'You are invited to attend this event.',
-              })}
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              data-testid="invite-message"
-            />
-          </Form.Group>
-
-          <Form.Group className="mb-3">
-            <Form.Label>
-              {t('expiresInDaysLabel', { defaultValue: 'Expires in (days)' })}
-            </Form.Label>
-            <Form.Control
-              type="number"
-              min={1}
-              value={expiresInDays}
-              onChange={(e) => setExpiresInDays(Number(e.target.value))}
-              data-testid="invite-expires"
-            />
-          </Form.Group>
-        </Form>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button
-          variant="secondary"
-          onClick={handleClose}
-          disabled={isSubmitting}
-        >
-          {tCommon('close', { defaultValue: 'Close' })}
-        </Button>
-        <Button
-          variant="primary"
-          onClick={onSubmit}
-          disabled={isSubmitting}
-          data-testid="send-invites"
-        >
-          {isSubmitting ? (
-            <>
-              <Spinner
-                as="span"
-                animation="border"
-                size="sm"
-                role="status"
-                aria-hidden="true"
-                className="me-2"
+          {recipients.map((r, idx) => (
+            <div key={idx} className={styles.recipientRow}>
+              <TextField
+                label={t('email')}
+                variant="outlined"
+                size="small"
+                value={r.email}
+                onChange={(e) => {
+                  const copy = [...recipients];
+                  copy[idx] = { ...copy[idx], email: e.target.value };
+                  setRecipients(copy);
+                }}
+                className={styles.emailInput}
               />
-              {t('sending', { defaultValue: 'Sending...' })}
-            </>
-          ) : (
-            t('sendInvites', { defaultValue: 'Send Invites' })
-          )}
-        </Button>
-      </Modal.Footer>
-    </Modal>
+
+              <TextField
+                label={t('name')}
+                variant="outlined"
+                size="small"
+                value={r.name}
+                onChange={(e) => {
+                  const copy = [...recipients];
+                  copy[idx] = { ...copy[idx], name: e.target.value };
+                  setRecipients(copy);
+                }}
+                className={styles.nameInput}
+              />
+
+              {recipients.length > 1 && (
+                <Button
+                  variant="link"
+                  onClick={() => {
+                    const copy = recipients.filter((_, i) => i !== idx);
+                    setRecipients(copy);
+                  }}
+                  className={styles.removeButton}
+                >
+                  {t('remove')}
+                </Button>
+              )}
+            </div>
+          ))}
+
+          <div className="mb-2">
+            <Button
+              variant="outline-primary"
+              onClick={() =>
+                setRecipients([...recipients, { email: '', name: '' }])
+              }
+            >
+              {t('addRecipient', { defaultValue: 'Add recipient' })}
+            </Button>
+          </div>
+
+          <small className="text-muted">
+            {t('emailsHelp', {
+              defaultValue:
+                'Provide email and optional name for each recipient. Add multiple recipients as needed.',
+            })}
+          </small>
+        </Form.Group>
+
+        <Form.Group className="mb-3">
+          <Form.Label>
+            {t('messageLabel', { defaultValue: 'Message (optional)' })}
+          </Form.Label>
+          <TextField
+            fullWidth
+            multiline
+            minRows={2}
+            placeholder={t('messagePlaceholder', {
+              defaultValue: 'You are invited to attend this event.',
+            })}
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            data-testid="invite-message"
+          />
+        </Form.Group>
+
+        <Form.Group className="mb-3">
+          <Form.Label>
+            {t('expiresInDaysLabel', { defaultValue: 'Expires in (days)' })}
+          </Form.Label>
+          <Form.Control
+            type="number"
+            min={1}
+            value={expiresInDays}
+            onChange={(e) => setExpiresInDays(Number(e.target.value))}
+            data-testid="invite-expires"
+          />
+        </Form.Group>
+      </Form>
+    </BaseModal>
   );
 };
 

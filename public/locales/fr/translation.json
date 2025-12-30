@@ -1677,8 +1677,30 @@
     "checkedInSuccessfully": "Enregistrement réussi"
   },
   "eventRegistrantsModal": {
-    "errorAddingAttendee": "Erreur lors de l'ajout du participant",
-    "errorRemovingAttendee": "Erreur lors de la suppression du participant"
+    "inviteByEmail": {
+      "title": "Inviter par e-mail",
+      "atLeastOneEmailRequired": "Veuillez fournir au moins une adresse e-mail de destinataire",
+      "invalidEmails": "Adresse(s) e-mail invalide(s) : {{emails}}",
+      "errorSendingInvites": "Erreur lors de l’envoi des invitations",
+      "sending": "Envoi en cours...",
+      "sendInvites": "Envoyer les invitations",
+      "emailsLabel": "E-mails et noms des destinataires",
+      "email": "E-mail",
+      "name": "Nom",
+      "remove": "Supprimer",
+      "addRecipient": "Ajouter un destinataire",
+      "emailsHelp": "Fournissez l’e-mail et le nom facultatif pour chaque destinataire. Ajoutez plusieurs destinataires si nécessaire.",
+      "messageLabel": "Message (optionnel)",
+      "messagePlaceholder": "Vous êtes invité à participer à cet événement.",
+      "expiresInDaysLabel": "Expire dans (jours)"
+    }
+  },
+  "checkInModal": {
+    "title": "Gestion des pointages de l’événement",
+    "searchAttendees": "Rechercher des participants",
+    "unknownUser": "Utilisateur inconnu",
+    "userColumn": "Utilisateur",
+    "checkInStatusColumn": "Statut d’enregistrement"
   },
   "userCampaigns": {
     "title": "Campagnes de financement",

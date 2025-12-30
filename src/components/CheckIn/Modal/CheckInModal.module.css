@@ -1,0 +1,12 @@
+.header {
+  background-color: var(--tableHeader-bg);
+}
+
+.header :global(.modal-title) {
+  color: var(--tableHeader-color);
+}
+
+.dataGridContainer {
+  height: 500px;
+  width: 100%;
+}

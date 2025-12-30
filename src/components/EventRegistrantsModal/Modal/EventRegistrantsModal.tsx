@@ -39,7 +39,7 @@
  * - `react-i18next` for translations.
  */
 import React, { useState, useEffect } from 'react';
-import { Modal, Button } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { useMutation, useQuery } from '@apollo/client';
 import {
@@ -51,9 +51,11 @@ import { ADD_EVENT_ATTENDEE } from 'GraphQl/Mutations/mutations';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import { useTranslation } from 'react-i18next';
+import BaseModal from 'shared-components/BaseModal/BaseModal';
 import AddOnSpotAttendee from './AddOnSpot/AddOnSpotAttendee';
 import InviteByEmailModal from './InviteByEmail/InviteByEmailModal';
 import type { InterfaceUser } from 'types/User/interface';
+import styles from './EventRegistrantsModal.module.css';
 
 type ModalPropType = {
   show: boolean;
@@ -103,10 +105,10 @@ export const EventRegistrantsModal = (props: ModalPropType): JSX.Element => {
   // Function to add a new registrant to the event
   const addRegistrant = (): void => {
     if (member == null) {
-      toast.warning('Please choose an user to add first!');
+      toast.warning(t('pleaseChooseUserFirst') as string);
       return;
     }
-    toast.warn('Adding the attendee...');
+    toast.warn(t('addingAttendee') as string);
     const addVariables = isRecurring
       ? { userId: member.id, recurringEventInstanceId: eventId }
       : { userId: member.id, eventId: eventId };
@@ -116,7 +118,7 @@ export const EventRegistrantsModal = (props: ModalPropType): JSX.Element => {
     })
       .then(() => {
         toast.success(
-          tCommon('addedSuccessfully', { item: 'Attendee' }) as string,
+          tCommon('addedSuccessfully', { item: t('addRegistrant') }) as string,
         );
         attendeesRefetch(); // Refresh the list of attendees
       })
@@ -128,82 +130,77 @@ export const EventRegistrantsModal = (props: ModalPropType): JSX.Element => {
 
   return (
     <>
-      <Modal show={show} onHide={handleClose} backdrop="static" centered>
-        <AddOnSpotAttendee
-          show={open}
-          handleClose={() => setOpen(false)}
-          reloadMembers={() => {
-            attendeesRefetch();
+      <AddOnSpotAttendee
+        show={open}
+        handleClose={() => setOpen(false)}
+        reloadMembers={() => {
+          attendeesRefetch();
+        }}
+      />
+      <InviteByEmailModal
+        show={inviteOpen}
+        handleClose={() => setInviteOpen(false)}
+        eventId={eventId}
+        isRecurring={isRecurring}
+        onInvitesSent={() => {
+          attendeesRefetch();
+        }}
+      />
+      <BaseModal
+        show={show}
+        onHide={handleClose}
+        title={t('title')}
+        headerClassName={styles.header}
+        backdrop="static"
+        centered
+        dataTestId="event-registrants-modal"
+        footer={
+          <>
+            <Button
+              className={styles.inviteButton}
+              onClick={() => setInviteOpen(true)}
+            >
+              {t('inviteByEmail.title')}
+            </Button>
+
+            <Button
+              className={styles.addRegistrantButton}
+              onClick={addRegistrant}
+            >
+              {t('addRegistrant')}
+            </Button>
+          </>
+        }
+      >
+        <Autocomplete
+          id="addRegistrant"
+          onChange={(_, newMember): void => {
+            setMember(newMember);
           }}
+          noOptionsText={
+            <div className="d-flex">
+              <p className="me-2">{t('noRegistrationsFound')}</p>
+              <span className={styles.onspotLink} onClick={() => setOpen(true)}>
+                {t('addOnspotRegistration')}
+              </span>
+            </div>
+          }
+          options={memberData?.usersByOrganizationId || []}
+          getOptionLabel={(member: InterfaceUser): string =>
+            member.name || t('unknownUser')
+          }
+          renderInput={(params): React.ReactNode => (
+            <TextField
+              {...params}
+              data-testid="autocomplete"
+              label={t('addRegistrantLabel')}
+              placeholder={t('chooseUserPlaceholder')}
+            />
+          )}
         />
-        <InviteByEmailModal
-          show={inviteOpen}
-          handleClose={() => setInviteOpen(false)}
-          eventId={eventId}
-          isRecurring={isRecurring}
-          onInvitesSent={() => {
-            attendeesRefetch();
-          }}
-        />
-        <Modal.Header
-          closeButton
-          style={{ backgroundColor: 'var(--tableHeader-bg)' }}
-        >
-          <Modal.Title>Event Registrants</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Autocomplete
-            id="addRegistrant"
-            onChange={(_, newMember): void => {
-              setMember(newMember);
-            }}
-            noOptionsText={
-              <div className="d-flex ">
-                <p className="me-2">No Registrations found</p>
-                <span
-                  className="underline"
-                  style={{
-                    color: '#555',
-                    textDecoration: 'underline',
-                  }}
-                  onClick={() => {
-                    setOpen(true);
-                  }}
-                >
-                  Add Onspot Registration
-                </span>
-              </div>
-            }
-            options={memberData?.usersByOrganizationId || []}
-            getOptionLabel={(member: InterfaceUser): string =>
-              member.name || 'Unknown User'
-            }
-            renderInput={(params): React.ReactNode => (
-              <TextField
-                {...params}
-                data-testid="autocomplete"
-                label="Add an Registrant"
-                placeholder="Choose the user that you want to add"
-              />
-            )}
-          />
-          <br />
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            style={{ backgroundColor: '#6CC9A6', color: '#fff' }}
-            onClick={() => setInviteOpen(true)}
-          >
-            Invite by Email
-          </Button>
-          <Button
-            style={{ backgroundColor: '#A8C7FA', color: '#555' }}
-            onClick={addRegistrant}
-          >
-            Add Registrant
-          </Button>
-        </Modal.Footer>
-      </Modal>
+
+        <br />
+      </BaseModal>
     </>
   );
 };

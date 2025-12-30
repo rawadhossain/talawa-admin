@@ -1677,8 +1677,41 @@
     "checkedInSuccessfully": "Checked in successfully"
   },
   "eventRegistrantsModal": {
+    "inviteByEmail": {
+      "title": "Invite by Email",
+      "atLeastOneEmailRequired": "Please provide at least one recipient email",
+      "invalidEmails": "Invalid email(s): {{emails}}",
+      "errorSendingInvites": "Error sending invites",
+      "sending": "Sending...",
+      "sendInvites": "Send Invites",
+      "emailsLabel": "Recipient emails and names",
+      "email": "Email",
+      "name": "Name",
+      "remove": "Remove",
+      "addRecipient": "Add recipient",
+      "emailsHelp": "Provide email and optional name for each recipient. Add multiple recipients as needed.",
+      "messageLabel": "Message (optional)",
+      "messagePlaceholder": "You are invited to attend this event.",
+      "expiresInDaysLabel": "Expires in (days)"
+    },
     "errorAddingAttendee": "Error adding attendee",
-    "errorRemovingAttendee": "Error removing attendee"
+    "errorRemovingAttendee": "Error removing attendee",
+    "title": "Event Registrants",
+    "addRegistrant": "Add Registrant",
+    "noRegistrationsFound": "No Registrations found",
+    "addOnspotRegistration": "Add Onspot Registration",
+    "addRegistrantLabel": "Add a Registrant",
+    "chooseUserPlaceholder": "Choose the user that you want to add",
+    "unknownUser": "Unknown User",
+    "pleaseChooseUserFirst": "Please choose a user to add first!",
+    "addingAttendee": "Adding the attendee..."
+  },
+  "checkInModal": {
+    "title": "Event Check In Management",
+    "searchAttendees": "Search Attendees",
+    "unknownUser": "Unknown User",
+    "userColumn": "User",
+    "checkInStatusColumn": "Check In Status"
   },
   "userCampaigns": {
     "title": "Fundraising Campaigns",

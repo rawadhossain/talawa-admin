@@ -1677,8 +1677,30 @@
     "checkedInSuccessfully": "Registrado con éxito"
   },
   "eventRegistrantsModal": {
-    "errorAddingAttendee": "Error al agregar asistente",
-    "errorRemovingAttendee": "Error al eliminar asistente"
+    "inviteByEmail": {
+      "title": "Invitar por correo electrónico",
+      "atLeastOneEmailRequired": "Por favor, proporcione al menos un correo electrónico de destinatario",
+      "invalidEmails": "Correo(s) electrónico(s) inválido(s): {{emails}}",
+      "errorSendingInvites": "Error al enviar invitaciones",
+      "sending": "Enviando...",
+      "sendInvites": "Enviar invitaciones",
+      "emailsLabel": "Correos electrónicos y nombres de destinatarios",
+      "email": "Correo electrónico",
+      "name": "Nombre",
+      "remove": "Eliminar",
+      "addRecipient": "Agregar destinatario",
+      "emailsHelp": "Proporcione el correo electrónico y el nombre opcional para cada destinatario. Agregue múltiples destinatarios según sea necesario.",
+      "messageLabel": "Mensaje (opcional)",
+      "messagePlaceholder": "Está invitado a asistir a este evento.",
+      "expiresInDaysLabel": "Expira en (días)"
+    }
+  },
+  "checkInModal": {
+    "title": "Gestión de registro del evento",
+    "searchAttendees": "Buscar asistentes",
+    "unknownUser": "Usuario desconocido",
+    "userColumn": "Usuario",
+    "checkInStatusColumn": "Estado de registro"
   },
   "userCampaigns": {
     "title": "Campañas de recaudación de fondos",
