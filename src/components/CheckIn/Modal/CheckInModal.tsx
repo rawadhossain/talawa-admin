@@ -36,9 +36,9 @@
  * />
  */
 import React, { useState, useEffect } from 'react';
-import { Modal } from 'react-bootstrap';
 import { useQuery } from '@apollo/client';
 import { EVENT_CHECKINS, EVENT_DETAILS } from 'GraphQl/Queries/Queries';
+import BaseModal from 'shared-components/BaseModal/BaseModal';
 import { TableRow } from './Row/TableRow';
 import type {
   InterfaceAttendeeCheckIn,
@@ -48,6 +48,8 @@ import type {
 import type { GridColDef, GridRowHeightReturnValue } from '@mui/x-data-grid';
 import { DataGrid } from '@mui/x-data-grid';
 import SearchBar from 'shared-components/SearchBar/SearchBar';
+import styles from './CheckInModal.module.css';
+import { useTranslation } from 'react-i18next';
 
 export const CheckInModal = ({
   show,
@@ -58,6 +60,10 @@ export const CheckInModal = ({
   // State to hold the data for the table
   const [tableData, setTableData] = useState<InterfaceTableData[]>([]);
   const [isRecurring, setIsRecurring] = useState<boolean>(false);
+
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'checkInModal',
+  });
 
   // State for search filter input
   const [userFilterQuery, setUserFilterQuery] = useState('');
@@ -99,11 +105,11 @@ export const CheckInModal = ({
       setTableData(
         checkInData.event.attendeesCheckInStatus.map(
           (checkIn: InterfaceAttendeeCheckIn) => ({
-            userName: checkIn.user.name || 'Unknown User',
+            name: checkIn.user.name || t('unknownUser'),
             id: checkIn.id,
             checkInData: {
               id: checkIn.id,
-              name: checkIn.user.name || 'Unknown User',
+              name: checkIn.user.name || t('unknownUser'),
               userId: checkIn.user.id,
               checkInTime: checkIn.checkInTime,
               checkOutTime: checkIn.checkOutTime,
@@ -120,10 +126,10 @@ export const CheckInModal = ({
 
   // Define columns for the DataGrid
   const columns: GridColDef[] = [
-    { field: 'userName', headerName: 'User', width: 300 }, // Column for user names
+    { field: 'userName', headerName: t('userColumn'), width: 300 }, // Column for user names
     {
       field: 'checkInData',
-      headerName: 'Check In Status',
+      headerName: t('checkInStatusColumn'),
       width: 400,
       renderCell: (props) => (
         // Render a custom row component for check-in status
@@ -138,65 +144,51 @@ export const CheckInModal = ({
   ];
 
   return (
-    <>
-      <Modal
-        show={show}
-        onHide={handleClose}
-        backdrop="static"
-        centered
-        size="lg"
-      >
-        <Modal.Header
-          closeButton
-          style={{ backgroundColor: 'var(--tableHeader-bg)' }}
-        >
-          <Modal.Title
-            className="text-tableHeader-color"
-            data-testid="modal-title"
-          >
-            Event Check In Management
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <div className="p-2">
-            <SearchBar
-              placeholder="Search Attendees"
-              value={userFilterQuery}
-              onChange={(value) => {
-                setUserFilterQuery(value);
-                setFilterQueryModel({
-                  items: [
-                    {
-                      field: 'userName',
-                      operator: 'contains',
-                      value,
-                    },
-                  ],
-                });
-              }}
-              onClear={() => {
-                setUserFilterQuery('');
-                setFilterQueryModel({
-                  items: [
-                    { field: 'userName', operator: 'contains', value: '' },
-                  ],
-                });
-              }}
-              showSearchButton={false}
-              inputTestId="searchAttendees"
-              clearButtonTestId="clearSearchAttendees"
-            />
-          </div>
-          <div style={{ height: 500, width: '100%' }}>
-            <DataGrid
-              rows={tableData}
-              getRowHeight={(): GridRowHeightReturnValue => 'auto'}
-              columns={columns}
-              filterModel={filterQueryModel}
-            />
-          </div>
-        </Modal.Body>
-      </Modal>
-    </>
+    <BaseModal
+      show={show}
+      onHide={handleClose}
+      title={t('title')}
+      headerClassName={styles.header}
+      backdrop="static"
+      centered
+      size="lg"
+      dataTestId="check-in-modal"
+    >
+      <div className="p-2">
+        <SearchBar
+          placeholder={t('searchAttendees')}
+          value={userFilterQuery}
+          onChange={(value) => {
+            setUserFilterQuery(value);
+            setFilterQueryModel({
+              items: [
+                {
+                  field: 'userName',
+                  operator: 'contains',
+                  value,
+                },
+              ],
+            });
+          }}
+          onClear={() => {
+            setUserFilterQuery('');
+            setFilterQueryModel({
+              items: [{ field: 'userName', operator: 'contains', value: '' }],
+            });
+          }}
+          showSearchButton={false}
+          inputTestId="searchAttendees"
+          clearButtonTestId="clearSearchAttendees"
+        />
+      </div>
+      <div className={styles.dataGridContainer}>
+        <DataGrid
+          rows={tableData}
+          getRowHeight={(): GridRowHeightReturnValue => 'auto'}
+          columns={columns}
+          filterModel={filterQueryModel}
+        />
+      </div>
+    </BaseModal>
   );
 };

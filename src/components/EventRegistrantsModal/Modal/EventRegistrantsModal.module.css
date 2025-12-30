@@ -1,0 +1,19 @@
+.header {
+  background-color: var(--tableHeader-bg);
+}
+
+.inviteButton {
+  background-color: var(--success-bg);
+  color: var(--white);
+}
+
+.addRegistrantButton {
+  background-color: var(--primary-light);
+  color: var(--gray-600);
+}
+
+.onspotLink {
+  color: var(--gray-600);
+  text-decoration: underline;
+  cursor: pointer;
+}

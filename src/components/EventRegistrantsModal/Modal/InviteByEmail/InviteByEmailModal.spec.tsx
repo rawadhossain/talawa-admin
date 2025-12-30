@@ -99,7 +99,7 @@ describe('InviteByEmailModal', () => {
 
   it('calls handleClose when the header close button is clicked', () => {
     renderComponent();
-    fireEvent.click(screen.getByLabelText('Close'));
+    fireEvent.click(screen.getByTestId('modalCloseBtn'));
     expect(mockHandleClose).toHaveBeenCalledTimes(1);
   });
 

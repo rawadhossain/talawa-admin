@@ -1677,8 +1677,30 @@
     "checkedInSuccessfully": "成功签到"
   },
   "eventRegistrantsModal": {
-    "errorAddingAttendee": "添加与会者时出错",
-    "errorRemovingAttendee": "删除与会者时出错"
+    "inviteByEmail": {
+      "title": "通过电子邮件邀请",
+      "atLeastOneEmailRequired": "请至少提供一个收件人电子邮件",
+      "invalidEmails": "无效的电子邮件：{{emails}}",
+      "errorSendingInvites": "发送邀请时出错",
+      "sending": "正在发送...",
+      "sendInvites": "发送邀请",
+      "emailsLabel": "收件人电子邮件和姓名",
+      "email": "电子邮件",
+      "name": "姓名",
+      "remove": "移除",
+      "addRecipient": "添加收件人",
+      "emailsHelp": "为每位收件人提供电子邮件和可选姓名。根据需要添加多个收件人。",
+      "messageLabel": "消息（可选）",
+      "messagePlaceholder": "您被邀请参加此活动。",
+      "expiresInDaysLabel": "有效期（天）"
+    }
+  },
+  "checkInModal": {
+    "title": "活动签到管理",
+    "searchAttendees": "搜索参与者",
+    "unknownUser": "未知用户",
+    "userColumn": "用户",
+    "checkInStatusColumn": "签到状态"
   },
   "userCampaigns": {
     "title": "筹款活动",
