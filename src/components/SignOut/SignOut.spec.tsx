@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MockedProvider, MockedResponse } from '@apollo/react-testing';
 import { BrowserRouter } from 'react-router';
@@ -104,6 +104,7 @@ describe('SignOut Component', () => {
   });
 
   test('calls logout functionality when sign out button is clicked', async () => {
+    const user = userEvent.setup();
     const mockEndSession = vi.fn();
     (useSession as Mock).mockReturnValue({
       endSession: mockEndSession,
@@ -114,7 +115,7 @@ describe('SignOut Component', () => {
     renderWithProviders(<SignOut />, [mockLogoutMutation]);
 
     const signOutButton = screen.getByText('Sign out');
-    fireEvent.click(signOutButton);
+    await user.click(signOutButton);
 
     await waitFor(() => {
       // Verify localStorage was cleared
@@ -129,6 +130,7 @@ describe('SignOut Component', () => {
   });
 
   test('handles error during logout', async () => {
+    const user = userEvent.setup();
     const consoleErrorMock = vi
       .spyOn(console, 'error')
       .mockImplementation(() => {});
@@ -149,7 +151,7 @@ describe('SignOut Component', () => {
     renderWithProviders(<SignOut />, [mockErrorLogout]);
 
     const signOutButton = screen.getByText('Sign out');
-    fireEvent.click(signOutButton);
+    await user.click(signOutButton);
 
     await waitFor(() => {
       // Verify error was logged
@@ -172,6 +174,7 @@ describe('SignOut Component', () => {
   });
 
   test('retries logout when user confirms and succeeds', async () => {
+    const user = userEvent.setup();
     // Mock window.confirm to return true
     vi.spyOn(window, 'confirm').mockReturnValue(true);
 
@@ -209,7 +212,7 @@ describe('SignOut Component', () => {
     renderWithProviders(<SignOut />, mocks);
 
     const signOutButton = screen.getByText('Sign out');
-    fireEvent.click(signOutButton);
+    await user.click(signOutButton);
 
     await waitFor(() => {
       // Verify confirm was called
@@ -231,6 +234,7 @@ describe('SignOut Component', () => {
   });
 
   test('handles failure during retry of logout', async () => {
+    const user = userEvent.setup();
     // Mock window.confirm to return true
     vi.spyOn(window, 'confirm').mockReturnValue(true);
 
@@ -264,7 +268,7 @@ describe('SignOut Component', () => {
     renderWithProviders(<SignOut />, mocks);
 
     const signOutButton = screen.getByText('Sign out');
-    fireEvent.click(signOutButton);
+    await user.click(signOutButton);
 
     await waitFor(() => {
       // Verify error was logged for both attempts
@@ -288,6 +292,7 @@ describe('SignOut Component', () => {
   });
 
   test('proceeds with local logout when user declines retry', async () => {
+    const user = userEvent.setup();
     // Mock window.confirm to return false
     vi.spyOn(window, 'confirm').mockReturnValue(false);
 
@@ -314,7 +319,7 @@ describe('SignOut Component', () => {
     renderWithProviders(<SignOut />, mocks);
 
     const signOutButton = screen.getByText('Sign out');
-    fireEvent.click(signOutButton);
+    await user.click(signOutButton);
 
     await waitFor(() => {
       // Verify confirm was called
@@ -355,6 +360,7 @@ describe('SignOut Component', () => {
     });
 
     test('sign out button responds to Enter key press', async () => {
+      const user = userEvent.setup();
       const mockEndSession = vi.fn();
       (useSession as Mock).mockReturnValue({
         endSession: mockEndSession,
@@ -367,7 +373,7 @@ describe('SignOut Component', () => {
       const signOutButton = screen.getByTestId('signOutBtn');
       signOutButton.focus();
 
-      await userEvent.keyboard('{Enter}');
+      await user.keyboard('{Enter}');
 
       await waitFor(() => {
         expect(mockClearAllItems).toHaveBeenCalled();
@@ -377,6 +383,7 @@ describe('SignOut Component', () => {
     });
 
     test('sign out button responds to Space key press', async () => {
+      const user = userEvent.setup();
       const mockEndSession = vi.fn();
       (useSession as Mock).mockReturnValue({
         endSession: mockEndSession,
@@ -389,7 +396,7 @@ describe('SignOut Component', () => {
       const signOutButton = screen.getByTestId('signOutBtn');
       signOutButton.focus();
 
-      await userEvent.keyboard(' ');
+      await user.keyboard(' ');
 
       await waitFor(() => {
         expect(mockClearAllItems).toHaveBeenCalled();
@@ -399,6 +406,7 @@ describe('SignOut Component', () => {
     });
 
     test('sign out button ignores other key presses', async () => {
+      const user = userEvent.setup();
       const mockEndSession = vi.fn();
       (useSession as Mock).mockReturnValue({
         endSession: mockEndSession,
@@ -411,9 +419,9 @@ describe('SignOut Component', () => {
       const signOutButton = screen.getByTestId('signOutBtn');
       signOutButton.focus();
 
-      await userEvent.keyboard('{Escape}');
-      await userEvent.keyboard('{Tab}');
-      await userEvent.keyboard('{ArrowDown}');
+      await user.keyboard('{Escape}');
+      await user.keyboard('{Tab}');
+      await user.keyboard('{ArrowDown}');
 
       await new Promise((resolve) => setTimeout(resolve, 100));
 
@@ -423,6 +431,7 @@ describe('SignOut Component', () => {
     });
 
     test('sign out button keyboard navigation with Enter key handles errors', async () => {
+      const user = userEvent.setup();
       vi.spyOn(window, 'confirm').mockReturnValue(false);
 
       const consoleErrorMock = vi
@@ -450,7 +459,7 @@ describe('SignOut Component', () => {
       const signOutButton = screen.getByTestId('signOutBtn');
       signOutButton.focus();
 
-      await userEvent.keyboard('{Enter}');
+      await user.keyboard('{Enter}');
 
       await waitFor(() => {
         expect(window.confirm).toHaveBeenCalledWith(
@@ -467,6 +476,7 @@ describe('SignOut Component', () => {
 
   describe('Disabled State and Spam Prevention', () => {
     test('button shows disabled state when logout is in progress', async () => {
+      const user = userEvent.setup();
       const mockEndSession = vi.fn();
       (useSession as Mock).mockReturnValue({
         endSession: mockEndSession,
@@ -481,7 +491,7 @@ describe('SignOut Component', () => {
       expect(screen.getByText('Sign out')).toBeInTheDocument();
 
       // Click the button
-      fireEvent.click(signOutButton);
+      await user.click(signOutButton);
 
       // Immediately check disabled state via aria-disabled
       expect(signOutButton).toHaveAttribute('aria-disabled', 'true');
@@ -493,6 +503,7 @@ describe('SignOut Component', () => {
     });
 
     test('prevents multiple clicks during logout', async () => {
+      const user = userEvent.setup();
       const mockEndSession = vi.fn();
       (useSession as Mock).mockReturnValue({
         endSession: mockEndSession,
@@ -503,9 +514,9 @@ describe('SignOut Component', () => {
       const signOutButton = screen.getByTestId('signOutBtn');
 
       // Click multiple times rapidly
-      fireEvent.click(signOutButton);
-      fireEvent.click(signOutButton);
-      fireEvent.click(signOutButton);
+      await user.click(signOutButton);
+      await user.click(signOutButton);
+      await user.click(signOutButton);
 
       await waitFor(() => {
         // Verify logout was only called once
@@ -515,6 +526,7 @@ describe('SignOut Component', () => {
     });
 
     test('button style prevents pointer events when disabled', async () => {
+      const user = userEvent.setup();
       const mockEndSession = vi.fn();
       (useSession as Mock).mockReturnValue({
         endSession: mockEndSession,
@@ -525,7 +537,7 @@ describe('SignOut Component', () => {
       const signOutButton = screen.getByTestId('signOutBtn');
 
       // Click the button
-      fireEvent.click(signOutButton);
+      await user.click(signOutButton);
 
       // Check that disabled state is set via aria-disabled
       await waitFor(() => {
@@ -534,6 +546,7 @@ describe('SignOut Component', () => {
     });
 
     test('hideDrawer prop hides text but maintains disabled state', async () => {
+      const user = userEvent.setup();
       const mockEndSession = vi.fn();
       (useSession as Mock).mockReturnValue({
         endSession: mockEndSession,
@@ -548,7 +561,7 @@ describe('SignOut Component', () => {
       expect(screen.queryByText('Signing out...')).not.toBeInTheDocument();
 
       // Click the button
-      fireEvent.click(signOutButton);
+      await user.click(signOutButton);
 
       // Verify disabled state is still applied and text remains hidden
       await waitFor(() => {

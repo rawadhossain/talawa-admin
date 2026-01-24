@@ -1,6 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { I18nextProvider } from 'react-i18next';
 import i18n from 'i18next';
 import EditOrgCustomFieldDropDown from './EditCustomFieldDropDown';
@@ -97,15 +98,14 @@ describe('EditOrgCustomFieldDropDown Component', () => {
   });
 
   it('displays all available field types in dropdown menu', async () => {
+    const user = userEvent.setup();
     render(
       <I18nextProvider i18n={i18n}>
         <EditOrgCustomFieldDropDown {...defaultProps} />
       </I18nextProvider>,
     );
 
-    await act(async () => {
-      fireEvent.click(screen.getByTestId('toggleBtn'));
-    });
+    await user.click(screen.getByTestId('toggleBtn'));
 
     // Change to get items by their test IDs instead of role
     const menuItems = [
@@ -123,34 +123,29 @@ describe('EditOrgCustomFieldDropDown Component', () => {
   });
 
   it('disables current type in dropdown menu', async () => {
+    const user = userEvent.setup();
     render(
       <I18nextProvider i18n={i18n}>
         <EditOrgCustomFieldDropDown {...defaultProps} />
       </I18nextProvider>,
     );
 
-    await act(async () => {
-      fireEvent.click(screen.getByTestId('toggleBtn'));
-    });
+    await user.click(screen.getByTestId('toggleBtn'));
 
     const textOption = screen.getByTestId('dropdown-btn-0');
     expect(textOption).toHaveClass('dropdown-item', 'disabled');
   });
 
   it('updates custom field data when new type is selected', async () => {
+    const user = userEvent.setup();
     render(
       <I18nextProvider i18n={i18n}>
         <EditOrgCustomFieldDropDown {...defaultProps} />
       </I18nextProvider>,
     );
 
-    await act(async () => {
-      fireEvent.click(screen.getByTestId('toggleBtn'));
-    });
-
-    await act(async () => {
-      fireEvent.click(screen.getByTestId('dropdown-btn-1'));
-    });
+    await user.click(screen.getByTestId('toggleBtn'));
+    await user.click(screen.getByTestId('dropdown-btn-1'));
 
     expect(mockSetCustomFieldData).toHaveBeenCalledWith({
       ...defaultProps.customFieldData,
@@ -159,6 +154,7 @@ describe('EditOrgCustomFieldDropDown Component', () => {
   });
 
   it('maintains other custom field data properties when updating type', async () => {
+    const user = userEvent.setup();
     const customFieldData = {
       type: 'TEXT',
       name: 'Test Field',
@@ -176,13 +172,8 @@ describe('EditOrgCustomFieldDropDown Component', () => {
       </I18nextProvider>,
     );
 
-    await act(async () => {
-      fireEvent.click(screen.getByTestId('toggleBtn'));
-    });
-
-    await act(async () => {
-      fireEvent.click(screen.getByTestId('dropdown-btn-2'));
-    });
+    await user.click(screen.getByTestId('toggleBtn'));
+    await user.click(screen.getByTestId('dropdown-btn-2'));
 
     expect(mockSetCustomFieldData).toHaveBeenCalledWith({
       ...customFieldData,
