@@ -1,5 +1,6 @@
 import React from 'react';
-import { fireEvent, render } from '@testing-library/react';
+import { render } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { TableRow } from './TableRow';
 import { BrowserRouter } from 'react-router';
 import { Provider } from 'react-redux';
@@ -47,6 +48,7 @@ describe('Testing Table Row for CheckIn Table', () => {
   });
 
   test('If the user is not checked in, button to check in should be displayed, and the user should be able to check in successfully', async () => {
+    const user = userEvent.setup();
     const props = {
       data: {
         id: `123`,
@@ -78,12 +80,13 @@ describe('Testing Table Row for CheckIn Table', () => {
 
     expect(await findByText('Check In')).toBeInTheDocument();
 
-    fireEvent.click(await findByText('Check In'));
+    await user.click(await findByText('Check In'));
 
     expect(await findByText('Checked in successfully')).toBeInTheDocument();
   });
 
   test('If the user is checked in, the option to download tag should be shown', async () => {
+    const user = userEvent.setup();
     const props = {
       data: {
         id: '123',
@@ -116,13 +119,14 @@ describe('Testing Table Row for CheckIn Table', () => {
     expect(await findByText('Checked In')).toBeInTheDocument();
     expect(await findByText('Download Tag')).toBeInTheDocument();
 
-    fireEvent.click(await findByText('Download Tag'));
+    await user.click(await findByText('Download Tag'));
 
     expect(await findByText('Generating pdf...')).toBeInTheDocument();
     expect(await findByText('PDF generated successfully!')).toBeInTheDocument();
   });
 
   test('Upon failing of check in mutation, the appropriate error message should be shown', async () => {
+    const user = userEvent.setup();
     const props = {
       data: {
         id: `123`,
@@ -154,13 +158,14 @@ describe('Testing Table Row for CheckIn Table', () => {
 
     expect(await findByText('Check In')).toBeInTheDocument();
 
-    fireEvent.click(await findByText('Check In'));
+    await user.click(await findByText('Check In'));
 
     expect(await findByText('Error checking in')).toBeInTheDocument();
     expect(await findByText('Oops')).toBeInTheDocument();
   });
 
   test('If PDF generation fails, the error message should be shown', async () => {
+    const user = userEvent.setup();
     const props = {
       data: {
         id: `123`,
@@ -190,12 +195,13 @@ describe('Testing Table Row for CheckIn Table', () => {
       </BrowserRouter>,
     );
 
-    fireEvent.click(await findByText('Download Tag'));
+    await user.click(await findByText('Download Tag'));
 
     expect(await findByText('Error generating pdf')).toBeInTheDocument();
   });
 
   test('Should check in user for recurring event successfully', async () => {
+    const user = userEvent.setup();
     const props = {
       data: {
         id: `123`,
@@ -228,12 +234,13 @@ describe('Testing Table Row for CheckIn Table', () => {
 
     expect(await findByText('Check In')).toBeInTheDocument();
 
-    fireEvent.click(await findByText('Check In'));
+    await user.click(await findByText('Check In'));
 
     expect(await findByText('Checked in successfully')).toBeInTheDocument();
   });
 
   test('Should handle non-Error rejection in PDF generation', async () => {
+    const user = userEvent.setup();
     // Mock generate to throw a non-Error value
     const { generate } = await import('@pdfme/generator');
     vi.mocked(generate).mockRejectedValueOnce('string error');
@@ -267,12 +274,13 @@ describe('Testing Table Row for CheckIn Table', () => {
       </BrowserRouter>,
     );
 
-    fireEvent.click(await findByText('Download Tag'));
+    await user.click(await findByText('Download Tag'));
 
     expect(await findByText('Error generating pdf')).toBeInTheDocument();
   });
 
   test('Should call onCheckInUpdate callback after successful check-in', async () => {
+    const user = userEvent.setup();
     const mockOnCheckInUpdate = vi.fn();
     const props = {
       data: {
@@ -304,7 +312,7 @@ describe('Testing Table Row for CheckIn Table', () => {
       </BrowserRouter>,
     );
 
-    fireEvent.click(await findByText('Check In'));
+    await user.click(await findByText('Check In'));
 
     expect(await findByText('Checked in successfully')).toBeInTheDocument();
     expect(mockOnCheckInUpdate).toHaveBeenCalledTimes(1);
