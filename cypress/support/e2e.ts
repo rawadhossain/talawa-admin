@@ -16,6 +16,18 @@
 // Import commands.js using ES2015 syntax:
 import './commands';
 import '@cypress/code-coverage/support';
+import {
+  aliasGraphQLOperation,
+  mockGraphQLOperation,
+  mockGraphQLError,
+  waitForGraphQLOperation,
+} from './graphql-utils';
+
+// Register GraphQL utilities as Cypress commands
+Cypress.Commands.add('aliasGraphQLOperation', aliasGraphQLOperation);
+Cypress.Commands.add('mockGraphQLOperation', mockGraphQLOperation);
+Cypress.Commands.add('mockGraphQLError', mockGraphQLError);
+Cypress.Commands.add('waitForGraphQLOperation', waitForGraphQLOperation);
 
 Cypress.on('uncaught:exception', () => {
   return false;

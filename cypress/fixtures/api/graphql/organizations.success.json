@@ -1,0 +1,20 @@
+{
+  "data": {
+    "organizations": [
+      {
+        "id": "org-1",
+        "name": "Example Org",
+        "description": "An example organization for testing",
+        "isPublic": true,
+        "createdAt": "2024-01-01T00:00:00.000Z"
+      },
+      {
+        "id": "org-2",
+        "name": "Another Organization",
+        "description": "A second test organization",
+        "isPublic": false,
+        "createdAt": "2024-01-02T00:00:00.000Z"
+      }
+    ]
+  }
+}

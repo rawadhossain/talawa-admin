@@ -31,6 +31,43 @@ declare global {
        * @param expectedMessage - The expected text (string or RegExp)
        */
       assertToast(expectedMessage: string | RegExp): Chainable<void>;
+      /**
+       * Alias a GraphQL operation for later waiting
+       * @param operationName - The GraphQL operation name to alias
+       */
+      aliasGraphQLOperation(operationName: string): Chainable<null>;
+      /**
+       * Wait for a GraphQL operation to complete
+       * @param operationName - The GraphQL operation name to wait for
+       */
+      waitForGraphQLOperation(operationName: string): Chainable<Interception>;
+      /**
+       * Mock a GraphQL operation with a custom response
+       * @param operationName - The GraphQL operation name to mock
+       * @param responder - fixture path, inline object, or handler function
+       * @param options - Optional response options
+       */
+      mockGraphQLOperation(
+        operationName: string,
+        responder:
+          | string
+          | Record<string, unknown>
+          | ((req: Cypress.Request) => void),
+        options?: Partial<StaticResponse>,
+      ): Chainable<null>;
+      /**
+       * Mock a GraphQL operation to return an error response
+       * @param operationName - The GraphQL operation name to mock
+       * @param message - The error message
+       * @param code - The error code (default: 'GRAPHQL_ERROR')
+       * @param extensions - Additional error extensions
+       */
+      mockGraphQLError(
+        operationName: string,
+        message: string,
+        code?: string,
+        extensions?: Record<string, unknown>,
+      ): Chainable<null>;
     }
   }
 }
