@@ -1,3 +1,5 @@
+/// <reference types="cypress" />
+
 /**
  * GraphQL interception utilities for Cypress
  *
@@ -6,19 +8,20 @@
  */
 
 /**
- * Type for GraphQL response handler
- * - string: fixture path (e.g., 'api/graphql/organizations.success.json')
- * - Record<string, unknown>: inline response object
- * - function: custom handler function that receives the request
+ * Type for GraphQL response handler:
+ * - string: fixture path
+ * - object: inline response data
+ * - function: custom handler that receives the request
  */
 export type GqlResponder =
   | string
   | Record<string, unknown>
-  | ((req: Cypress.Request) => void);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | ((req: any) => void);
 
 /**
- * Get the API URL pattern for GraphQL interception
- * Uses Cypress.env('apiUrl') if set, otherwise falls back to wildcard pattern
+ * Get the API URL pattern for GraphQL interception.
+ * Uses Cypress.env apiUrl if set, otherwise falls back to wildcard pattern.
  */
 const getApiPattern = (): string => {
   const apiUrl = Cypress.env('apiUrl');
@@ -26,15 +29,10 @@ const getApiPattern = (): string => {
 };
 
 /**
- * Alias a GraphQL operation for later waiting
- * This sets up an intercept that assigns an alias when the operation matches
+ * Alias a GraphQL operation for later waiting.
+ * This sets up an intercept that assigns an alias when the operation matches.
  *
  * @param operationName - The GraphQL operation name to alias
- *
- * @example
- * cy.aliasGraphQLOperation('GetOrganizations');
- * cy.visit('/orglist');
- * cy.wait('@GetOrganizations');
  */
 export function aliasGraphQLOperation(operationName: string): void {
   const apiPattern = getApiPattern();
@@ -47,53 +45,32 @@ export function aliasGraphQLOperation(operationName: string): void {
 }
 
 /**
- * Wait for a GraphQL operation to complete
- * Use after aliasGraphQLOperation or mockGraphQLOperation
+ * Wait for a GraphQL operation to complete.
+ * Use after aliasGraphQLOperation or mockGraphQLOperation.
  *
  * @param operationName - The GraphQL operation name to wait for
  * @returns Cypress chainable with the interception object
- *
- * @example
- * cy.aliasGraphQLOperation('GetOrganizations');
- * cy.visit('/orglist');
- * cy.waitForGraphQLOperation('GetOrganizations').then((interception) => {
- *   expect(interception.response?.statusCode).to.equal(200);
- * });
  */
-export function waitForGraphQLOperation(
-  operationName: string,
-): Cypress.Chainable<Cypress.Interception> {
+export function waitForGraphQLOperation(operationName: string) {
   return cy.wait(`@${operationName}`);
 }
 
 /**
- * Mock a GraphQL operation with a custom response
+ * Mock a GraphQL operation with a custom response.
+ *
+ * The responder can be:
+ * - A string path to a fixture file
+ * - An inline response object
+ * - A function that receives the request and handles the reply
  *
  * @param operationName - The GraphQL operation name to mock
- * @param responder - The response to return:
- *   - string: path to a fixture file
- *   - object: inline response data
- *   - function: custom handler that receives the request
- * @param options - Optional response options (statusCode, headers, etc.)
- *
- * @example
- * // Using a fixture
- * cy.mockGraphQLOperation('GetOrganizations', 'api/graphql/organizations.success.json');
- *
- * // Using inline data
- * cy.mockGraphQLOperation('GetOrganizations', {
- *   data: { organizations: [{ id: '1', name: 'Test Org' }] }
- * });
- *
- * // Using a function
- * cy.mockGraphQLOperation('GetOrganizations', (req) => {
- *   req.reply({ data: { organizations: [] } });
- * });
+ * @param responder - The response: fixture path, inline object, or handler function
+ * @param options - Optional response options like statusCode and headers
  */
 export function mockGraphQLOperation(
   operationName: string,
   responder: GqlResponder,
-  options?: Partial<Cypress.StaticResponse>,
+  options?: Record<string, unknown>,
 ): void {
   const apiPattern = getApiPattern();
 
@@ -118,17 +95,12 @@ export function mockGraphQLOperation(
 }
 
 /**
- * Mock a GraphQL operation to return an error response
+ * Mock a GraphQL operation to return an error response.
  *
  * @param operationName - The GraphQL operation name to mock
  * @param message - The error message
- * @param code - The error code (default: 'GRAPHQL_ERROR')
+ * @param code - The error code, defaults to GRAPHQL_ERROR
  * @param extensions - Additional error extensions
- *
- * @example
- * cy.mockGraphQLError('CreateOrganization', 'Organization name already exists', 'CONFLICT');
- * // Perform create action...
- * cy.contains(/already exists/i).should('be.visible');
  */
 export function mockGraphQLError(
   operationName: string,

@@ -40,7 +40,8 @@ declare global {
        * Wait for a GraphQL operation to complete
        * @param operationName - The GraphQL operation name to wait for
        */
-      waitForGraphQLOperation(operationName: string): Chainable<Interception>;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      waitForGraphQLOperation(operationName: string): Chainable<any>;
       /**
        * Mock a GraphQL operation with a custom response
        * @param operationName - The GraphQL operation name to mock
@@ -49,17 +50,15 @@ declare global {
        */
       mockGraphQLOperation(
         operationName: string,
-        responder:
-          | string
-          | Record<string, unknown>
-          | ((req: Cypress.Request) => void),
-        options?: Partial<StaticResponse>,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        responder: string | Record<string, unknown> | ((req: any) => void),
+        options?: Record<string, unknown>,
       ): Chainable<null>;
       /**
        * Mock a GraphQL operation to return an error response
        * @param operationName - The GraphQL operation name to mock
        * @param message - The error message
-       * @param code - The error code (default: 'GRAPHQL_ERROR')
+       * @param code - The error code, defaults to GRAPHQL_ERROR
        * @param extensions - Additional error extensions
        */
       mockGraphQLError(
